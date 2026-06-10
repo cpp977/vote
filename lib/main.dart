@@ -1,0 +1,495 @@
+import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'dart:convert';
+import 'controllers/auth_controller.dart';
+import 'services/auth_middleware.dart';
+import 'pages/login_page.dart';
+
+void main() {
+  runApp(const MyApp());
+}
+
+class Question {
+  final int id;
+  final String text;
+  final int categoryId;
+  final String language;
+  final int minAge;
+  final String createdAt;
+
+  Question({
+    required this.id,
+    required this.text,
+    required this.categoryId,
+    required this.language,
+    required this.minAge,
+    required this.createdAt,
+  });
+
+  factory Question.fromJson(Map<String, dynamic> json) {
+    return Question(
+      id: json['id'] as int,
+      text: json['text'] as String,
+      categoryId: json['category_id'] as int,
+      language: json['language'] as String,
+      minAge: json['min_age'] as int,
+      createdAt: json['created_at'] as String,
+    );
+  }
+}
+
+class Category {
+  final int id;
+  final String name;
+
+  Category({required this.id, required this.name});
+
+  factory Category.fromJson(Map<String, dynamic> json) {
+    return Category(
+      id: json['id'] as int,
+      name: json['name'] as String,
+    );
+  }
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return ChangeNotifierProvider(
+      create: (_) => AuthController()..checkAuthStatus(),
+      child: MaterialApp(
+        title: 'Vote',
+        theme: ThemeData(
+          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+          useMaterial3: true,
+        ),
+        home: const AuthGate(),
+      ),
+    );
+  }
+}
+
+/// Widget that shows login page or home page based on auth state.
+class AuthGate extends StatelessWidget {
+  const AuthGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<AuthController>(
+      builder: (context, auth, _) {
+        if (auth.isLoading) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (auth.isAuthenticated) {
+          return const MyHomePage(title: 'Vote');
+        }
+        return const LoginPage();
+      },
+    );
+  }
+}
+
+class MyHomePage extends StatefulWidget {
+  const MyHomePage({super.key, required this.title});
+
+  final String title;
+
+  @override
+  State<MyHomePage> createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
+  final AuthMiddleware _authMiddleware = AuthMiddleware();
+  List<Question> _questions = [];
+  List<Category> _categories = [];
+  String? _errorMessage;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchData();
+  }
+
+  Future<void> _fetchData() async {
+    debugPrint('Fetching data...');
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final categoriesResponse =
+          await _authMiddleware.get('http://127.0.0.1:8848/categories');
+      final questionsResponse =
+          await _authMiddleware.get('http://127.0.0.1:8848/questions');
+
+      if (categoriesResponse.statusCode == 200 &&
+          questionsResponse.statusCode == 200) {
+        final List<dynamic> categoriesData =
+            jsonDecode(categoriesResponse.body);
+        final List<dynamic> questionsData =
+            jsonDecode(questionsResponse.body);
+
+        setState(() {
+          _categories = categoriesData
+              .map((e) => Category.fromJson(e as Map<String, dynamic>))
+              .toList();
+          _questions = questionsData
+              .map((e) => Question.fromJson(e as Map<String, dynamic>))
+              .toList();
+          _isLoading = false;
+        });
+        debugPrint(
+            'Loaded ${_categories.length} categories and ${_questions.length} questions');
+      } else if (categoriesResponse.statusCode == 401 ||
+          questionsResponse.statusCode == 401) {
+        // Token refresh failed, user needs to login again
+        if (mounted) {
+          context.read<AuthController>().logout();
+        }
+      } else {
+        setState(() {
+          _errorMessage = 'Server returned an error';
+          _isLoading = false;
+        });
+      }
+    } catch (e, stackTrace) {
+      debugPrint('Error fetching data: $e');
+      debugPrint('Stack trace: $stackTrace');
+      setState(() {
+        _errorMessage = 'Failed to connect: $e';
+        _isLoading = false;
+      });
+    }
+  }
+
+  Future<void> _handleLogout() async {
+    final authController = context.read<AuthController>();
+    await authController.logout();
+  }
+
+  Map<Category, List<Question>> _groupQuestionsByCategory() {
+    final Map<Category, List<Question>> grouped = {};
+    for (final category in _categories) {
+      grouped[category] =
+          _questions.where((q) => q.categoryId == category.id).toList();
+    }
+    return grouped;
+  }
+
+  void _navigateToDetails(Question question) {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuestionDetailsPage(question: question),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final groupedQuestions = _groupQuestionsByCategory();
+    final authController = context.watch<AuthController>();
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        title: Text(widget.title),
+        actions: [
+          // User menu
+          PopupMenuButton<String>(
+            icon: CircleAvatar(
+              backgroundColor: Theme.of(context).colorScheme.primary,
+              child: Text(
+                authController.username?.substring(0, 1).toUpperCase() ?? 'U',
+                style: TextStyle(
+                  color: Theme.of(context).colorScheme.onPrimary,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+            onSelected: (value) {
+              if (value == 'logout') {
+                _handleLogout();
+              }
+            },
+            itemBuilder: (context) => [
+              PopupMenuItem(
+                enabled: false,
+                child: Text(
+                  authController.username ?? 'User',
+                  style: const TextStyle(fontWeight: FontWeight.bold),
+                ),
+              ),
+              const PopupMenuDivider(),
+              const PopupMenuItem(
+                value: 'logout',
+                child: Row(
+                  children: [
+                    Icon(Icons.logout),
+                    SizedBox(width: 8),
+                    Text('Logout'),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          IconButton(
+            onPressed: _isLoading ? null : _fetchData,
+            icon: const Icon(Icons.refresh),
+            tooltip: 'Reload',
+          ),
+        ],
+      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _errorMessage != null
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        _errorMessage!,
+                        style: const TextStyle(color: Colors.red),
+                        textAlign: TextAlign.center,
+                      ),
+                      const SizedBox(height: 16),
+                      ElevatedButton(
+                        onPressed: _fetchData,
+                        child: const Text('Retry'),
+                      ),
+                    ],
+                  ),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.all(16),
+                  itemCount: groupedQuestions.length,
+                  itemBuilder: (context, index) {
+                    final category = groupedQuestions.keys.elementAt(index);
+                    final questions = groupedQuestions[category]!;
+                    return CategorySection(
+                      category: category,
+                      questions: questions,
+                      onQuestionTap: _navigateToDetails,
+                    );
+                  },
+                ),
+    );
+  }
+}
+
+class CategorySection extends StatelessWidget {
+  final Category category;
+  final List<Question> questions;
+  final void Function(Question) onQuestionTap;
+
+  const CategorySection({
+    super.key,
+    required this.category,
+    required this.questions,
+    required this.onQuestionTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 24),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(left: 4, bottom: 12),
+            child: Row(
+              children: [
+                Container(
+                  padding: const EdgeInsets.symmetric(
+                      horizontal: 12, vertical: 6),
+                  decoration: BoxDecoration(
+                    color: colorScheme.secondaryContainer,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  child: Text(
+                    category.name,
+                    style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                          color: colorScheme.onSecondaryContainer,
+                          fontWeight: FontWeight.w600,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          ...questions.map((question) => Padding(
+                padding: const EdgeInsets.only(bottom: 10),
+                child: QuestionCard(
+                  question: question,
+                  onTap: () => onQuestionTap(question),
+                ),
+              )),
+        ],
+      ),
+    );
+  }
+}
+
+class QuestionCard extends StatelessWidget {
+  final Question question;
+  final VoidCallback onTap;
+
+  const QuestionCard({
+    super.key,
+    required this.question,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Card(
+      elevation: 2,
+      shadowColor: colorScheme.shadow.withValues(alpha: 0.3),
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(16),
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                colorScheme.surface,
+                colorScheme.surfaceContainerHighest.withValues(alpha: 0.5),
+              ],
+            ),
+          ),
+          child: Row(
+            children: [
+              Container(
+                width: 48,
+                height: 48,
+                decoration: BoxDecoration(
+                  color: colorScheme.primaryContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Icon(
+                  Icons.help_outline,
+                  color: colorScheme.onPrimaryContainer,
+                  size: 24,
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  question.text,
+                  style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+              Icon(
+                Icons.arrow_forward_ios,
+                color: colorScheme.onSurfaceVariant,
+                size: 16,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class QuestionDetailsPage extends StatelessWidget {
+  final Question question;
+
+  const QuestionDetailsPage({
+    super.key,
+    required this.question,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Scaffold(
+      appBar: AppBar(
+        backgroundColor: colorScheme.surface,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () => Navigator.pop(context),
+        ),
+        title: const Text('Question Details'),
+      ),
+      body: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.primaryContainer.withValues(alpha: 0.3),
+                borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: colorScheme.outlineVariant.withValues(alpha: 0.5),
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Icon(
+                        Icons.help_outline,
+                        color: colorScheme.primary,
+                        size: 28,
+                      ),
+                      const SizedBox(width: 12),
+                      Text(
+                        'Question',
+                        style: Theme.of(context).textTheme.labelLarge?.copyWith(
+                              color: colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    question.text,
+                    style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                          height: 1.4,
+                        ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 24),
+            Text(
+              'More details coming soon...',
+              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
