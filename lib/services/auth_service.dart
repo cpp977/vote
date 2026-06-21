@@ -19,8 +19,8 @@ class AuthService {
     if (response.statusCode == 201) {
       return User.fromJson(jsonDecode(response.body));
     } else {
-      final error = ApiError.fromJson(jsonDecode(response.body));
-      throw ApiException(error.error, response.statusCode);
+      final error = _parseError(response);
+      throw ApiException(error, response.statusCode);
     }
   }
 
@@ -37,8 +37,8 @@ class AuthService {
     if (response.statusCode == 200) {
       return AuthResponse.fromJson(jsonDecode(response.body));
     } else {
-      final error = ApiError.fromJson(jsonDecode(response.body));
-      throw ApiException(error.error, response.statusCode);
+      final error = _parseError(response);
+      throw ApiException(error, response.statusCode);
     }
   }
 
@@ -53,8 +53,12 @@ class AuthService {
       body: jsonEncode(request.toJson()),
     );
 
-    if (response.statusCode != 200) {
-      final error = ApiError.fromJson(jsonDecode(response.body));
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final body = response.body;
+      if (body.isEmpty) {
+        throw ApiException('Logout failed with status ${response.statusCode}', response.statusCode);
+      }
+      final error = ApiError.fromJson(jsonDecode(body));
       throw ApiException(error.error, response.statusCode);
     }
   }
@@ -72,8 +76,23 @@ class AuthService {
     if (response.statusCode == 200) {
       return AuthResponse.fromJson(jsonDecode(response.body));
     } else {
-      final error = ApiError.fromJson(jsonDecode(response.body));
-      throw ApiException(error.error, response.statusCode);
+      final error = _parseError(response);
+      throw ApiException(error, response.statusCode);
+    }
+  }
+
+  /// Parses an error message from an API response.
+  /// Handles empty response bodies gracefully.
+  String _parseError(http.Response response) {
+    final body = response.body;
+    if (body.isEmpty) {
+      return 'Request failed with status ${response.statusCode}';
+    }
+    try {
+      final error = ApiError.fromJson(jsonDecode(body));
+      return error.error;
+    } catch (_) {
+      return body;
     }
   }
 }
