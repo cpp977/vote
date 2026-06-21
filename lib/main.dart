@@ -13,6 +13,7 @@ class Question {
   final int id;
   final String text;
   final int categoryId;
+  final String categoryName;
   final String language;
   final int minAge;
   final String createdAt;
@@ -21,6 +22,7 @@ class Question {
     required this.id,
     required this.text,
     required this.categoryId,
+    required this.categoryName,
     required this.language,
     required this.minAge,
     required this.createdAt,
@@ -31,23 +33,10 @@ class Question {
       id: json['id'] as int,
       text: json['text'] as String,
       categoryId: json['category_id'] as int,
+      categoryName: json['category_name'] as String? ?? 'Uncategorized',
       language: json['language'] as String,
       minAge: json['min_age'] as int,
       createdAt: json['created_at'] as String,
-    );
-  }
-}
-
-class Category {
-  final int id;
-  final String name;
-
-  Category({required this.id, required this.name});
-
-  factory Category.fromJson(Map<String, dynamic> json) {
-    return Category(
-      id: json['id'] as int,
-      name: json['name'] as String,
     );
   }
 }
@@ -105,49 +94,37 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   final AuthMiddleware _authMiddleware = AuthMiddleware();
   List<Question> _questions = [];
-  List<Category> _categories = [];
   String? _errorMessage;
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchData();
+    _fetchQuestions();
   }
 
-  Future<void> _fetchData() async {
-    debugPrint('Fetching data...');
+  Future<void> _fetchQuestions() async {
+    debugPrint('Fetching questions...');
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
     try {
-      final categoriesResponse =
-          await _authMiddleware.get('http://127.0.0.1:8848/categories');
-      final questionsResponse =
-          await _authMiddleware.get('http://127.0.0.1:8848/questions');
+      final response =
+          await _authMiddleware.get('http://127.0.0.1:8848/questions/with-categories');
 
-      if (categoriesResponse.statusCode == 200 &&
-          questionsResponse.statusCode == 200) {
-        final List<dynamic> categoriesData =
-            jsonDecode(categoriesResponse.body);
-        final List<dynamic> questionsData =
-            jsonDecode(questionsResponse.body);
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
 
         setState(() {
-          _categories = categoriesData
-              .map((e) => Category.fromJson(e as Map<String, dynamic>))
-              .toList();
-          _questions = questionsData
+          _questions = data
               .map((e) => Question.fromJson(e as Map<String, dynamic>))
               .toList();
           _isLoading = false;
         });
-        debugPrint(
-            'Loaded ${_categories.length} categories and ${_questions.length} questions');
-      } else if (categoriesResponse.statusCode == 401 ||
-          questionsResponse.statusCode == 401) {
+        debugPrint('Loaded ${_questions.length} questions');
+      } else if (response.statusCode == 401) {
         // Token refresh failed, user needs to login again
         if (mounted) {
           context.read<AuthController>().logout();
@@ -159,7 +136,7 @@ class _MyHomePageState extends State<MyHomePage> {
         });
       }
     } catch (e, stackTrace) {
-      debugPrint('Error fetching data: $e');
+      debugPrint('Error fetching questions: $e');
       debugPrint('Stack trace: $stackTrace');
       setState(() {
         _errorMessage = 'Failed to connect: $e';
@@ -173,11 +150,10 @@ class _MyHomePageState extends State<MyHomePage> {
     await authController.logout();
   }
 
-  Map<Category, List<Question>> _groupQuestionsByCategory() {
-    final Map<Category, List<Question>> grouped = {};
-    for (final category in _categories) {
-      grouped[category] =
-          _questions.where((q) => q.categoryId == category.id).toList();
+  Map<String, List<Question>> _groupQuestionsByCategory() {
+    final Map<String, List<Question>> grouped = {};
+    for (final question in _questions) {
+      grouped.putIfAbsent(question.categoryName, () => []).add(question);
     }
     return grouped;
   }
@@ -240,7 +216,7 @@ class _MyHomePageState extends State<MyHomePage> {
             ],
           ),
           IconButton(
-            onPressed: _isLoading ? null : _fetchData,
+            onPressed: _isLoading ? null : _fetchQuestions,
             icon: const Icon(Icons.refresh),
             tooltip: 'Reload',
           ),
@@ -260,7 +236,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       ),
                       const SizedBox(height: 16),
                       ElevatedButton(
-                        onPressed: _fetchData,
+                        onPressed: _fetchQuestions,
                         child: const Text('Retry'),
                       ),
                     ],
@@ -270,10 +246,10 @@ class _MyHomePageState extends State<MyHomePage> {
                   padding: const EdgeInsets.all(16),
                   itemCount: groupedQuestions.length,
                   itemBuilder: (context, index) {
-                    final category = groupedQuestions.keys.elementAt(index);
-                    final questions = groupedQuestions[category]!;
+                    final categoryName = groupedQuestions.keys.elementAt(index);
+                    final questions = groupedQuestions[categoryName]!;
                     return CategorySection(
-                      category: category,
+                      categoryName: categoryName,
                       questions: questions,
                       onQuestionTap: _navigateToDetails,
                     );
@@ -284,13 +260,13 @@ class _MyHomePageState extends State<MyHomePage> {
 }
 
 class CategorySection extends StatelessWidget {
-  final Category category;
+  final String categoryName;
   final List<Question> questions;
   final void Function(Question) onQuestionTap;
 
   const CategorySection({
     super.key,
-    required this.category,
+    required this.categoryName,
     required this.questions,
     required this.onQuestionTap,
   });
@@ -316,7 +292,7 @@ class CategorySection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    category.name,
+                    categoryName,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           color: colorScheme.onSecondaryContainer,
                           fontWeight: FontWeight.w600,
