@@ -41,6 +41,26 @@ class Question {
   }
 }
 
+class AnswerOption {
+  final int id;
+  final int questionId;
+  final String text;
+
+  AnswerOption({
+    required this.id,
+    required this.questionId,
+    required this.text,
+  });
+
+  factory AnswerOption.fromJson(Map<String, dynamic> json) {
+    return AnswerOption(
+      id: json['id'] as int,
+      questionId: json['question_id'] as int,
+      text: json['text'] as String,
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -388,13 +408,71 @@ class QuestionCard extends StatelessWidget {
   }
 }
 
-class QuestionDetailsPage extends StatelessWidget {
+class QuestionDetailsPage extends StatefulWidget {
   final Question question;
 
   const QuestionDetailsPage({
     super.key,
     required this.question,
   });
+
+  @override
+  State<QuestionDetailsPage> createState() => _QuestionDetailsPageState();
+}
+
+class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
+  final AuthMiddleware _authMiddleware = AuthMiddleware();
+  List<AnswerOption> _answers = [];
+  String? _errorMessage;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchAnswers();
+  }
+
+  Future<void> _fetchAnswers() async {
+    setState(() {
+      _isLoading = true;
+      _errorMessage = null;
+    });
+
+    try {
+      final response = await _authMiddleware.get(
+        'http://127.0.0.1:8848/questions/${widget.question.id}/answers',
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _answers = data
+              .map((e) => AnswerOption.fromJson(e as Map<String, dynamic>))
+              .toList();
+          _isLoading = false;
+        });
+      } else if (response.statusCode == 401) {
+        if (mounted) {
+          context.read<AuthController>().logout();
+        }
+      } else if (response.statusCode == 404) {
+        setState(() {
+          _errorMessage = 'Question not found';
+          _isLoading = false;
+        });
+      } else {
+        setState(() {
+          _errorMessage = 'Server returned an error';
+          _isLoading = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _errorMessage = 'Failed to connect: $e';
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -415,6 +493,7 @@ class QuestionDetailsPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            // Question card
             Container(
               width: double.infinity,
               padding: const EdgeInsets.all(24),
@@ -447,7 +526,7 @@ class QuestionDetailsPage extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   Text(
-                    question.text,
+                    widget.question.text,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                           fontWeight: FontWeight.w600,
                           height: 1.4,
@@ -457,12 +536,111 @@ class QuestionDetailsPage extends StatelessWidget {
               ),
             ),
             const SizedBox(height: 24),
+
+            // Answers section
             Text(
-              'More details coming soon...',
-              style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
+              'Possible Answers',
+              style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.w600,
                   ),
             ),
+            const SizedBox(height: 12),
+
+            if (_isLoading)
+              const Center(
+                child: Padding(
+                  padding: EdgeInsets.all(32),
+                  child: CircularProgressIndicator(),
+                ),
+              )
+            else if (_errorMessage != null)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(16),
+                decoration: BoxDecoration(
+                  color: colorScheme.errorContainer,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Row(
+                  children: [
+                    Icon(
+                      Icons.error_outline,
+                      color: colorScheme.onErrorContainer,
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Text(
+                        _errorMessage!,
+                        style: TextStyle(
+                          color: colorScheme.onErrorContainer,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else if (_answers.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
+                decoration: BoxDecoration(
+                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Text(
+                  'No answers available for this question.',
+                  style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                        color: colorScheme.onSurfaceVariant,
+                      ),
+                  textAlign: TextAlign.center,
+                ),
+              )
+            else
+              ..._answers.map((answer) => Padding(
+                    padding: const EdgeInsets.only(bottom: 10),
+                    child: Card(
+                      elevation: 1,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      child: Container(
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          borderRadius: BorderRadius.circular(12),
+                          color: colorScheme.surface,
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 36,
+                              height: 36,
+                              decoration: BoxDecoration(
+                                color: colorScheme.secondaryContainer,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: Icon(
+                                Icons.check_circle_outline,
+                                color: colorScheme.onSecondaryContainer,
+                                size: 20,
+                              ),
+                            ),
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Text(
+                                answer.text,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .bodyLarge
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  )),
           ],
         ),
       ),
