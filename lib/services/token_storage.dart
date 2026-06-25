@@ -1,10 +1,13 @@
 import 'package:shared_preferences/shared_preferences.dart';
 
-/// Service for persisting authentication tokens locally.
+/// Service for persisting authentication tokens and user profile data locally.
 class TokenStorage {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
   static const String _usernameKey = 'username';
+  static const String _birthYearKey = 'birth_year';
+  static const String _genderKey = 'gender';
+  static const String _nationalityKey = 'nationality';
 
   /// Stores the access token.
   Future<void> setAccessToken(String token) async {
@@ -42,12 +45,51 @@ class TokenStorage {
     return prefs.getString(_usernameKey);
   }
 
+  /// Stores the user's birth year.
+  Future<void> setBirthYear(int birthYear) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_birthYearKey, birthYear);
+  }
+
+  /// Retrieves the stored birth year, or null if not set.
+  Future<int?> getBirthYear() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt(_birthYearKey);
+  }
+
+  /// Stores the user's gender.
+  Future<void> setGender(String gender) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_genderKey, gender);
+  }
+
+  /// Retrieves the stored gender, or null if not set.
+  Future<String?> getGender() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_genderKey);
+  }
+
+  /// Stores the user's nationality.
+  Future<void> setNationality(String nationality) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_nationalityKey, nationality);
+  }
+
+  /// Retrieves the stored nationality, or null if not set.
+  Future<String?> getNationality() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_nationalityKey);
+  }
+
   /// Clears all stored authentication data.
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_accessTokenKey);
     await prefs.remove(_refreshTokenKey);
     await prefs.remove(_usernameKey);
+    await prefs.remove(_birthYearKey);
+    await prefs.remove(_genderKey);
+    await prefs.remove(_nationalityKey);
   }
 
   /// Checks if both tokens are present.

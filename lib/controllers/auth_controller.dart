@@ -14,6 +14,9 @@ class AuthController extends ChangeNotifier {
   bool _isLoading = false;
   String? _errorMessage;
   String? _username;
+  int? _birthYear;
+  String? _gender;
+  String? _nationality;
 
   AuthController({
     AuthService? authService,
@@ -33,6 +36,15 @@ class AuthController extends ChangeNotifier {
   /// The username of the currently logged-in user.
   String? get username => _username;
 
+  /// The birth year of the currently logged-in user.
+  int? get birthYear => _birthYear;
+
+  /// The gender of the currently logged-in user.
+  String? get gender => _gender;
+
+  /// The nationality of the currently logged-in user.
+  String? get nationality => _nationality;
+
   /// Checks if the user has valid stored tokens.
   /// Should be called on app startup.
   Future<void> checkAuthStatus() async {
@@ -41,6 +53,9 @@ class AuthController extends ChangeNotifier {
       final hasTokens = await _tokenStorage.hasTokens();
       if (hasTokens) {
         _username = await _tokenStorage.getUsername();
+        _birthYear = await _tokenStorage.getBirthYear();
+        _gender = await _tokenStorage.getGender();
+        _nationality = await _tokenStorage.getNationality();
         _isAuthenticated = true;
       } else {
         _isAuthenticated = false;
@@ -111,6 +126,26 @@ class AuthController extends ChangeNotifier {
       await _tokenStorage.setUsername(username);
 
       _username = username;
+
+      // Fetch user profile data (birth year, gender, nationality)
+      try {
+        final user = await _authService.getCurrentUser(response.accessToken);
+        _birthYear = user.birthYear;
+        _gender = user.gender;
+        _nationality = user.nationality;
+        if (_birthYear != null) {
+          await _tokenStorage.setBirthYear(_birthYear!);
+        }
+        if (_gender != null) {
+          await _tokenStorage.setGender(_gender!);
+        }
+        if (_nationality != null) {
+          await _tokenStorage.setNationality(_nationality!);
+        }
+      } catch (_) {
+        // Profile fetch failed — demographics will be null
+      }
+
       _isAuthenticated = true;
       _setLoading(false);
       return true;
@@ -145,6 +180,9 @@ class AuthController extends ChangeNotifier {
       await _tokenStorage.clearAll();
       _isAuthenticated = false;
       _username = null;
+      _birthYear = null;
+      _gender = null;
+      _nationality = null;
       _setLoading(false);
     }
   }

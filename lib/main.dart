@@ -478,9 +478,24 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     });
 
     try {
+      final authController = context.read<AuthController>();
+
+      // Build tags from user demographic data
+      final tags = <String, String>{};
+      if (authController.birthYear != null) {
+        tags['birth_year'] = authController.birthYear.toString();
+      }
+      if (authController.gender != null) {
+        tags['gender'] = authController.gender!;
+      }
+      if (authController.nationality != null) {
+        tags['nationality'] = authController.nationality!;
+      }
+
       final body = jsonEncode({
         'question_id': widget.question.id,
         'answer_id': answer.id,
+        if (tags.isNotEmpty) 'tags': jsonEncode(tags),
       });
 
       final response = await _authMiddleware.post(

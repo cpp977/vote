@@ -81,6 +81,26 @@ class AuthService {
     }
   }
 
+  /// Fetches the current user's profile data.
+  /// Returns [User] on success.
+  /// Throws [ApiException] on failure.
+  Future<User> getCurrentUser(String accessToken) async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/me'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
+    } else {
+      final error = _parseError(response);
+      throw ApiException(error, response.statusCode);
+    }
+  }
+
   /// Parses an error message from an API response.
   /// Handles empty response bodies gracefully.
   String _parseError(http.Response response) {
