@@ -6,17 +6,26 @@ class RegisterRequest {
   final String username;
   final String email;
   final String password;
+  final int? birthYear;
+  final String? gender;
+  final String? nationality;
 
   const RegisterRequest({
     required this.username,
     required this.email,
     required this.password,
+    this.birthYear,
+    this.gender,
+    this.nationality,
   });
 
   Map<String, dynamic> toJson() => {
         'username': username,
         'email': email,
         'password': password,
+        if (birthYear != null) 'birth_year': birthYear,
+        if (gender != null) 'gender': gender,
+        if (nationality != null) 'nationality': nationality,
       };
 }
 
@@ -81,11 +90,17 @@ class User {
   final int id;
   final String username;
   final String email;
+  final int? birthYear;
+  final String? gender;
+  final String? nationality;
 
   const User({
     required this.id,
     required this.username,
     required this.email,
+    this.birthYear,
+    this.gender,
+    this.nationality,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -93,6 +108,9 @@ class User {
       id: json['id'] as int,
       username: json['username'] as String? ?? '',
       email: json['email'] as String? ?? '',
+      birthYear: json['birth_year'] as int?,
+      gender: json['gender'] as String?,
+      nationality: json['nationality'] as String?,
     );
   }
 }

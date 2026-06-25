@@ -16,8 +16,50 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
+  final _otherNationalityController = TextEditingController();
+  int? _birthYear;
+  String? _gender;
+  String? _nationality;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  static const List<String> _nationalities = [
+    'Austrian',
+    'Belgian',
+    'British',
+    'Bulgarian',
+    'Croatian',
+    'Cypriot',
+    'Czech',
+    'Danish',
+    'Dutch',
+    'Estonian',
+    'Finnish',
+    'French',
+    'German',
+    'Greek',
+    'Hungarian',
+    'Irish',
+    'Italian',
+    'Latvian',
+    'Lithuanian',
+    'Luxembourgish',
+    'Maltese',
+    'Polish',
+    'Portuguese',
+    'Romanian',
+    'Slovak',
+    'Slovenian',
+    'Spanish',
+    'Swedish',
+    'Swiss',
+    'Other',
+  ];
+
+  static List<int> get _birthYears {
+    final currentYear = DateTime.now().year;
+    return List.generate(100, (i) => currentYear - i);
+  }
 
   @override
   void dispose() {
@@ -25,17 +67,25 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
+    _otherNationalityController.dispose();
     super.dispose();
   }
 
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
 
+    final nationality = _nationality == 'Other'
+        ? _otherNationalityController.text.trim()
+        : _nationality;
+
     final authController = context.read<AuthController>();
     final success = await authController.register(
       username: _usernameController.text.trim(),
       email: _emailController.text.trim(),
       password: _passwordController.text,
+      birthYear: _birthYear,
+      gender: _gender,
+      nationality: nationality?.isEmpty ?? true ? null : nationality,
     );
 
     if (success && mounted) {
@@ -78,17 +128,17 @@ class _RegisterPageState extends State<RegisterPage> {
                   Text(
                     'Join Vote',
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                          color: colorScheme.onSurface,
-                        ),
+                      fontWeight: FontWeight.bold,
+                      color: colorScheme.onSurface,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 8),
                   Text(
                     'Create an account to get started',
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                        ),
+                      color: colorScheme.onSurfaceVariant,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                   const SizedBox(height: 32),
@@ -138,13 +188,105 @@ class _RegisterPageState extends State<RegisterPage> {
                             if (value == null || value.trim().isEmpty) {
                               return 'Please enter your email';
                             }
-                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                                .hasMatch(value.trim())) {
+                            if (!RegExp(
+                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                            ).hasMatch(value.trim())) {
                               return 'Please enter a valid email';
                             }
                             return null;
                           },
                         ),
+                        const SizedBox(height: 16),
+
+                        // Birth year field
+                        DropdownButtonFormField<int>(
+                          value: _birthYear,
+                          decoration: InputDecoration(
+                            labelText: 'Birth Year',
+                            prefixIcon: const Icon(Icons.cake_outlined),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          items: _birthYears
+                              .map((year) => DropdownMenuItem(
+                                    value: year,
+                                    child: Text(year.toString()),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _birthYear = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Gender field
+                        DropdownButtonFormField<String>(
+                          value: _gender,
+                          decoration: InputDecoration(
+                            labelText: 'Gender',
+                            prefixIcon: const Icon(Icons.person_outline),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          items: const [
+                            DropdownMenuItem(value: 'm', child: Text('Male')),
+                            DropdownMenuItem(value: 'w', child: Text('Female')),
+                            DropdownMenuItem(
+                              value: 'd',
+                              child: Text('Diverse'),
+                            ),
+                          ],
+                          onChanged: (value) {
+                            setState(() {
+                              _gender = value;
+                            });
+                          },
+                        ),
+                        const SizedBox(height: 16),
+
+                        // Nationality field
+                        DropdownButtonFormField<String>(
+                          value: _nationality,
+                          decoration: InputDecoration(
+                            labelText: 'Nationality',
+                            prefixIcon: const Icon(Icons.flag_outlined),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                          ),
+                          items: _nationalities
+                              .map((n) => DropdownMenuItem(
+                                    value: n,
+                                    child: Text(n),
+                                  ))
+                              .toList(),
+                          onChanged: (value) {
+                            setState(() {
+                              _nationality = value;
+                              if (value != 'Other') {
+                                _otherNationalityController.clear();
+                              }
+                            });
+                          },
+                        ),
+                        if (_nationality == 'Other') ...[
+                          const SizedBox(height: 16),
+                          TextFormField(
+                            controller: _otherNationalityController,
+                            decoration: InputDecoration(
+                              labelText: 'Please specify',
+                              prefixIcon: const Icon(Icons.edit_outlined),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            textInputAction: TextInputAction.next,
+                          ),
+                        ],
                         const SizedBox(height: 16),
 
                         // Password field
@@ -198,7 +340,8 @@ class _RegisterPageState extends State<RegisterPage> {
                               ),
                               onPressed: () {
                                 setState(() {
-                                  _obscureConfirmPassword = !_obscureConfirmPassword;
+                                  _obscureConfirmPassword =
+                                      !_obscureConfirmPassword;
                                 });
                               },
                             ),
@@ -260,9 +403,13 @@ class _RegisterPageState extends State<RegisterPage> {
                         Consumer<AuthController>(
                           builder: (context, auth, _) {
                             return FilledButton(
-                              onPressed: auth.isLoading ? null : _handleRegister,
+                              onPressed: auth.isLoading
+                                  ? null
+                                  : _handleRegister,
                               style: FilledButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(vertical: 16),
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 16,
+                                ),
                                 shape: RoundedRectangleBorder(
                                   borderRadius: BorderRadius.circular(12),
                                 ),

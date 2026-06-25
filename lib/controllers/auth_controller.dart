@@ -58,6 +58,9 @@ class AuthController extends ChangeNotifier {
     required String username,
     required String email,
     required String password,
+    int? birthYear,
+    String? gender,
+    String? nationality,
   }) async {
     _setLoading(true);
     _clearError();
@@ -67,6 +70,9 @@ class AuthController extends ChangeNotifier {
         username: username,
         email: email,
         password: password,
+        birthYear: birthYear,
+        gender: gender,
+        nationality: nationality,
       );
 
       await _authService.register(request);
