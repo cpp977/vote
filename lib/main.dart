@@ -131,8 +131,9 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     try {
-      final response =
-          await _authMiddleware.get('http://127.0.0.1:8848/questions/with-categories');
+      final response = await _authMiddleware.get(
+        'http://127.0.0.1:8848/questions/with-categories',
+      );
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -245,36 +246,36 @@ class _MyHomePageState extends State<MyHomePage> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _errorMessage != null
-              ? Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        _errorMessage!,
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
-                      ),
-                      const SizedBox(height: 16),
-                      ElevatedButton(
-                        onPressed: _fetchQuestions,
-                        child: const Text('Retry'),
-                      ),
-                    ],
+          ? Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    _errorMessage!,
+                    style: const TextStyle(color: Colors.red),
+                    textAlign: TextAlign.center,
                   ),
-                )
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: groupedQuestions.length,
-                  itemBuilder: (context, index) {
-                    final categoryName = groupedQuestions.keys.elementAt(index);
-                    final questions = groupedQuestions[categoryName]!;
-                    return CategorySection(
-                      categoryName: categoryName,
-                      questions: questions,
-                      onQuestionTap: _navigateToDetails,
-                    );
-                  },
-                ),
+                  const SizedBox(height: 16),
+                  ElevatedButton(
+                    onPressed: _fetchQuestions,
+                    child: const Text('Retry'),
+                  ),
+                ],
+              ),
+            )
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: groupedQuestions.length,
+              itemBuilder: (context, index) {
+                final categoryName = groupedQuestions.keys.elementAt(index);
+                final questions = groupedQuestions[categoryName]!;
+                return CategorySection(
+                  categoryName: categoryName,
+                  questions: questions,
+                  onQuestionTap: _navigateToDetails,
+                );
+              },
+            ),
     );
   }
 }
@@ -306,7 +307,9 @@ class CategorySection extends StatelessWidget {
               children: [
                 Container(
                   padding: const EdgeInsets.symmetric(
-                      horizontal: 12, vertical: 6),
+                    horizontal: 12,
+                    vertical: 6,
+                  ),
                   decoration: BoxDecoration(
                     color: colorScheme.secondaryContainer,
                     borderRadius: BorderRadius.circular(20),
@@ -314,21 +317,23 @@ class CategorySection extends StatelessWidget {
                   child: Text(
                     categoryName,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                          color: colorScheme.onSecondaryContainer,
-                          fontWeight: FontWeight.w600,
-                        ),
+                      color: colorScheme.onSecondaryContainer,
+                      fontWeight: FontWeight.w600,
+                    ),
                   ),
                 ),
               ],
             ),
           ),
-          ...questions.map((question) => Padding(
-                padding: const EdgeInsets.only(bottom: 10),
-                child: QuestionCard(
-                  question: question,
-                  onTap: () => onQuestionTap(question),
-                ),
-              )),
+          ...questions.map(
+            (question) => Padding(
+              padding: const EdgeInsets.only(bottom: 10),
+              child: QuestionCard(
+                question: question,
+                onTap: () => onQuestionTap(question),
+              ),
+            ),
+          ),
         ],
       ),
     );
@@ -339,11 +344,7 @@ class QuestionCard extends StatelessWidget {
   final Question question;
   final VoidCallback onTap;
 
-  const QuestionCard({
-    super.key,
-    required this.question,
-    required this.onTap,
-  });
+  const QuestionCard({super.key, required this.question, required this.onTap});
 
   @override
   Widget build(BuildContext context) {
@@ -352,9 +353,7 @@ class QuestionCard extends StatelessWidget {
     return Card(
       elevation: 2,
       shadowColor: colorScheme.shadow.withValues(alpha: 0.3),
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-      ),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       child: InkWell(
         onTap: onTap,
         borderRadius: BorderRadius.circular(16),
@@ -391,8 +390,8 @@ class QuestionCard extends StatelessWidget {
                 child: Text(
                   question.text,
                   style: Theme.of(context).textTheme.titleMedium?.copyWith(
-                        fontWeight: FontWeight.w500,
-                      ),
+                    fontWeight: FontWeight.w500,
+                  ),
                 ),
               ),
               Icon(
@@ -411,10 +410,7 @@ class QuestionCard extends StatelessWidget {
 class QuestionDetailsPage extends StatefulWidget {
   final Question question;
 
-  const QuestionDetailsPage({
-    super.key,
-    required this.question,
-  });
+  const QuestionDetailsPage({super.key, required this.question});
 
   @override
   State<QuestionDetailsPage> createState() => _QuestionDetailsPageState();
@@ -425,6 +421,8 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   List<AnswerOption> _answers = [];
   String? _errorMessage;
   bool _isLoading = true;
+  final Set<int> _submittingAnswerIds = {};
+  final Set<int> _votedAnswerIds = {};
 
   @override
   void initState() {
@@ -474,6 +472,68 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     }
   }
 
+  Future<void> _submitAnswer(AnswerOption answer) async {
+    setState(() {
+      _submittingAnswerIds.add(answer.id);
+    });
+
+    try {
+      final body = jsonEncode({
+        'question_id': widget.question.id,
+        'answer_id': answer.id,
+      });
+
+      final response = await _authMiddleware.post(
+        'http://127.0.0.1:8848/useranswers',
+        body: body,
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200 || response.statusCode == 201) {
+        setState(() {
+          _submittingAnswerIds.remove(answer.id);
+          _votedAnswerIds.add(answer.id);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Vote for "${answer.text}" submitted!'),
+            backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else if (response.statusCode == 401) {
+        context.read<AuthController>().logout();
+      } else {
+        setState(() {
+          _submittingAnswerIds.remove(answer.id);
+        });
+        final errorMessage = response.body.isNotEmpty
+            ? response.body
+            : 'Failed to submit vote';
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Error: $errorMessage'),
+            backgroundColor: Theme.of(context).colorScheme.errorContainer,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      }
+    } catch (e) {
+      if (!mounted) return;
+            setState(() {
+                _submittingAnswerIds.remove(answer.id);
+              });
+              ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Failed to submit vote: $e'),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
@@ -518,9 +578,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                       Text(
                         'Question',
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
-                              color: colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                          color: colorScheme.primary,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
                   ),
@@ -528,9 +588,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                   Text(
                     widget.question.text,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                          height: 1.4,
-                        ),
+                      fontWeight: FontWeight.w600,
+                      height: 1.4,
+                    ),
                   ),
                 ],
               ),
@@ -540,9 +600,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
             // Answers section
             Text(
               'Possible Answers',
-              style: Theme.of(context).textTheme.titleLarge?.copyWith(
-                    fontWeight: FontWeight.w600,
-                  ),
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 12),
 
@@ -571,9 +631,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                     Expanded(
                       child: Text(
                         _errorMessage!,
-                        style: TextStyle(
-                          color: colorScheme.onErrorContainer,
-                        ),
+                        style: TextStyle(color: colorScheme.onErrorContainer),
                       ),
                     ),
                   ],
@@ -584,30 +642,42 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                 width: double.infinity,
                 padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: colorScheme.surfaceContainerHighest.withValues(alpha: 0.3),
+                  color: colorScheme.surfaceContainerHighest.withValues(
+                    alpha: 0.3,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
                   'No answers available for this question.',
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                        color: colorScheme.onSurfaceVariant,
-                      ),
+                    color: colorScheme.onSurfaceVariant,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               )
             else
-              ..._answers.map((answer) => Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: Card(
-                      elevation: 1,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+              ..._answers.map((answer) {
+                final isSubmitting = _submittingAnswerIds.contains(answer.id);
+                final isVoted = _votedAnswerIds.contains(answer.id);
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 10),
+                  child: Card(
+                    elevation: 1,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: InkWell(
+                      onTap: isSubmitting || isVoted
+                          ? null
+                          : () => _submitAnswer(answer),
+                      borderRadius: BorderRadius.circular(12),
                       child: Container(
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
-                          color: colorScheme.surface,
+                          color: isVoted
+                              ? colorScheme.primaryContainer.withValues(alpha: 0.4)
+                              : colorScheme.surface,
                         ),
                         child: Row(
                           children: [
@@ -615,32 +685,50 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                               width: 36,
                               height: 36,
                               decoration: BoxDecoration(
-                                color: colorScheme.secondaryContainer,
+                                color: isVoted
+                                    ? colorScheme.primary
+                                    : colorScheme.secondaryContainer,
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              child: Icon(
-                                Icons.check_circle_outline,
-                                color: colorScheme.onSecondaryContainer,
-                                size: 20,
-                              ),
+                              child: isSubmitting
+                                  ? SizedBox(
+                                      width: 20,
+                                      height: 20,
+                                      child: CircularProgressIndicator(
+                                        strokeWidth: 2,
+                                        color: colorScheme.onSecondaryContainer,
+                                      ),
+                                    )
+                                  : Icon(
+                                      isVoted ? Icons.check_circle : Icons.check_circle_outline,
+                                      color: isVoted
+                                          ? colorScheme.onPrimary
+                                          : colorScheme.onSecondaryContainer,
+                                      size: 20,
+                                    ),
                             ),
                             const SizedBox(width: 14),
                             Expanded(
                               child: Text(
                                 answer.text,
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(
-                                      fontWeight: FontWeight.w500,
-                                    ),
+                                style: Theme.of(context).textTheme.bodyLarge
+                                    ?.copyWith(fontWeight: FontWeight.w500),
                               ),
+                            ),
+                            Icon(
+                              isVoted ? Icons.how_to_vote : Icons.how_to_vote_outlined,
+                              color: isVoted
+                                  ? colorScheme.primary
+                                  : colorScheme.onSurfaceVariant,
+                              size: 20,
                             ),
                           ],
                         ),
                       ),
                     ),
-                  )),
+                  ),
+                );
+              }),
           ],
         ),
       ),
