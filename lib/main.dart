@@ -34,9 +34,9 @@ class Question {
       text: json['text'] as String,
       categoryId: json['category_id'] as int,
       categoryName: json['category_name'] as String? ?? 'Uncategorized',
-      language: json['language'] as String,
-      minAge: json['min_age'] as int,
-      createdAt: json['created_at'] as String,
+      language: json['language'] as String? ?? 'en',
+      minAge: json['min_age'] as int? ?? 0,
+      createdAt: json['created_at'] as String? ?? '',
     );
   }
 }
@@ -130,9 +130,12 @@ class _MyHomePageState extends State<MyHomePage> {
       _errorMessage = null;
     });
 
+    final languageCode = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    debugPrint('Fetching questions for language: $languageCode');
+
     try {
       final response = await _authMiddleware.get(
-        'http://127.0.0.1:8848/questions/with-categories',
+        'http://127.0.0.1:8848/questions/lang/$languageCode',
       );
 
       if (response.statusCode == 200) {
