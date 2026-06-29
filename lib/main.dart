@@ -61,6 +61,30 @@ class AnswerOption {
   }
 }
 
+/// Statistics for a single answer option.
+class AnswerStats {
+  final int answerId;
+  final String answerText;
+  final int count;
+  final double percent;
+
+  AnswerStats({
+    required this.answerId,
+    required this.answerText,
+    required this.count,
+    required this.percent,
+  });
+
+  factory AnswerStats.fromJson(Map<String, dynamic> json) {
+    return AnswerStats(
+      answerId: json['answer_id'] as int,
+      answerText: json['answer_text'] as String,
+      count: json['count'] as int,
+      percent: (json['percent'] as num).toDouble(),
+    );
+  }
+}
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
@@ -418,6 +442,229 @@ class QuestionCard extends StatelessWidget {
   }
 }
 
+/// A widget that displays voting statistics for a question.
+///
+/// Uses a tabbed layout to support multiple views of the statistics.
+/// Currently only shows an "Overall" tab with vote counts and percentages.
+/// Gender-specific statistics data.
+class GenderStats {
+  final String gender;
+  final String label;
+  final List<AnswerStats> stats;
+  final bool isLoading;
+  final String? errorMessage;
+
+  GenderStats({
+    required this.gender,
+    required this.label,
+    required this.stats,
+    required this.isLoading,
+    this.errorMessage,
+  });
+}
+
+class QuestionStatsWidget extends StatelessWidget {
+  final List<AnswerStats> stats;
+  final bool isLoading;
+  final String? errorMessage;
+  final List<GenderStats> genderStats;
+
+  const QuestionStatsWidget({
+    super.key,
+    required this.stats,
+    required this.isLoading,
+    this.errorMessage,
+    required this.genderStats,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return DefaultTabController(
+      length: 2,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          TabBar(
+            tabs: const [
+              Tab(text: 'Overall'),
+              Tab(text: 'By Gender'),
+            ],
+            labelColor: colorScheme.primary,
+            unselectedLabelColor: colorScheme.onSurfaceVariant,
+            indicatorColor: colorScheme.primary,
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            height: 200,
+            child: TabBarView(
+              children: [
+                _buildStatsTab(
+                  context,
+                  colorScheme,
+                  stats,
+                  isLoading,
+                  errorMessage,
+                ),
+                _buildGenderTab(context, colorScheme),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGenderTab(
+    BuildContext context,
+    ColorScheme colorScheme,
+  ) {
+    if (genderStats.every((g) => g.isLoading)) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    return DefaultTabController(
+      length: genderStats.length,
+      child: Column(
+        children: [
+          TabBar(
+            isScrollable: true,
+            tabs: genderStats
+                .map((g) => Tab(text: g.label))
+                .toList(),
+            labelColor: colorScheme.primary,
+            unselectedLabelColor: colorScheme.onSurfaceVariant,
+            indicatorColor: colorScheme.primary,
+          ),
+          const SizedBox(height: 8),
+          Expanded(
+            child: TabBarView(
+              children: genderStats
+                  .map((g) => _buildStatsTab(
+                        context,
+                        colorScheme,
+                        g.stats,
+                        g.isLoading,
+                        g.errorMessage,
+                      ))
+                  .toList(),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStatsTab(
+    BuildContext context,
+    ColorScheme colorScheme,
+    List<AnswerStats> stats,
+    bool isLoading,
+    String? errorMessage,
+  ) {
+    if (isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (errorMessage != null) {
+      final error = errorMessage;
+      return Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(
+              Icons.error_outline,
+              color: colorScheme.error,
+              size: 32,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              error,
+              style: TextStyle(color: colorScheme.error),
+              textAlign: TextAlign.center,
+            ),
+          ],
+        ),
+      );
+    }
+
+    if (stats.isEmpty) {
+      return Center(
+        child: Text(
+          'No votes yet.',
+          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+        ),
+      );
+    }
+
+    // Sort by count descending
+    final sortedStats = List<AnswerStats>.from(stats)
+      ..sort((a, b) => b.count.compareTo(a.count));
+
+    return ListView.builder(
+      itemCount: sortedStats.length,
+      itemBuilder: (context, index) {
+        final stat = sortedStats[index];
+        return _StatRow(stat: stat);
+      },
+    );
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  final AnswerStats stat;
+
+  const _StatRow({required this.stat});
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final percent = stat.percent.clamp(0.0, 100.0);
+
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Expanded(
+                child: Text(
+                  stat.answerText,
+                  style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                        fontWeight: FontWeight.w500,
+                      ),
+                ),
+              ),
+              const SizedBox(width: 8),
+              Text(
+                '${stat.count} vote${stat.count != 1 ? 's' : ''} (${percent.toStringAsFixed(1)}%)',
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                      color: colorScheme.onSurfaceVariant,
+                    ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 4),
+          ClipRRect(
+            borderRadius: BorderRadius.circular(4),
+            child: LinearProgressIndicator(
+              value: percent / 100.0,
+              minHeight: 8,
+              backgroundColor: colorScheme.surfaceContainerHighest,
+              valueColor: AlwaysStoppedAnimation<Color>(colorScheme.primary),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class QuestionDetailsPage extends StatefulWidget {
   final Question question;
 
@@ -435,10 +682,25 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   final Set<int> _submittingAnswerIds = {};
   final Set<int> _votedAnswerIds = {};
 
+  // Statistics state
+  List<AnswerStats> _stats = [];
+  bool _isLoadingStats = true;
+  String? _statsErrorMessage;
+
+  // Gender-resolved statistics state
+  final List<String> _genders = ['m', 'f', 'd'];
+  final Map<String, List<AnswerStats>> _genderStats = {};
+  final Map<String, bool> _genderLoading = {};
+  final Map<String, String?> _genderErrors = {};
+
   @override
   void initState() {
     super.initState();
     _fetchAnswers();
+    _fetchStats();
+    for (final gender in _genders) {
+      _fetchStatsForGender(gender);
+    }
   }
 
   Future<void> _fetchAnswers() async {
@@ -483,6 +745,94 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     }
   }
 
+  Future<void> _fetchStats() async {
+    setState(() {
+      _isLoadingStats = true;
+      _statsErrorMessage = null;
+    });
+
+    try {
+      final response = await _authMiddleware.get(
+        'http://127.0.0.1:8848/questions/${widget.question.id}/stats',
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _stats = data
+              .map((e) => AnswerStats.fromJson(e as Map<String, dynamic>))
+              .toList();
+          _isLoadingStats = false;
+        });
+      } else if (response.statusCode == 401) {
+        if (mounted) {
+          context.read<AuthController>().logout();
+        }
+      } else if (response.statusCode == 404) {
+        setState(() {
+          _statsErrorMessage = 'Statistics not available';
+          _isLoadingStats = false;
+        });
+      } else {
+        setState(() {
+          _statsErrorMessage = 'Failed to load statistics';
+          _isLoadingStats = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _statsErrorMessage = 'Failed to connect: $e';
+        _isLoadingStats = false;
+      });
+    }
+  }
+
+  Future<void> _fetchStatsForGender(String gender) async {
+    setState(() {
+      _genderLoading[gender] = true;
+      _genderErrors[gender] = null;
+    });
+
+    try {
+      final uri = Uri.parse(
+        'http://127.0.0.1:8848/questions/${widget.question.id}/stats',
+      ).replace(queryParameters: {
+        'tagKey': 'gender',
+        'tagValue': gender,
+      });
+      final response = await _authMiddleware.get(uri.toString());
+
+      if (response.statusCode == 200) {
+        final List<dynamic> data = jsonDecode(response.body);
+        setState(() {
+          _genderStats[gender] = data
+              .map((e) => AnswerStats.fromJson(e as Map<String, dynamic>))
+              .toList();
+          _genderLoading[gender] = false;
+        });
+      } else if (response.statusCode == 401) {
+        if (mounted) {
+          context.read<AuthController>().logout();
+        }
+      } else if (response.statusCode == 404) {
+        setState(() {
+          _genderErrors[gender] = 'Statistics not available';
+          _genderLoading[gender] = false;
+        });
+      } else {
+        setState(() {
+          _genderErrors[gender] = 'Failed to load statistics';
+          _genderLoading[gender] = false;
+        });
+      }
+    } catch (e) {
+      setState(() {
+        _genderErrors[gender] = 'Failed to connect: $e';
+        _genderLoading[gender] = false;
+      });
+    }
+  }
+
   Future<void> _submitAnswer(AnswerOption answer) async {
     setState(() {
       _submittingAnswerIds.add(answer.id);
@@ -521,6 +871,11 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           _submittingAnswerIds.remove(answer.id);
           _votedAnswerIds.add(answer.id);
         });
+        // Refresh statistics to reflect the new vote
+        _fetchStats();
+        for (final gender in _genders) {
+          _fetchStatsForGender(gender);
+        }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text('Vote for "${answer.text}" submitted!'),
@@ -755,6 +1110,40 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                   ),
                 );
               }),
+
+            const SizedBox(height: 32),
+
+            // Statistics section
+            Text(
+              'Statistics',
+              style: Theme.of(
+                context,
+              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+            ),
+            const SizedBox(height: 12),
+            Card(
+              elevation: 1,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: QuestionStatsWidget(
+                  stats: _stats,
+                  isLoading: _isLoadingStats,
+                  errorMessage: _statsErrorMessage,
+                  genderStats: _genders.map((gender) {
+                    return GenderStats(
+                      gender: gender,
+                      label: gender == 'm' ? 'Male' : gender == 'f' ? 'Female' : 'Diverse',
+                      stats: _genderStats[gender] ?? [],
+                      isLoading: _genderLoading[gender] ?? true,
+                      errorMessage: _genderErrors[gender],
+                    );
+                  }).toList(),
+                ),
+              ),
+            ),
           ],
         ),
       ),
