@@ -131,6 +131,8 @@ class _MyHomePageState extends State<MyHomePage> {
     });
 
     final languageCode = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    final preAuth = context.read<AuthController>();
+    final preBirthYear = preAuth.birthYear;
     debugPrint('Fetching questions for language: $languageCode');
 
     try {
@@ -140,10 +142,16 @@ class _MyHomePageState extends State<MyHomePage> {
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
+        final currentYear = DateTime.now().year;
+        final userAge = preBirthYear != null
+            ? currentYear - preBirthYear
+            : null;
 
         setState(() {
           _questions = data
               .map((e) => Question.fromJson(e as Map<String, dynamic>))
+              .where((q) =>
+                  userAge == null || q.minAge <= userAge)
               .toList();
           _isLoading = false;
         });
