@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../config/api_config.dart';
 import '../models/auth_models.dart';
 
 /// Service for making authentication-related API calls.
 class AuthService {
-  static const String _baseUrl = 'http://127.0.0.1:8848';
+  static const String _baseUrl = ApiConfig.baseUrl;
 
   /// Registers a new user.
   /// Returns the created [User] on success.

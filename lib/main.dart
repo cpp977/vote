@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
+import 'config/api_config.dart';
 import 'controllers/auth_controller.dart';
 import 'services/auth_middleware.dart';
 import 'pages/login_page.dart';
@@ -161,7 +162,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
     try {
       final response = await _authMiddleware.get(
-        'http://127.0.0.1:8848/questions/lang/$languageCode',
+        '${ApiConfig.baseUrl}/questions/lang/$languageCode',
       );
 
       if (response.statusCode == 200) {
@@ -1202,7 +1203,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
 
     try {
       final response = await _authMiddleware.get(
-        'http://127.0.0.1:8848/questions/${widget.question.id}/answers',
+        '${ApiConfig.baseUrl}/questions/${widget.question.id}/answers',
       );
 
       if (response.statusCode == 200) {
@@ -1244,7 +1245,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
 
     try {
       final response = await _authMiddleware.get(
-        'http://127.0.0.1:8848/questions/${widget.question.id}/stats',
+        '${ApiConfig.baseUrl}/questions/${widget.question.id}/stats',
       );
 
       if (response.statusCode == 200) {
@@ -1286,7 +1287,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
 
     try {
       final uri = Uri.parse(
-        'http://127.0.0.1:8848/questions/${widget.question.id}/stats',
+        '${ApiConfig.baseUrl}/questions/${widget.question.id}/stats',
       ).replace(queryParameters: {
         'tagKey': 'gender',
         'tagValue': gender,
@@ -1351,7 +1352,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
       });
 
       final response = await _authMiddleware.post(
-        'http://127.0.0.1:8848/useranswers',
+        '${ApiConfig.baseUrl}/useranswers',
         body: body,
       );
 
