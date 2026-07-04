@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'dart:convert';
+import 'dart:async';
 import 'config/api_config.dart';
 import 'controllers/auth_controller.dart';
 import 'services/auth_middleware.dart';
@@ -141,6 +142,10 @@ class _MyHomePageState extends State<MyHomePage> {
   List<Question> _questions = [];
   String? _errorMessage;
   bool _isLoading = true;
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  static const int _searchDelayMilliseconds = 500;
+  Timer? _debounceTimer;
 
   @override
   void initState() {
@@ -148,8 +153,8 @@ class _MyHomePageState extends State<MyHomePage> {
     _fetchQuestions();
   }
 
-  Future<void> _fetchQuestions() async {
-    debugPrint('Fetching questions...');
+  Future<void> _fetchQuestions({String? searchQuery}) async {
+    debugPrint('Fetching questions...${searchQuery != null ? ' with search: $searchQuery' : ''}');
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -161,9 +166,16 @@ class _MyHomePageState extends State<MyHomePage> {
     debugPrint('Fetching questions for language: $languageCode');
 
     try {
-      final response = await _authMiddleware.get(
-        '${ApiConfig.baseUrl}/questions/lang/$languageCode',
-      );
+      String endpoint;
+      if (searchQuery != null && searchQuery.isNotEmpty) {
+        // Use search endpoint for non-empty search queries
+        endpoint = '${ApiConfig.baseUrl}/questions/search?q=${Uri.encodeComponent(searchQuery)}';
+      } else {
+        // Use language-based endpoint for default view
+        endpoint = '${ApiConfig.baseUrl}/questions/lang/$languageCode';
+      }
+
+      final response = await _authMiddleware.get(endpoint);
 
       if (response.statusCode == 200) {
         final List<dynamic> data = jsonDecode(response.body);
@@ -202,6 +214,49 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
+  void _onSearchChanged(String value) {
+    // Always update search query state first
+    setState(() {
+      _searchQuery = value;
+    });
+    
+    // Cancel any pending previous search FIRST to prevent immediate execution
+    _debounceTimer?.cancel();
+    
+    // Handle different search scenarios
+    if (value.isEmpty) {
+      // When clearing search: fetch non-search questions immediately
+      // but prevent any search scheduling
+      _fetchQuestions();
+      return;
+    } else if (value.length >= 3) {
+      // Schedule the search with delay ONLY for 3+ characters
+      _debounceTimer = Timer(
+        const Duration(milliseconds: _searchDelayMilliseconds),
+        () {
+          // Check if this is still the current value before making API call
+          if (_searchController.text == value && value.length >= 3) {
+            _fetchQuestions(searchQuery: value);
+          }
+        },
+      );
+    } else {
+      // For values < 3 characters: don't trigger search yet
+      // This prevents immediate search on first letter
+      return;
+    }
+  }
+
+  void _clearSearch() {
+    _searchController.clear();
+    _debounceTimer?.cancel();
+    // Schedule clear action with small delay to prevent immediate fetch
+    _debounceTimer = Timer(
+      const Duration(milliseconds: 200),
+      () => _onSearchChanged(''),
+    );
+  }
+
   Future<void> _handleLogout() async {
     final authController = context.read<AuthController>();
     await authController.logout();
@@ -224,6 +279,75 @@ class _MyHomePageState extends State<MyHomePage> {
     );
   }
 
+  void showSearchDialog(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: const Text('Search Questions'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  hintText: 'Enter search term...',
+                  border: const OutlineInputBorder(),
+                  suffixIcon: IconButton(
+                    icon: const Icon(Icons.clear),
+                    onPressed: _clearSearch,
+                  ),
+                ),
+                onChanged: _onSearchChanged, // Use the same debounced handler
+                autofocus: true,
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+                _fetchQuestions(); // Reset when canceled
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.pop(context);
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget buildSearchField() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      child: TextField(
+        controller: _searchController,
+        decoration: InputDecoration(
+          hintText: 'Search questions...',
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(24),
+          ),
+          suffixIcon: _searchQuery.isNotEmpty
+              ? IconButton(
+                  icon: const Icon(Icons.clear),
+                  onPressed: _clearSearch,
+                )
+              : null,
+          prefixIcon: const Icon(Icons.search),
+          filled: true,
+          fillColor: Theme.of(context).colorScheme.surface,
+        ),
+        onChanged: _onSearchChanged,
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final groupedQuestions = _groupQuestionsByCategory();
@@ -234,6 +358,14 @@ class _MyHomePageState extends State<MyHomePage> {
         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
         title: Text(widget.title),
         actions: [
+          // Search button
+          IconButton(
+            onPressed: () {
+              showSearchDialog(context);
+            },
+            icon: const Icon(Icons.search),
+            tooltip: 'Search questions',
+          ),
           // User menu
           PopupMenuButton<String>(
             icon: CircleAvatar(
@@ -299,18 +431,45 @@ class _MyHomePageState extends State<MyHomePage> {
                 ],
               ),
             )
-          : ListView.builder(
+          : ListView(
               padding: const EdgeInsets.all(16),
-              itemCount: groupedQuestions.length,
-              itemBuilder: (context, index) {
-                final categoryName = groupedQuestions.keys.elementAt(index);
-                final questions = groupedQuestions[categoryName]!;
-                return CategorySection(
-                  categoryName: categoryName,
-                  questions: questions,
-                  onQuestionTap: _navigateToDetails,
-                );
-              },
+              children: [
+                // Search field at the top
+                buildSearchField(),
+                const SizedBox(height: 16),
+                // Display search query indicator when searching
+                if (_searchQuery.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: Row(
+                      children: [
+                        Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Search results for "$_searchQuery"',
+                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                              color: Theme.of(context).colorScheme.primary,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: _clearSearch,
+                          child: const Text('Clear'),
+                        ),
+                      ],
+                    ),
+                  ),
+                // Categories
+                ...groupedQuestions.entries.map(
+                  (entry) => CategorySection(
+                    categoryName: entry.key,
+                    questions: entry.value,
+                    onQuestionTap: _navigateToDetails,
+                  ),
+                ),
+              ],
             ),
     );
   }
