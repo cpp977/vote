@@ -447,7 +447,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            'Search results for "$_searchQuery"',
+                            (_searchQuery.length > 2) ? 'Search results for "$_searchQuery"' : 'Type at least three characters',
                             style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                               color: Theme.of(context).colorScheme.primary,
                               fontWeight: FontWeight.w600,
