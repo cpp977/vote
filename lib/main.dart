@@ -142,20 +142,93 @@ class _MyHomePageState extends State<MyHomePage> {
   static const int _searchDelayMilliseconds = 500;
   Timer? _debounceTimer;
 
+  /// Controls infinite-scroll pagination.
+  final ScrollController _scrollController = ScrollController();
+
+  /// Number of questions requested per page from the backend.
+  static const int _pageSize = 20;
+
+  /// Offset of the next page to fetch (number of questions already loaded).
+  int _offset = 0;
+
+  /// Whether more pages are available on the backend.
+  bool _hasMore = true;
+
+  /// Whether a page is currently being appended (infinite scroll).
+  bool _isLoadingMore = false;
+
+  /// Internal mutex guarding against concurrent fetches.
+  bool _isFetching = false;
+
   @override
   void initState() {
     super.initState();
+    _scrollController.addListener(_onScroll);
     _fetchQuestions();
   }
 
-  Future<void> _fetchQuestions({String? searchQuery}) async {
+  @override
+  void dispose() {
+    _scrollController.removeListener(_onScroll);
+    _scrollController.dispose();
+    _debounceTimer?.cancel();
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  /// Triggers loading the next page when the user scrolls near the bottom.
+  void _onScroll() {
+    if (!_scrollController.hasClients) return;
+    final threshold = _scrollController.position.maxScrollExtent - 200;
+    if (_scrollController.position.pixels >= threshold &&
+        _hasMore &&
+        !_isLoading &&
+        !_isLoadingMore) {
+      _fetchQuestions(reset: false);
+    }
+  }
+
+  /// Loads questions from the backend using the paginated `/questions/restSearch`
+  /// endpoint.
+  ///
+  /// When [reset] is `true` the current list is cleared, the pagination state is
+  /// reset, and the first page (size [_pageSize], offset 0) is fetched. This is
+  /// used for the initial load, search, category filtering and manual refresh.
+  ///
+  /// When [reset] is `false` the next page is appended to the existing list.
+  /// This is used by the infinite-scroll handler [_onScroll] once the user
+  /// reaches the bottom of the list.
+  ///
+  /// [searchQuery] optionally overrides the currently applied search term; when
+  /// omitted, the current [_searchQuery] is used so appended pages keep the same
+  /// filter as the already loaded ones.
+  Future<void> _fetchQuestions({bool reset = true, String? searchQuery}) async {
+    // Prevent concurrent requests (initial load, search, append) from
+    // interfering with each other.
+    if (_isFetching) return;
+    _isFetching = true;
+
+    final String effectiveSearch = (searchQuery ?? _searchQuery).trim();
+
     debugPrint(
-      'Fetching questions...${searchQuery != null ? ' with search: $searchQuery' : ''}',
+      'Fetching questions...'
+      '${effectiveSearch.isNotEmpty ? ' with search: $effectiveSearch' : ''}'
+      '${reset ? '' : ' (append, offset: $_offset)'}',
     );
-    setState(() {
-      _isLoading = true;
-      _errorMessage = null;
-    });
+
+    if (reset) {
+      setState(() {
+        _isLoading = true;
+        _errorMessage = null;
+        _offset = 0;
+        _hasMore = true;
+        _questions = [];
+      });
+    } else {
+      setState(() {
+        _isLoadingMore = true;
+      });
+    }
 
     final languageCode =
         WidgetsBinding.instance.platformDispatcher.locale.languageCode;
@@ -166,17 +239,18 @@ class _MyHomePageState extends State<MyHomePage> {
     try {
       // Use the restSearch endpoint for all question loading.
       // Language selection and age verification are handled server-side via
-      // the `language` and `age` parameters. Pagination is disabled with
-      // `limit: 0` and category filtering is intentionally not used.
+      // the `language` and `age` parameters. Results are fetched in pages of
+      // [_pageSize] questions; infinite scroll appends further pages as the
+      // user scrolls down. Category filtering is applied via `categoryIds`.
       final currentYear = DateTime.now().year;
       final userAge = preBirthYear != null ? currentYear - preBirthYear : null;
 
       final Map<String, Object> body = <String, Object>{
         'language': languageCode,
-        'offset': 0,
-        'limit': 0,
-        if (searchQuery != null && searchQuery.isNotEmpty)
-          'search': searchQuery,
+        'offset': _offset,
+        'limit': _pageSize,
+        // Only apply substring search for queries of at least 3 characters.
+        if (effectiveSearch.length >= 3) 'search': effectiveSearch,
         if (_selectedCategoryIds.isNotEmpty)
           'categoryIds': _selectedCategoryIds.toList(),
       };
@@ -195,15 +269,28 @@ class _MyHomePageState extends State<MyHomePage> {
         final List<dynamic> data =
             (jsonDecode(response.body) as List?) ?? <dynamic>[];
 
+        final newQuestions = data
+            .map((e) => Question.fromJson(e as Map<String, dynamic>))
+            .toList();
+
         setState(() {
-          _questions = data
-              .map((e) => Question.fromJson(e as Map<String, dynamic>))
-              .toList();
+          _questions.addAll(newQuestions);
+          _offset += newQuestions.length;
+          // If we received fewer items than a full page there are no further
+          // pages to load.
+          _hasMore = newQuestions.length >= _pageSize;
           _isLoading = false;
+          _isLoadingMore = false;
         });
-        debugPrint('Loaded ${_questions.length} questions');
+        debugPrint(
+          'Loaded ${newQuestions.length} questions (total: ${_questions.length})',
+        );
       } else if (response.statusCode == 401) {
-        // Token refresh failed, user needs to login again
+        // Token refresh failed, user needs to login again.
+        setState(() {
+          _isLoading = false;
+          _isLoadingMore = false;
+        });
         if (mounted) {
           context.read<AuthController>().logout();
         }
@@ -211,6 +298,7 @@ class _MyHomePageState extends State<MyHomePage> {
         setState(() {
           _errorMessage = 'Server returned an error';
           _isLoading = false;
+          _isLoadingMore = false;
         });
       }
     } catch (e, stackTrace) {
@@ -219,7 +307,10 @@ class _MyHomePageState extends State<MyHomePage> {
       setState(() {
         _errorMessage = 'Failed to connect: $e';
         _isLoading = false;
+        _isLoadingMore = false;
       });
+    } finally {
+      _isFetching = false;
     }
   }
 
@@ -522,6 +613,7 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
             )
           : ListView(
+              controller: _scrollController,
               padding: const EdgeInsets.all(16),
               children: [
                 // Search field at the top
@@ -587,6 +679,36 @@ class _MyHomePageState extends State<MyHomePage> {
                     onQuestionTap: _navigateToDetails,
                   ),
                 ),
+                // Infinite-scroll footer.
+                if (_isLoadingMore)
+                  const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 24),
+                    child: Center(child: CircularProgressIndicator()),
+                  )
+                else if (!_hasMore && _questions.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: Text(
+                        'All questions loaded',
+                        style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  )
+                else if (_questions.isEmpty)
+                  Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 24),
+                    child: Center(
+                      child: Text(
+                        'No questions found',
+                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                    ),
+                  ),
               ],
             ),
     );
