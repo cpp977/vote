@@ -17,8 +17,6 @@ class Question {
   final int categoryId;
   final String categoryName;
   final String language;
-  final int minAge;
-  final String createdAt;
 
   Question({
     required this.id,
@@ -26,8 +24,6 @@ class Question {
     required this.categoryId,
     required this.categoryName,
     required this.language,
-    required this.minAge,
-    required this.createdAt,
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
@@ -37,8 +33,6 @@ class Question {
       categoryId: json['category_id'] as int,
       categoryName: json['category_name'] as String? ?? 'Uncategorized',
       language: json['language'] as String? ?? 'en',
-      minAge: json['min_age'] as int? ?? 0,
-      createdAt: json['created_at'] as String? ?? '',
     );
   }
 }
@@ -154,41 +148,53 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Future<void> _fetchQuestions({String? searchQuery}) async {
-    debugPrint('Fetching questions...${searchQuery != null ? ' with search: $searchQuery' : ''}');
+    debugPrint(
+      'Fetching questions...${searchQuery != null ? ' with search: $searchQuery' : ''}',
+    );
     setState(() {
       _isLoading = true;
       _errorMessage = null;
     });
 
-    final languageCode = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    final languageCode =
+        WidgetsBinding.instance.platformDispatcher.locale.languageCode;
     final preAuth = context.read<AuthController>();
     final preBirthYear = preAuth.birthYear;
     debugPrint('Fetching questions for language: $languageCode');
 
     try {
-      String endpoint;
-      if (searchQuery != null && searchQuery.isNotEmpty) {
-        // Use search endpoint for non-empty search queries
-        endpoint = '${ApiConfig.baseUrl}/questions/search?q=${Uri.encodeComponent(searchQuery)}';
-      } else {
-        // Use language-based endpoint for default view
-        endpoint = '${ApiConfig.baseUrl}/questions/lang/$languageCode';
+      // Use the restSearch endpoint for all question loading.
+      // Language selection and age verification are handled server-side via
+      // the `language` and `age` parameters. Pagination is disabled with
+      // `limit: 0` and category filtering is intentionally not used.
+      final currentYear = DateTime.now().year;
+      final userAge = preBirthYear != null ? currentYear - preBirthYear : null;
+
+      final Map<String, Object> body = <String, Object>{
+        'language': languageCode,
+        'offset': 0,
+        'limit': 0,
+        if (searchQuery != null && searchQuery.isNotEmpty)
+          'search': searchQuery,
+      };
+      if (userAge != null) {
+        body['age'] = userAge;
       }
 
-      final response = await _authMiddleware.get(endpoint);
+      final response = await _authMiddleware.post(
+        '${ApiConfig.baseUrl}/questions/restSearch',
+        body: jsonEncode(body),
+      );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
-        final currentYear = DateTime.now().year;
-        final userAge = preBirthYear != null
-            ? currentYear - preBirthYear
-            : null;
+        // The backend returns the JSON literal `null` (HTTP 200) for an empty
+        // result set, so guard against a null body here.
+        final List<dynamic> data =
+            (jsonDecode(response.body) as List?) ?? <dynamic>[];
 
         setState(() {
           _questions = data
               .map((e) => Question.fromJson(e as Map<String, dynamic>))
-              .where((q) =>
-                  userAge == null || q.minAge <= userAge)
               .toList();
           _isLoading = false;
         });
@@ -219,10 +225,10 @@ class _MyHomePageState extends State<MyHomePage> {
     setState(() {
       _searchQuery = value;
     });
-    
+
     // Cancel any pending previous search FIRST to prevent immediate execution
     _debounceTimer?.cancel();
-    
+
     // Handle different search scenarios
     if (value.isEmpty) {
       // When clearing search: fetch non-search questions immediately
@@ -330,9 +336,7 @@ class _MyHomePageState extends State<MyHomePage> {
         controller: _searchController,
         decoration: InputDecoration(
           hintText: 'Search questions...',
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(24),
-          ),
+          border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
                   icon: const Icon(Icons.clear),
@@ -443,15 +447,21 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: const EdgeInsets.symmetric(vertical: 8),
                     child: Row(
                       children: [
-                        Icon(Icons.search, color: Theme.of(context).colorScheme.primary),
+                        Icon(
+                          Icons.search,
+                          color: Theme.of(context).colorScheme.primary,
+                        ),
                         const SizedBox(width: 8),
                         Expanded(
                           child: Text(
-                            (_searchQuery.length > 2) ? 'Search results for "$_searchQuery"' : 'Type at least three characters',
-                            style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context).colorScheme.primary,
-                              fontWeight: FontWeight.w600,
-                            ),
+                            (_searchQuery.length > 2)
+                                ? 'Search results for "$_searchQuery"'
+                                : 'Type at least three characters',
+                            style: Theme.of(context).textTheme.bodyMedium
+                                ?.copyWith(
+                                  color: Theme.of(context).colorScheme.primary,
+                                  fontWeight: FontWeight.w600,
+                                ),
                           ),
                         ),
                         TextButton(
@@ -691,9 +701,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
         // Header with total votes and view toggle
         Row(
           children: [
-            Expanded(
-              child: _TotalVotesBadge(totalVotes: totalVotes),
-            ),
+            Expanded(child: _TotalVotesBadge(totalVotes: totalVotes)),
             const SizedBox(width: 12),
             _ViewToggle(
               selectedIndex: _selectedView,
@@ -793,10 +801,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
           child: SizedBox(
             width: 160,
             height: 160,
-            child: _DonutChart(
-              stats: sorted,
-              colors: _answerColors,
-            ),
+            child: _DonutChart(stats: sorted, colors: _answerColors),
           ),
         ),
         const SizedBox(height: 16),
@@ -838,7 +843,9 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
                     color: isSelected
                         ? colorScheme.onPrimaryContainer
                         : colorScheme.onSurfaceVariant,
-                    fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                    fontWeight: isSelected
+                        ? FontWeight.w600
+                        : FontWeight.normal,
                   ),
                 ),
               );
@@ -878,9 +885,9 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
       children: [
         Text(
           '$totalVotes vote${totalVotes != 1 ? 's' : ''}',
-          style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                color: colorScheme.onSurfaceVariant,
-              ),
+          style: Theme.of(
+            context,
+          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
         ),
         const SizedBox(height: 8),
         ...List.generate(sorted.length, (i) {
@@ -920,8 +927,8 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
             Text(
               stat.answerText,
               style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         );
@@ -956,13 +963,17 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(Icons.bar_chart, color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4), size: 32),
+            Icon(
+              Icons.bar_chart,
+              color: colorScheme.onSurfaceVariant.withValues(alpha: 0.4),
+              size: 32,
+            ),
             const SizedBox(height: 8),
             Text(
               'No votes yet',
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                    color: colorScheme.onSurfaceVariant,
-                  ),
+                color: colorScheme.onSurfaceVariant,
+              ),
             ),
           ],
         ),
@@ -995,9 +1006,9 @@ class _TotalVotesBadge extends StatelessWidget {
           Text(
             '$totalVotes vote${totalVotes != 1 ? 's' : ''} total',
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                  color: colorScheme.primary,
-                  fontWeight: FontWeight.w600,
-                ),
+              color: colorScheme.primary,
+              fontWeight: FontWeight.w600,
+            ),
           ),
         ],
       ),
@@ -1011,19 +1022,12 @@ class _ViewToggle extends StatelessWidget {
   final int selectedIndex;
   final ValueChanged<int> onSelected;
 
-  const _ViewToggle({
-    required this.selectedIndex,
-    required this.onSelected,
-  });
+  const _ViewToggle({required this.selectedIndex, required this.onSelected});
 
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final icons = [
-      Icons.bar_chart,
-      Icons.donut_large,
-      Icons.people_outline,
-    ];
+    final icons = [Icons.bar_chart, Icons.donut_large, Icons.people_outline];
     final tooltips = ['Bars', 'Donut', 'Gender'];
 
     return Container(
@@ -1045,9 +1049,7 @@ class _ViewToggle extends StatelessWidget {
                 curve: Curves.easeInOut,
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: isSelected
-                      ? colorScheme.primary
-                      : Colors.transparent,
+                  color: isSelected ? colorScheme.primary : Colors.transparent,
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: Icon(
@@ -1100,12 +1102,14 @@ class _AnimatedBarState extends State<_AnimatedBar>
       duration: const Duration(milliseconds: 800),
       vsync: this,
     );
-    _barAnimation = Tween<double>(begin: 0, end: 1).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
-    _percentAnimation = Tween<double>(begin: 0, end: widget.stat.percent).animate(
-      CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic),
-    );
+    _barAnimation = Tween<double>(
+      begin: 0,
+      end: 1,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
+    _percentAnimation = Tween<double>(
+      begin: 0,
+      end: widget.stat.percent,
+    ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeOutCubic));
 
     Future.delayed(widget.delay, () {
       if (mounted) _controller.forward();
@@ -1121,7 +1125,9 @@ class _AnimatedBarState extends State<_AnimatedBar>
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
-    final fraction = widget.maxCount > 0 ? widget.stat.count / widget.maxCount : 0.0;
+    final fraction = widget.maxCount > 0
+        ? widget.stat.count / widget.maxCount
+        : 0.0;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 10),
@@ -1139,8 +1145,10 @@ class _AnimatedBarState extends State<_AnimatedBar>
                 child: Text(
                   widget.stat.answerText,
                   style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                        fontWeight: widget.isWinner ? FontWeight.w700 : FontWeight.w500,
-                      ),
+                    fontWeight: widget.isWinner
+                        ? FontWeight.w700
+                        : FontWeight.w500,
+                  ),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -1151,9 +1159,9 @@ class _AnimatedBarState extends State<_AnimatedBar>
                   return Text(
                     '${widget.stat.count} (${_percentAnimation.value.toStringAsFixed(1)}%)',
                     style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: colorScheme.onSurfaceVariant,
-                          fontWeight: FontWeight.w500,
-                        ),
+                      color: colorScheme.onSurfaceVariant,
+                      fontWeight: FontWeight.w500,
+                    ),
                   );
                 },
               ),
@@ -1218,10 +1226,7 @@ class _DonutChart extends StatelessWidget {
   final List<AnswerStats> stats;
   final List<Color> colors;
 
-  const _DonutChart({
-    required this.stats,
-    required this.colors,
-  });
+  const _DonutChart({required this.stats, required this.colors});
 
   @override
   Widget build(BuildContext context) {
@@ -1239,8 +1244,9 @@ class _DonutChart extends StatelessWidget {
             painter: _DonutChartPainter(
               stats: stats,
               colors: colors,
-              backgroundColor: colorScheme.surfaceContainerHighest
-                  .withValues(alpha: 0.4),
+              backgroundColor: colorScheme.surfaceContainerHighest.withValues(
+                alpha: 0.4,
+              ),
               textColor: colorScheme.onSurface,
             ),
           ),
@@ -1250,14 +1256,14 @@ class _DonutChart extends StatelessWidget {
               Text(
                 '$total',
                 style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                      fontWeight: FontWeight.w700,
-                    ),
+                  fontWeight: FontWeight.w700,
+                ),
               ),
               Text(
                 'votes',
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                      color: colorScheme.onSurfaceVariant,
-                    ),
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
             ],
           ),
@@ -1288,7 +1294,10 @@ class _DonutChartPainter extends CustomPainter {
     final center = Offset(size.width / 2, size.height / 2);
     final radius = size.width / 2;
     final strokeWidth = radius * 0.32;
-    final rect = Rect.fromCircle(center: center, radius: radius - strokeWidth / 2);
+    final rect = Rect.fromCircle(
+      center: center,
+      radius: radius - strokeWidth / 2,
+    );
 
     // Background ring
     final bgPaint = Paint()
@@ -1366,7 +1375,8 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> data =
+            (jsonDecode(response.body) as List?) ?? <dynamic>[];
         setState(() {
           _answers = data
               .map((e) => AnswerOption.fromJson(e as Map<String, dynamic>))
@@ -1408,7 +1418,8 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
       );
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> data =
+            (jsonDecode(response.body) as List?) ?? <dynamic>[];
         setState(() {
           _stats = data
               .map((e) => AnswerStats.fromJson(e as Map<String, dynamic>))
@@ -1447,14 +1458,12 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     try {
       final uri = Uri.parse(
         '${ApiConfig.baseUrl}/questions/${widget.question.id}/stats',
-      ).replace(queryParameters: {
-        'tagKey': 'gender',
-        'tagValue': gender,
-      });
+      ).replace(queryParameters: {'tagKey': 'gender', 'tagValue': gender});
       final response = await _authMiddleware.get(uri.toString());
 
       if (response.statusCode == 200) {
-        final List<dynamic> data = jsonDecode(response.body);
+        final List<dynamic> data =
+            (jsonDecode(response.body) as List?) ?? <dynamic>[];
         setState(() {
           _genderStats[gender] = data
               .map((e) => AnswerStats.fromJson(e as Map<String, dynamic>))
@@ -1553,10 +1562,10 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
       }
     } catch (e) {
       if (!mounted) return;
-            setState(() {
-                _submittingAnswerIds.remove(answer.id);
-              });
-              ScaffoldMessenger.of(context).showSnackBar(
+      setState(() {
+        _submittingAnswerIds.remove(answer.id);
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Failed to submit vote: $e'),
           backgroundColor: Theme.of(context).colorScheme.errorContainer,
@@ -1708,7 +1717,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                         decoration: BoxDecoration(
                           borderRadius: BorderRadius.circular(12),
                           color: isVoted
-                              ? colorScheme.primaryContainer.withValues(alpha: 0.4)
+                              ? colorScheme.primaryContainer.withValues(
+                                  alpha: 0.4,
+                                )
                               : colorScheme.surface,
                         ),
                         child: Row(
@@ -1732,7 +1743,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                                       ),
                                     )
                                   : Icon(
-                                      isVoted ? Icons.check_circle : Icons.check_circle_outline,
+                                      isVoted
+                                          ? Icons.check_circle
+                                          : Icons.check_circle_outline,
                                       color: isVoted
                                           ? colorScheme.onPrimary
                                           : colorScheme.onSecondaryContainer,
@@ -1748,7 +1761,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                               ),
                             ),
                             Icon(
-                              isVoted ? Icons.how_to_vote : Icons.how_to_vote_outlined,
+                              isVoted
+                                  ? Icons.how_to_vote
+                                  : Icons.how_to_vote_outlined,
                               color: isVoted
                                   ? colorScheme.primary
                                   : colorScheme.onSurfaceVariant,
@@ -1767,7 +1782,11 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
             // Statistics section
             Row(
               children: [
-                Icon(Icons.bar_chart_rounded, color: colorScheme.primary, size: 24),
+                Icon(
+                  Icons.bar_chart_rounded,
+                  color: colorScheme.primary,
+                  size: 24,
+                ),
                 const SizedBox(width: 8),
                 Text(
                   'Statistics',
@@ -1796,7 +1815,11 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                   genderStats: _genders.map((gender) {
                     return GenderStats(
                       gender: gender,
-                      label: gender == 'm' ? 'Male' : gender == 'f' ? 'Female' : 'Diverse',
+                      label: gender == 'm'
+                          ? 'Male'
+                          : gender == 'f'
+                          ? 'Female'
+                          : 'Diverse',
                       stats: _genderStats[gender] ?? [],
                       isLoading: _genderLoading[gender] ?? true,
                       errorMessage: _genderErrors[gender],
