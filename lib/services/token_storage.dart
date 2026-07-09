@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:shared_preferences/shared_preferences.dart';
 
 /// Service for persisting authentication tokens and user profile data locally.
@@ -8,6 +10,7 @@ class TokenStorage {
   static const String _birthYearKey = 'birth_year';
   static const String _genderKey = 'gender';
   static const String _nationalityKey = 'nationality';
+  static const String _categoriesKey = 'categories';
 
   /// Stores the access token.
   Future<void> setAccessToken(String token) async {
@@ -81,6 +84,30 @@ class TokenStorage {
     return prefs.getString(_nationalityKey);
   }
 
+  /// Stores the available categories as a mapping of category id to name.
+  Future<void> setCategories(Map<int, String> categories) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_categoriesKey, jsonEncode(categories));
+  }
+
+  /// Retrieves the stored category mapping (category id -> name), or an empty
+  /// map if none has been stored yet.
+  Future<Map<int, String>> getCategories() async {
+    final prefs = await SharedPreferences.getInstance();
+    final raw = prefs.getString(_categoriesKey);
+    if (raw == null || raw.isEmpty) {
+      return <int, String>{};
+    }
+    try {
+      final decoded = jsonDecode(raw) as Map<String, dynamic>;
+      return decoded.map(
+        (key, value) => MapEntry(int.parse(key), value as String),
+      );
+    } catch (_) {
+      return <int, String>{};
+    }
+  }
+
   /// Clears all stored authentication data.
   Future<void> clearAll() async {
     final prefs = await SharedPreferences.getInstance();
@@ -90,6 +117,7 @@ class TokenStorage {
     await prefs.remove(_birthYearKey);
     await prefs.remove(_genderKey);
     await prefs.remove(_nationalityKey);
+    await prefs.remove(_categoriesKey);
   }
 
   /// Checks if both tokens are present.

@@ -17,12 +17,11 @@ class AuthController extends ChangeNotifier {
   int? _birthYear;
   String? _gender;
   String? _nationality;
+  Map<int, String> _categories = {};
 
-  AuthController({
-    AuthService? authService,
-    TokenStorage? tokenStorage,
-  })  : _authService = authService ?? AuthService(),
-        _tokenStorage = tokenStorage ?? TokenStorage();
+  AuthController({AuthService? authService, TokenStorage? tokenStorage})
+    : _authService = authService ?? AuthService(),
+      _tokenStorage = tokenStorage ?? TokenStorage();
 
   /// Whether a user is currently authenticated.
   bool get isAuthenticated => _isAuthenticated;
@@ -45,6 +44,9 @@ class AuthController extends ChangeNotifier {
   /// The nationality of the currently logged-in user.
   String? get nationality => _nationality;
 
+  /// The available question categories as a mapping of category id to name.
+  Map<int, String> get categories => _categories;
+
   /// Checks if the user has valid stored tokens.
   /// Should be called on app startup.
   Future<void> checkAuthStatus() async {
@@ -56,6 +58,7 @@ class AuthController extends ChangeNotifier {
         _birthYear = await _tokenStorage.getBirthYear();
         _gender = await _tokenStorage.getGender();
         _nationality = await _tokenStorage.getNationality();
+        _categories = await _tokenStorage.getCategories();
         _isAuthenticated = true;
       } else {
         _isAuthenticated = false;
@@ -114,10 +117,7 @@ class AuthController extends ChangeNotifier {
     _clearError();
 
     try {
-      final request = LoginRequest(
-        username: username,
-        password: password,
-      );
+      final request = LoginRequest(username: username, password: password);
 
       final response = await _authService.login(request);
 
@@ -144,6 +144,17 @@ class AuthController extends ChangeNotifier {
         }
       } catch (_) {
         // Profile fetch failed — demographics will be null
+      }
+
+      // Fetch the available categories (category id -> name mapping).
+      try {
+        final cats = await _authService.getCategories(response.accessToken);
+        final map = <int, String>{for (final c in cats) c.id: c.name};
+        _categories = map;
+        await _tokenStorage.setCategories(map);
+      } catch (_) {
+        // Category fetch failed — the mapping stays empty; the user can still
+        // browse questions without a category filter.
       }
 
       _isAuthenticated = true;
@@ -183,6 +194,7 @@ class AuthController extends ChangeNotifier {
       _birthYear = null;
       _gender = null;
       _nationality = null;
+      _categories = {};
       _setLoading(false);
     }
   }

@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import '../config/api_config.dart';
 import '../models/auth_models.dart';
+import '../models/category_models.dart';
 
 /// Service for making authentication-related API calls.
 class AuthService {
@@ -57,7 +58,10 @@ class AuthService {
     if (response.statusCode != 200 && response.statusCode != 204) {
       final body = response.body;
       if (body.isEmpty) {
-        throw ApiException('Logout failed with status ${response.statusCode}', response.statusCode);
+        throw ApiException(
+          'Logout failed with status ${response.statusCode}',
+          response.statusCode,
+        );
       }
       final error = ApiError.fromJson(jsonDecode(body));
       throw ApiException(error.error, response.statusCode);
@@ -96,6 +100,30 @@ class AuthService {
 
     if (response.statusCode == 200) {
       return User.fromJson(jsonDecode(response.body));
+    } else {
+      final error = _parseError(response);
+      throw ApiException(error, response.statusCode);
+    }
+  }
+
+  /// Fetches the list of available question categories.
+  /// Returns a [List<Category>] on success.
+  /// Throws [ApiException] on failure.
+  Future<List<Category>> getCategories(String accessToken) async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/categories'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data =
+          (jsonDecode(response.body) as List?) ?? <dynamic>[];
+      return data
+          .map((e) => Category.fromJson(e as Map<String, dynamic>))
+          .toList();
     } else {
       final error = _parseError(response);
       throw ApiException(error, response.statusCode);

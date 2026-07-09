@@ -138,6 +138,7 @@ class _MyHomePageState extends State<MyHomePage> {
   bool _isLoading = true;
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
+  final Set<int> _selectedCategoryIds = {};
   static const int _searchDelayMilliseconds = 500;
   Timer? _debounceTimer;
 
@@ -176,6 +177,8 @@ class _MyHomePageState extends State<MyHomePage> {
         'limit': 0,
         if (searchQuery != null && searchQuery.isNotEmpty)
           'search': searchQuery,
+        if (_selectedCategoryIds.isNotEmpty)
+          'categoryIds': _selectedCategoryIds.toList(),
       };
       if (userAge != null) {
         body['age'] = userAge;
@@ -260,6 +263,80 @@ class _MyHomePageState extends State<MyHomePage> {
     _debounceTimer = Timer(
       const Duration(milliseconds: 200),
       () => _onSearchChanged(''),
+    );
+  }
+
+  /// Shows a multi-select dialog that lets the user pick which categories to
+  /// filter questions by. The selection is applied via [categoryIds] on the
+  /// next question fetch.
+  void _showCategoryFilterDialog(BuildContext context) {
+    final categories = context.read<AuthController>().categories;
+    // Sort categories by name for a stable display order.
+    final sortedEntries = categories.entries.toList()
+      ..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase()));
+
+    // Work on a local copy so Cancel leaves the current selection intact.
+    final Set<int> tempSelected = Set<int>.from(_selectedCategoryIds);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setDialogState) {
+            return AlertDialog(
+              title: const Text('Filter by Category'),
+              content: SizedBox(
+                width: double.maxFinite,
+                child: sortedEntries.isEmpty
+                    ? const Padding(
+                        padding: EdgeInsets.all(16),
+                        child: Center(child: Text('No categories available')),
+                      )
+                    : ListView(
+                        shrinkWrap: true,
+                        children: sortedEntries.map((entry) {
+                          return CheckboxListTile(
+                            title: Text(entry.value),
+                            value: tempSelected.contains(entry.key),
+                            onChanged: (checked) {
+                              setDialogState(() {
+                                if (checked == true) {
+                                  tempSelected.add(entry.key);
+                                } else {
+                                  tempSelected.remove(entry.key);
+                                }
+                              });
+                            },
+                          );
+                        }).toList(),
+                      ),
+              ),
+              actions: [
+                TextButton(
+                  onPressed: () => setDialogState(() => tempSelected.clear()),
+                  child: const Text('Clear'),
+                ),
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancel'),
+                ),
+                TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    setState(() {
+                      _selectedCategoryIds
+                        ..clear()
+                        ..addAll(tempSelected);
+                    });
+                    _fetchQuestions();
+                  },
+                  child: const Text('Apply'),
+                ),
+              ],
+            );
+          },
+        );
+      },
     );
   }
 
@@ -370,6 +447,15 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: const Icon(Icons.search),
             tooltip: 'Search questions',
           ),
+          // Category filter button
+          IconButton(
+            onPressed: () => _showCategoryFilterDialog(context),
+            icon: Badge(
+              isLabelVisible: _selectedCategoryIds.isNotEmpty,
+              child: const Icon(Icons.filter_list),
+            ),
+            tooltip: 'Filter by category',
+          ),
           // User menu
           PopupMenuButton<String>(
             icon: CircleAvatar(
@@ -468,6 +554,28 @@ class _MyHomePageState extends State<MyHomePage> {
                           onPressed: _clearSearch,
                           child: const Text('Clear'),
                         ),
+                      ],
+                    ),
+                  ),
+                // Active category filter chips
+                if (_selectedCategoryIds.isNotEmpty)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Wrap(
+                      spacing: 8,
+                      runSpacing: 4,
+                      children: [
+                        ..._selectedCategoryIds.map((id) {
+                          final name =
+                              authController.categories[id] ?? 'Category $id';
+                          return Chip(
+                            label: Text(name),
+                            onDeleted: () {
+                              setState(() => _selectedCategoryIds.remove(id));
+                              _fetchQuestions();
+                            },
+                          );
+                        }),
                       ],
                     ),
                   ),
