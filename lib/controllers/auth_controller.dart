@@ -1,5 +1,6 @@
 import 'package:flutter/foundation.dart';
 import '../models/auth_models.dart';
+import '../l10n/auth_error_localization.dart';
 import '../services/auth_service.dart';
 import '../services/token_storage.dart';
 
@@ -12,7 +13,7 @@ class AuthController extends ChangeNotifier {
 
   bool _isAuthenticated = false;
   bool _isLoading = false;
-  String? _errorMessage;
+  AuthError? _error;
   String? _username;
   int? _birthYear;
   String? _gender;
@@ -29,8 +30,9 @@ class AuthController extends ChangeNotifier {
   /// Whether an authentication operation is in progress.
   bool get isLoading => _isLoading;
 
-  /// The current error message, if any.
-  String? get errorMessage => _errorMessage;
+  /// The current authentication error, if any. UI code localizes it via the
+  /// [localizedAuthError] helper using the [AuthError.code] and [detail].
+  AuthError? get error => _error;
 
   /// The username of the currently logged-in user.
   String? get username => _username;
@@ -97,11 +99,11 @@ class AuthController extends ChangeNotifier {
       _setLoading(false);
       return true;
     } on ApiException catch (e) {
-      _setError(e.message);
+      _setError(_errorFromApi(e));
       _setLoading(false);
       return false;
-    } catch (e) {
-      _setError('Registration failed: ${e.toString()}');
+    } catch (_) {
+      _setError(const AuthError('registrationFailed', null));
       _setLoading(false);
       return false;
     }
@@ -161,11 +163,11 @@ class AuthController extends ChangeNotifier {
       _setLoading(false);
       return true;
     } on ApiException catch (e) {
-      _setError(e.message);
+      _setError(_errorFromApi(e));
       _setLoading(false);
       return false;
-    } catch (e) {
-      _setError('Login failed: ${e.toString()}');
+    } catch (_) {
+      _setError(const AuthError('loginFailed', null));
       _setLoading(false);
       return false;
     }
@@ -204,13 +206,21 @@ class AuthController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void _setError(String error) {
-    _errorMessage = error;
+  /// Maps an [ApiException] to a localizable [AuthError].
+  AuthError _errorFromApi(ApiException e) {
+    if (e.code == 'requestFailed') {
+      return AuthError('requestFailed', e.statusCode.toString());
+    }
+    return AuthError('server', e.message);
+  }
+
+  void _setError(AuthError error) {
+    _error = error;
     notifyListeners();
   }
 
   void _clearError() {
-    _errorMessage = null;
+    _error = null;
   }
 
   /// Clears the current error message.

@@ -38,6 +38,9 @@ dependencies:
   chopper: ^8.0.0
   shared_preferences: ^2.5.5
   provider: ^6.1.5+1
+  flutter_localizations:
+    sdk: flutter
+  intl: ^0.20.2
 
 dev_dependencies:
   flutter_test:
@@ -55,6 +58,8 @@ dev_dependencies:
 
 # The following section is specific to Flutter packages.
 flutter:
+  # Enables flutter_gen (localization code generation from ARB files).
+  generate: true
 
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in

@@ -21,8 +21,7 @@ class AuthService {
     if (response.statusCode == 201) {
       return User.fromJson(jsonDecode(response.body));
     } else {
-      final error = _parseError(response);
-      throw ApiException(error, response.statusCode);
+      throw _parseError(response);
     }
   }
 
@@ -39,8 +38,7 @@ class AuthService {
     if (response.statusCode == 200) {
       return AuthResponse.fromJson(jsonDecode(response.body));
     } else {
-      final error = _parseError(response);
-      throw ApiException(error, response.statusCode);
+      throw _parseError(response);
     }
   }
 
@@ -58,10 +56,11 @@ class AuthService {
     if (response.statusCode != 200 && response.statusCode != 204) {
       final body = response.body;
       if (body.isEmpty) {
-        throw ApiException(
-          'Logout failed with status ${response.statusCode}',
-          response.statusCode,
-        );
+              throw ApiException(
+                'Logout failed with status ${response.statusCode}',
+                response.statusCode,
+                'logoutFailed',
+              );
       }
       final error = ApiError.fromJson(jsonDecode(body));
       throw ApiException(error.error, response.statusCode);
@@ -81,8 +80,7 @@ class AuthService {
     if (response.statusCode == 200) {
       return AuthResponse.fromJson(jsonDecode(response.body));
     } else {
-      final error = _parseError(response);
-      throw ApiException(error, response.statusCode);
+      throw _parseError(response);
     }
   }
 
@@ -101,8 +99,7 @@ class AuthService {
     if (response.statusCode == 200) {
       return User.fromJson(jsonDecode(response.body));
     } else {
-      final error = _parseError(response);
-      throw ApiException(error, response.statusCode);
+      throw _parseError(response);
     }
   }
 
@@ -125,23 +122,29 @@ class AuthService {
           .map((e) => Category.fromJson(e as Map<String, dynamic>))
           .toList();
     } else {
-      final error = _parseError(response);
-      throw ApiException(error, response.statusCode);
+      throw _parseError(response);
     }
   }
 
-  /// Parses an error message from an API response.
-  /// Handles empty response bodies gracefully.
-  String _parseError(http.Response response) {
+  /// Parses an API error into an [ApiException].
+  ///
+  /// When the body is empty/unparsable the [ApiException.code] is set to
+  /// `requestFailed` so the UI can localize it with the HTTP status code.
+  /// Otherwise the raw server message is preserved (code `null`).
+  ApiException _parseError(http.Response response) {
     final body = response.body;
     if (body.isEmpty) {
-      return 'Request failed with status ${response.statusCode}';
+      return ApiException(
+        'Request failed with status ${response.statusCode}',
+        response.statusCode,
+        'requestFailed',
+      );
     }
     try {
       final error = ApiError.fromJson(jsonDecode(body));
-      return error.error;
+      return ApiException(error.error, response.statusCode);
     } catch (_) {
-      return body;
+      return ApiException(body, response.statusCode);
     }
   }
 }
@@ -150,8 +153,9 @@ class AuthService {
 class ApiException implements Exception {
   final String message;
   final int statusCode;
+  final String? code;
 
-  const ApiException(this.message, this.statusCode);
+  const ApiException(this.message, this.statusCode, [this.code]);
 
   @override
   String toString() => 'ApiException($statusCode): $message';

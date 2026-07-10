@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import 'register_page.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/auth_error_localization.dart';
 
 /// Page for user login.
 class LoginPage extends StatefulWidget {
@@ -47,6 +49,7 @@ class _LoginPageState extends State<LoginPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -68,7 +71,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 24),
                   Text(
-                    'Welcome to Vote',
+                    l10n.welcomeToApp(l10n.appName),
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                           fontWeight: FontWeight.bold,
                           color: colorScheme.onSurface,
@@ -77,7 +80,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Sign in to continue',
+                    l10n.signInToContinue,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                           color: colorScheme.onSurfaceVariant,
                         ),
@@ -95,7 +98,7 @@ class _LoginPageState extends State<LoginPage> {
                         TextFormField(
                           controller: _usernameController,
                           decoration: InputDecoration(
-                            labelText: 'Username',
+                            labelText: l10n.usernameLabel,
                             prefixIcon: const Icon(Icons.person_outline),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -104,7 +107,7 @@ class _LoginPageState extends State<LoginPage> {
                           textInputAction: TextInputAction.next,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your username';
+                              return l10n.usernameRequired;
                             }
                             return null;
                           },
@@ -116,7 +119,7 @@ class _LoginPageState extends State<LoginPage> {
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: l10n.passwordLabel,
                             prefixIcon: const Icon(Icons.lock_outline),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -138,7 +141,7 @@ class _LoginPageState extends State<LoginPage> {
                           onFieldSubmitted: (_) => _handleLogin(),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter your password';
+                              return l10n.passwordRequired;
                             }
                             return null;
                           },
@@ -148,7 +151,7 @@ class _LoginPageState extends State<LoginPage> {
                         // Error message
                         Consumer<AuthController>(
                           builder: (context, auth, _) {
-                            if (auth.errorMessage == null) {
+                            if (auth.error == null) {
                               return const SizedBox.shrink();
                             }
                             return Container(
@@ -168,7 +171,7 @@ class _LoginPageState extends State<LoginPage> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      auth.errorMessage!,
+                                      localizedAuthError(l10n, auth.error),
                                       style: TextStyle(
                                         color: colorScheme.onErrorContainer,
                                         fontSize: 14,
@@ -201,8 +204,8 @@ class _LoginPageState extends State<LoginPage> {
                                         color: Colors.white,
                                       ),
                                     )
-                                  : const Text(
-                                      'Sign In',
+                                  : Text(
+                                      l10n.signIn,
                                       style: TextStyle(fontSize: 16),
                                     ),
                             );
@@ -218,12 +221,12 @@ class _LoginPageState extends State<LoginPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        "Don't have an account? ",
+                        l10n.noAccountPrompt,
                         style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                       TextButton(
                         onPressed: _navigateToRegister,
-                        child: const Text('Sign Up'),
+                        child: Text(l10n.signUp),
                       ),
                     ],
                   ),

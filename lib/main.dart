@@ -1,15 +1,23 @@
+import 'dart:async';
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'dart:convert';
-import 'dart:async';
+
 import 'config/api_config.dart';
 import 'controllers/auth_controller.dart';
 import 'services/auth_middleware.dart';
 import 'pages/login_page.dart';
+import 'l10n/app_localizations.dart';
 
 void main() {
   runApp(const MyApp());
 }
+
+/// Fallback category name used by [Question.fromJson] when the backend
+/// returns none. It is matched (case-sensitively) at the display site so the
+/// localized equivalent can be shown instead.
+const String uncategorizedFallback = 'Uncategorized';
 
 class Question {
   final int id;
@@ -31,7 +39,7 @@ class Question {
       id: json['id'] as int,
       text: json['text'] as String,
       categoryId: json['category_id'] as int,
-      categoryName: json['category_name'] as String? ?? 'Uncategorized',
+      categoryName: json['category_name'] as String? ?? uncategorizedFallback,
       language: json['language'] as String? ?? 'en',
     );
   }
@@ -95,6 +103,8 @@ class MyApp extends StatelessWidget {
           useMaterial3: true,
         ),
         home: const AuthGate(),
+        localizationsDelegates: AppLocalizations.localizationsDelegates,
+        supportedLocales: AppLocalizations.supportedLocales,
       ),
     );
   }
@@ -164,7 +174,13 @@ class _MyHomePageState extends State<MyHomePage> {
   void initState() {
     super.initState();
     _scrollController.addListener(_onScroll);
-    _fetchQuestions();
+    // Defer the initial fetch until after the first frame is built so the
+    // build context can depend on inherited widgets such as `AppLocalizations`.
+    // Accessing `AppLocalizations.of(context)` from `initState` directly throws
+    // because inherited widgets are not yet available at that point.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _fetchQuestions();
+    });
   }
 
   @override
@@ -208,6 +224,7 @@ class _MyHomePageState extends State<MyHomePage> {
     if (_isFetching) return;
     _isFetching = true;
 
+    final l10n = AppLocalizations.of(context);
     final String effectiveSearch = (searchQuery ?? _searchQuery).trim();
 
     debugPrint(
@@ -296,7 +313,7 @@ class _MyHomePageState extends State<MyHomePage> {
         }
       } else {
         setState(() {
-          _errorMessage = 'Server returned an error';
+          _errorMessage = l10n.serverError;
           _isLoading = false;
           _isLoadingMore = false;
         });
@@ -305,7 +322,7 @@ class _MyHomePageState extends State<MyHomePage> {
       debugPrint('Error fetching questions: $e');
       debugPrint('Stack trace: $stackTrace');
       setState(() {
-        _errorMessage = 'Failed to connect: $e';
+        _errorMessage = l10n.connectionError(e.toString());
         _isLoading = false;
         _isLoadingMore = false;
       });
@@ -361,6 +378,7 @@ class _MyHomePageState extends State<MyHomePage> {
   /// filter questions by. The selection is applied via [categoryIds] on the
   /// next question fetch.
   void _showCategoryFilterDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final categories = context.read<AuthController>().categories;
     // Sort categories by name for a stable display order.
     final sortedEntries = categories.entries.toList()
@@ -375,13 +393,13 @@ class _MyHomePageState extends State<MyHomePage> {
         return StatefulBuilder(
           builder: (context, setDialogState) {
             return AlertDialog(
-              title: const Text('Filter by Category'),
+              title: Text(l10n.filterDialogTitle),
               content: SizedBox(
                 width: double.maxFinite,
                 child: sortedEntries.isEmpty
-                    ? const Padding(
-                        padding: EdgeInsets.all(16),
-                        child: Center(child: Text('No categories available')),
+                    ? Padding(
+                        padding: const EdgeInsets.all(16),
+                        child: Center(child: Text(l10n.noCategoriesAvailable)),
                       )
                     : ListView(
                         shrinkWrap: true,
@@ -405,11 +423,11 @@ class _MyHomePageState extends State<MyHomePage> {
               actions: [
                 TextButton(
                   onPressed: () => setDialogState(() => tempSelected.clear()),
-                  child: const Text('Clear'),
+                  child: Text(l10n.clear),
                 ),
                 TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
+                  child: Text(l10n.cancel),
                 ),
                 TextButton(
                   onPressed: () {
@@ -421,7 +439,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     });
                     _fetchQuestions();
                   },
-                  child: const Text('Apply'),
+                  child: Text(l10n.apply),
                 ),
               ],
             );
@@ -454,18 +472,19 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void showSearchDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     showDialog(
       context: context,
       builder: (context) {
         return AlertDialog(
-          title: const Text('Search Questions'),
+          title: Text(l10n.searchDialogTitle),
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
                 controller: _searchController,
                 decoration: InputDecoration(
-                  hintText: 'Enter search term...',
+                  hintText: l10n.searchHint,
                   border: const OutlineInputBorder(),
                   suffixIcon: IconButton(
                     icon: const Icon(Icons.clear),
@@ -483,13 +502,13 @@ class _MyHomePageState extends State<MyHomePage> {
                 Navigator.pop(context);
                 _fetchQuestions(); // Reset when canceled
               },
-              child: const Text('Cancel'),
+              child: Text(l10n.cancel),
             ),
             TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: const Text('OK'),
+              child: Text(l10n.ok),
             ),
           ],
         );
@@ -498,12 +517,13 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   Widget buildSearchField() {
+    final l10n = AppLocalizations.of(context);
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       child: TextField(
         controller: _searchController,
         decoration: InputDecoration(
-          hintText: 'Search questions...',
+          hintText: l10n.searchFieldHint,
           border: OutlineInputBorder(borderRadius: BorderRadius.circular(24)),
           suffixIcon: _searchQuery.isNotEmpty
               ? IconButton(
@@ -522,6 +542,7 @@ class _MyHomePageState extends State<MyHomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final groupedQuestions = _groupQuestionsByCategory();
     final authController = context.watch<AuthController>();
 
@@ -536,7 +557,7 @@ class _MyHomePageState extends State<MyHomePage> {
               showSearchDialog(context);
             },
             icon: const Icon(Icons.search),
-            tooltip: 'Search questions',
+            tooltip: l10n.searchTooltip,
           ),
           // Category filter button
           IconButton(
@@ -545,14 +566,15 @@ class _MyHomePageState extends State<MyHomePage> {
               isLabelVisible: _selectedCategoryIds.isNotEmpty,
               child: const Icon(Icons.filter_list),
             ),
-            tooltip: 'Filter by category',
+            tooltip: l10n.filterTooltip,
           ),
           // User menu
           PopupMenuButton<String>(
             icon: CircleAvatar(
               backgroundColor: Theme.of(context).colorScheme.primary,
               child: Text(
-                authController.username?.substring(0, 1).toUpperCase() ?? 'U',
+                authController.username?.substring(0, 1).toUpperCase() ??
+                    l10n.userInitialFallback,
                 style: TextStyle(
                   color: Theme.of(context).colorScheme.onPrimary,
                   fontWeight: FontWeight.bold,
@@ -568,18 +590,18 @@ class _MyHomePageState extends State<MyHomePage> {
               PopupMenuItem(
                 enabled: false,
                 child: Text(
-                  authController.username ?? 'User',
+                  authController.username ?? l10n.userMenuName,
                   style: const TextStyle(fontWeight: FontWeight.bold),
                 ),
               ),
               const PopupMenuDivider(),
-              const PopupMenuItem(
+              PopupMenuItem(
                 value: 'logout',
                 child: Row(
                   children: [
                     Icon(Icons.logout),
-                    SizedBox(width: 8),
-                    Text('Logout'),
+                    const SizedBox(width: 8),
+                    Text(l10n.logout),
                   ],
                 ),
               ),
@@ -588,7 +610,7 @@ class _MyHomePageState extends State<MyHomePage> {
           IconButton(
             onPressed: _isLoading ? null : _fetchQuestions,
             icon: const Icon(Icons.refresh),
-            tooltip: 'Reload',
+            tooltip: l10n.reload,
           ),
         ],
       ),
@@ -607,7 +629,7 @@ class _MyHomePageState extends State<MyHomePage> {
                   const SizedBox(height: 16),
                   ElevatedButton(
                     onPressed: _fetchQuestions,
-                    child: const Text('Retry'),
+                    child: Text(l10n.retry),
                   ),
                 ],
               ),
@@ -644,7 +666,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         ),
                         TextButton(
                           onPressed: _clearSearch,
-                          child: const Text('Clear'),
+                          child: Text(l10n.clear),
                         ),
                       ],
                     ),
@@ -659,7 +681,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       children: [
                         ..._selectedCategoryIds.map((id) {
                           final name =
-                              authController.categories[id] ?? 'Category $id';
+                              authController.categories[id] ??
+                              l10n.categoryFallback(id);
                           return Chip(
                             label: Text(name),
                             onDeleted: () {
@@ -690,7 +713,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Center(
                       child: Text(
-                        'All questions loaded',
+                        l10n.allQuestionsLoaded,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -702,7 +725,7 @@ class _MyHomePageState extends State<MyHomePage> {
                     padding: const EdgeInsets.symmetric(vertical: 24),
                     child: Center(
                       child: Text(
-                        'No questions found',
+                        l10n.noQuestionsFound,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                           color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
@@ -729,6 +752,7 @@ class CategorySection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
@@ -750,7 +774,9 @@ class CategorySection extends StatelessWidget {
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Text(
-                    categoryName,
+                    categoryName == uncategorizedFallback
+                        ? l10n.uncategorized
+                        : categoryName,
                     style: Theme.of(context).textTheme.labelLarge?.copyWith(
                       color: colorScheme.onSecondaryContainer,
                       fontWeight: FontWeight.w600,
@@ -1091,6 +1117,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
   }
 
   Widget _buildGenderStatsForIndex(ColorScheme colorScheme, int index) {
+    final l10n = AppLocalizations.of(context);
     final g = widget.genderStats[index];
     if (g.isLoading) {
       return const SizedBox(
@@ -1114,7 +1141,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         Text(
-          '$totalVotes vote${totalVotes != 1 ? 's' : ''}',
+          l10n.votesCount(totalVotes),
           style: Theme.of(
             context,
           ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
@@ -1187,6 +1214,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
   }
 
   Widget _buildEmpty(ColorScheme colorScheme) {
+    final l10n = AppLocalizations.of(context);
     return SizedBox(
       height: 120,
       child: Center(
@@ -1200,7 +1228,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
             ),
             const SizedBox(height: 8),
             Text(
-              'No votes yet',
+              l10n.noVotesYet,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),
@@ -1221,6 +1249,7 @@ class _TotalVotesBadge extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -1234,7 +1263,7 @@ class _TotalVotesBadge extends StatelessWidget {
           Icon(Icons.how_to_vote, size: 16, color: colorScheme.primary),
           const SizedBox(width: 6),
           Text(
-            '$totalVotes vote${totalVotes != 1 ? 's' : ''} total',
+            l10n.totalVotes(totalVotes),
             style: Theme.of(context).textTheme.labelMedium?.copyWith(
               color: colorScheme.primary,
               fontWeight: FontWeight.w600,
@@ -1256,9 +1285,10 @@ class _ViewToggle extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final icons = [Icons.bar_chart, Icons.donut_large, Icons.people_outline];
-    final tooltips = ['Bars', 'Donut', 'Gender'];
+    final tooltips = [l10n.viewBars, l10n.viewDonut, l10n.viewGender];
 
     return Container(
       decoration: BoxDecoration(
@@ -1460,6 +1490,7 @@ class _DonutChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
     final total = stats.fold<int>(0, (sum, s) => sum + s.count);
 
@@ -1490,7 +1521,7 @@ class _DonutChart extends StatelessWidget {
                 ),
               ),
               Text(
-                'votes',
+                l10n.votesNoun,
                 style: Theme.of(context).textTheme.bodySmall?.copyWith(
                   color: colorScheme.onSurfaceVariant,
                 ),
@@ -1586,14 +1617,22 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   @override
   void initState() {
     super.initState();
-    _fetchAnswers();
-    _fetchStats();
-    for (final gender in _genders) {
-      _fetchStatsForGender(gender);
-    }
+    // Defer the initial fetches until after the first frame is built so the
+    // build context can depend on inherited widgets such as `AppLocalizations`.
+    // Accessing `AppLocalizations.of(context)` from `initState` directly throws
+    // because inherited widgets are not yet available at that point.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      _fetchAnswers();
+      _fetchStats();
+      for (final gender in _genders) {
+        _fetchStatsForGender(gender);
+      }
+    });
   }
 
   Future<void> _fetchAnswers() async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _isLoading = true;
       _errorMessage = null;
@@ -1619,24 +1658,25 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         }
       } else if (response.statusCode == 404) {
         setState(() {
-          _errorMessage = 'Question not found';
+          _errorMessage = l10n.questionNotFound;
           _isLoading = false;
         });
       } else {
         setState(() {
-          _errorMessage = 'Server returned an error';
+          _errorMessage = l10n.serverError;
           _isLoading = false;
         });
       }
     } catch (e) {
       setState(() {
-        _errorMessage = 'Failed to connect: $e';
+        _errorMessage = l10n.connectionError(e.toString());
         _isLoading = false;
       });
     }
   }
 
   Future<void> _fetchStats() async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _isLoadingStats = true;
       _statsErrorMessage = null;
@@ -1662,24 +1702,25 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         }
       } else if (response.statusCode == 404) {
         setState(() {
-          _statsErrorMessage = 'Statistics not available';
+          _statsErrorMessage = l10n.statsNotAvailable;
           _isLoadingStats = false;
         });
       } else {
         setState(() {
-          _statsErrorMessage = 'Failed to load statistics';
+          _statsErrorMessage = l10n.statsLoadFailed;
           _isLoadingStats = false;
         });
       }
     } catch (e) {
       setState(() {
-        _statsErrorMessage = 'Failed to connect: $e';
+        _statsErrorMessage = l10n.connectionError(e.toString());
         _isLoadingStats = false;
       });
     }
   }
 
   Future<void> _fetchStatsForGender(String gender) async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _genderLoading[gender] = true;
       _genderErrors[gender] = null;
@@ -1706,24 +1747,25 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         }
       } else if (response.statusCode == 404) {
         setState(() {
-          _genderErrors[gender] = 'Statistics not available';
+          _genderErrors[gender] = l10n.statsNotAvailable;
           _genderLoading[gender] = false;
         });
       } else {
         setState(() {
-          _genderErrors[gender] = 'Failed to load statistics';
+          _genderErrors[gender] = l10n.statsLoadFailed;
           _genderLoading[gender] = false;
         });
       }
     } catch (e) {
       setState(() {
-        _genderErrors[gender] = 'Failed to connect: $e';
+        _genderErrors[gender] = l10n.connectionError(e.toString());
         _genderLoading[gender] = false;
       });
     }
   }
 
   Future<void> _submitAnswer(AnswerOption answer) async {
+    final l10n = AppLocalizations.of(context);
     setState(() {
       _submittingAnswerIds.add(answer.id);
     });
@@ -1768,7 +1810,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         }
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Vote for "${answer.text}" submitted!'),
+            content: Text(l10n.voteSubmitted(answer.text)),
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1780,11 +1822,11 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           _submittingAnswerIds.remove(answer.id);
         });
         final errorMessage = response.body.isNotEmpty
-            ? response.body
-            : 'Failed to submit vote';
+            ? response.body.toString()
+            : l10n.serverError;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('Error: $errorMessage'),
+            content: Text(l10n.errorWithMessage(errorMessage)),
             backgroundColor: Theme.of(context).colorScheme.errorContainer,
             behavior: SnackBarBehavior.floating,
           ),
@@ -1797,7 +1839,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
       });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Failed to submit vote: $e'),
+          content: Text(l10n.voteSubmitFailed(e.toString())),
           backgroundColor: Theme.of(context).colorScheme.errorContainer,
           behavior: SnackBarBehavior.floating,
         ),
@@ -1807,6 +1849,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -1817,7 +1860,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Question Details'),
+        title: Text(l10n.questionDetailsTitle),
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
@@ -1847,7 +1890,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                       ),
                       const SizedBox(width: 12),
                       Text(
-                        'Question',
+                        l10n.questionLabel,
                         style: Theme.of(context).textTheme.labelLarge?.copyWith(
                           color: colorScheme.primary,
                           fontWeight: FontWeight.w600,
@@ -1870,7 +1913,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
 
             // Answers section
             Text(
-              'Possible Answers',
+              l10n.possibleAnswers,
               style: Theme.of(
                 context,
               ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
@@ -1919,7 +1962,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
-                  'No answers available for this question.',
+                  l10n.noAnswersAvailable,
                   style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                     color: colorScheme.onSurfaceVariant,
                   ),
@@ -2019,7 +2062,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                 ),
                 const SizedBox(width: 8),
                 Text(
-                  'Statistics',
+                  l10n.statistics,
                   style: Theme.of(
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
@@ -2046,10 +2089,10 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                     return GenderStats(
                       gender: gender,
                       label: gender == 'm'
-                          ? 'Male'
+                          ? l10n.genderMale
                           : gender == 'f'
-                          ? 'Female'
-                          : 'Diverse',
+                          ? l10n.genderFemale
+                          : l10n.genderDiverse,
                       stats: _genderStats[gender] ?? [],
                       isLoading: _genderLoading[gender] ?? true,
                       errorMessage: _genderErrors[gender],

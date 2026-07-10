@@ -1,0 +1,391 @@
+{
+  "@@author": "ECA",
+  "@@context": "Vote app — English (template) ARB. Keys map 1:1 to AppLocalizations getters.",
+  "@@locale": "en",
+
+  "appName": "Vote",
+  "@appName": {
+    "description": "Brand name of the application. Kept untranslated on purpose."
+  },
+
+  "welcomeToApp": "Welcome to {appName}",
+  "@welcomeToApp": {
+    "description": "Login screen greeting; {appName} is the brand and stays 'Vote'.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "joinApp": "Join {appName}",
+  "@joinApp": {
+    "description": "Register screen heading; {appName} is the brand and stays 'Vote'.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+
+  "signInToContinue": "Sign in to continue",
+  "@signInToContinue": {
+    "description": "Subtitle on the login screen."
+  },
+  "noAccountPrompt": "Don't have an account? ",
+  "@noAccountPrompt": {
+    "description": "Prompt inviting the user to register (followed by a Sign Up button)."
+  },
+  "signUp": "Sign Up",
+  "@signUp": {
+    "description": "Button/link to navigate to the registration screen."
+  },
+  "signIn": "Sign In",
+  "@signIn": {
+    "description": "Button/link to sign in or go to the login screen."
+  },
+
+  "usernameLabel": "Username",
+  "@usernameLabel": {
+    "description": "Label for the username input field."
+  },
+  "passwordLabel": "Password",
+  "@passwordLabel": {
+    "description": "Label for the password input field."
+  },
+  "usernameRequired": "Please enter your username",
+  "@usernameRequired": {
+    "description": "Validation error when the login username is empty."
+  },
+  "passwordRequired": "Please enter your password",
+  "@passwordRequired": {
+    "description": "Validation error when the login password is empty."
+  },
+
+  "createAccount": "Create Account",
+  "@createAccount": {
+    "description": "App bar title and submit button on the registration screen."
+  },
+  "createAccountSubtitle": "Create an account to get started",
+  "@createAccountSubtitle": {
+    "description": "Subtitle on the registration screen."
+  },
+  "usernameRequiredAlt": "Please enter a username",
+  "@usernameRequiredAlt": {
+    "description": "Validation error when the registration username is empty."
+  },
+  "usernameMinLength": "Username must be at least 3 characters",
+  "@usernameMinLength": {
+    "description": "Validation error when the username is too short."
+  },
+  "emailLabel": "Email",
+  "@emailLabel": {
+    "description": "Label for the email input field."
+  },
+  "emailRequired": "Please enter your email",
+  "@emailRequired": {
+    "description": "Validation error when the email is empty."
+  },
+  "emailInvalid": "Please enter a valid email",
+  "@emailInvalid": {
+    "description": "Validation error when the email format is invalid."
+  },
+  "birthYearLabel": "Birth Year",
+  "@birthYearLabel": {
+    "description": "Label for the birth year selector."
+  },
+  "genderLabel": "Gender",
+  "@genderLabel": {
+    "description": "Label for the gender selector."
+  },
+  "genderMale": "Male",
+  "@genderMale": {
+    "description": "Gender option label (value sent to backend: 'm')."
+  },
+  "genderFemale": "Female",
+  "@genderFemale": {
+    "description": "Gender option label (value sent to backend: 'w')."
+  },
+  "genderDiverse": "Diverse",
+  "@genderDiverse": {
+    "description": "Gender option label (value sent to backend: 'd')."
+  },
+  "nationalityLabel": "Nationality",
+  "@nationalityLabel": {
+    "description": "Label for the nationality selector."
+  },
+  "nationalityOtherLabel": "Please specify",
+  "@nationalityOtherLabel": {
+    "description": "Label for the free-text field shown when 'Other' nationality is selected."
+  },
+  "passwordRequiredAlt": "Please enter a password",
+  "@passwordRequiredAlt": {
+    "description": "Validation error when the registration password is empty."
+  },
+  "passwordMinLength": "Password must be at least 6 characters",
+  "@passwordMinLength": {
+    "description": "Validation error when the password is too short."
+  },
+  "confirmPasswordLabel": "Confirm Password",
+  "@confirmPasswordLabel": {
+    "description": "Label for the confirm-password input field."
+  },
+  "confirmPasswordRequired": "Please confirm your password",
+  "@confirmPasswordRequired": {
+    "description": "Validation error when the confirm-password field is empty."
+  },
+  "passwordsDoNotMatch": "Passwords do not match",
+  "@passwordsDoNotMatch": {
+    "description": "Validation error when the two password fields differ."
+  },
+  "registrationSuccess": "Registration successful! Please sign in.",
+  "@registrationSuccess": {
+    "description": "Success snack bar shown after a successful registration."
+  },
+  "haveAccountPrompt": "Already have an account? ",
+  "@haveAccountPrompt": {
+    "description": "Prompt inviting the user to sign in (followed by a Sign In button)."
+  },
+
+  "filterDialogTitle": "Filter by Category",
+  "@filterDialogTitle": {
+    "description": "Title of the category filter dialog."
+  },
+  "noCategoriesAvailable": "No categories available",
+  "@noCategoriesAvailable": {
+    "description": "Message shown when there are no categories to filter by."
+  },
+  "clear": "Clear",
+  "@clear": {
+    "description": "Generic clear action (category filter dialog and active search indicator)."
+  },
+  "cancel": "Cancel",
+  "@cancel": {
+    "description": "Generic cancel action."
+  },
+  "apply": "Apply",
+  "@apply": {
+    "description": "Apply action in the category filter dialog."
+  },
+
+  "searchDialogTitle": "Search Questions",
+  "@searchDialogTitle": {
+    "description": "Title of the search dialog."
+  },
+  "searchHint": "Enter search term...",
+  "@searchHint": {
+    "description": "Hint text inside the search dialog input."
+  },
+  "ok": "OK",
+  "@ok": {
+    "description": "Generic confirm action in the search dialog."
+  },
+  "searchFieldHint": "Search questions...",
+  "@searchFieldHint": {
+    "description": "Hint text of the inline search field on the home screen."
+  },
+  "searchTooltip": "Search questions",
+  "@searchTooltip": {
+    "description": "Tooltip for the search button."
+  },
+  "filterTooltip": "Filter by category",
+  "@filterTooltip": {
+    "description": "Tooltip for the category filter button."
+  },
+  "reload": "Reload",
+  "@reload": {
+    "description": "Tooltip for the reload button."
+  },
+
+  "searchResultsFor": "Search results for \"{query}\"",
+  "@searchResultsFor": {
+    "description": "Header shown above search results; {query} is the user's search term.",
+    "placeholders": {
+      "query": {
+        "type": "String"
+      }
+    }
+  },
+  "searchMinChars": "Type at least three characters",
+  "@searchMinChars": {
+    "description": "Hint shown when the search term is shorter than 3 characters."
+  },
+  "categoryFallback": "Category {id}",
+  "@categoryFallback": {
+    "description": "Fallback label for a category chip when the name is unknown; {id} is the numeric category id.",
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "allQuestionsLoaded": "All questions loaded",
+  "@allQuestionsLoaded": {
+    "description": "Footer shown when every question has been loaded."
+  },
+  "noQuestionsFound": "No questions found",
+  "@noQuestionsFound": {
+    "description": "Empty-state message when no questions match."
+  },
+  "retry": "Retry",
+  "@retry": {
+    "description": "Button to retry loading after an error."
+  },
+
+  "serverError": "Server returned an error",
+  "@serverError": {
+    "description": "Generic error when the server responds with an unexpected status."
+  },
+  "connectionError": "Failed to connect: {error}",
+  "@connectionError": {
+    "description": "Error shown when the network request fails; {error} is the underlying exception message.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "questionDetailsTitle": "Question Details",
+  "@questionDetailsTitle": {
+    "description": "App bar title of the question details screen."
+  },
+  "questionLabel": "Question",
+  "@questionLabel": {
+    "description": "Section label for the question text."
+  },
+  "possibleAnswers": "Possible Answers",
+  "@possibleAnswers": {
+    "description": "Section label for the list of answer options."
+  },
+  "noAnswersAvailable": "No answers available for this question.",
+  "@noAnswersAvailable": {
+    "description": "Empty-state message when a question has no answer options."
+  },
+  "statistics": "Statistics",
+  "@statistics": {
+    "description": "Section label for the voting statistics."
+  },
+  "questionNotFound": "Question not found",
+  "@questionNotFound": {
+    "description": "Error shown when the question could not be found (404)."
+  },
+  "statsNotAvailable": "Statistics not available",
+  "@statsNotAvailable": {
+    "description": "Error shown when statistics could not be loaded (404)."
+  },
+  "statsLoadFailed": "Failed to load statistics",
+  "@statsLoadFailed": {
+    "description": "Error shown when loading statistics fails for another reason."
+  },
+  "voteSubmitted": "Vote for \"{answer}\" submitted!",
+  "@voteSubmitted": {
+    "description": "Success snack bar after voting; {answer} is the answer option text returned by the server.",
+    "placeholders": {
+      "answer": {
+        "type": "String"
+      }
+    }
+  },
+  "errorWithMessage": "Error: {message}",
+  "@errorWithMessage": {
+    "description": "Error snack bar with a server-provided message; {message} is the raw server response.",
+    "placeholders": {
+      "message": {
+        "type": "String"
+      }
+    }
+  },
+  "voteSubmitFailed": "Failed to submit vote: {error}",
+  "@voteSubmitFailed": {
+    "description": "Error snack bar when submitting a vote fails; {error} is the underlying exception message.",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+
+  "votesNoun": "votes",
+  "@votesNoun": {
+    "description": "Noun label shown in the center of the donut chart."
+  },
+  "noVotesYet": "No votes yet",
+  "@noVotesYet": {
+    "description": "Empty-state message in the statistics widget before any votes exist."
+  },
+  "totalVotes": "{count, plural, =0{No votes} =1{{count} vote total}other{{count} votes total}}",
+  "@totalVotes": {
+    "description": "Total-votes badge; {count} is the number of votes.",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "votesCount": "{count, plural, =0{No votes} =1{{count} vote}other{{count} votes}}",
+  "@votesCount": {
+    "description": "Per-gender vote count; {count} is the number of votes.",
+    "placeholders": {
+      "count": {
+        "type": "num"
+      }
+    }
+  },
+  "viewBars": "Bars",
+  "@viewBars": {
+    "description": "Tooltip for the bar-chart view toggle."
+  },
+  "viewDonut": "Donut",
+  "@viewDonut": {
+    "description": "Tooltip for the donut-chart view toggle."
+  },
+  "viewGender": "Gender",
+  "@viewGender": {
+    "description": "Tooltip for the gender-comparison view toggle."
+  },
+
+  "uncategorized": "Uncategorized",
+  "@uncategorized": {
+    "description": "Fallback category name when the backend returns none."
+  },
+  "userInitialFallback": "U",
+  "@userInitialFallback": {
+    "description": "Single-letter fallback shown in the user avatar when no username is available."
+  },
+  "userMenuName": "User",
+  "@userMenuName": {
+    "description": "Fallback name shown in the user menu when no username is available."
+  },
+  "logout": "Logout",
+  "@logout": {
+    "description": "Menu item to log out."
+  },
+
+  "loginFailed": "Login failed: {error}",
+  "@loginFailed": {
+    "description": "Login error wrapper; {error} is the underlying detail (server message or exception).",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "registrationFailed": "Registration failed: {error}",
+  "@registrationFailed": {
+    "description": "Registration error wrapper; {error} is the underlying detail (server message or exception).",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "requestFailedStatus": "Request failed with status {status}",
+  "@requestFailedStatus": {
+    "description": "Low-level error when the server returns an empty/unparsable body; {status} is the HTTP status code.",
+    "placeholders": {
+      "status": {
+        "type": "String"
+      }
+    }
+  }
+}

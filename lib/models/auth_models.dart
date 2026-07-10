@@ -1,6 +1,21 @@
 /// Authentication-related data models for the Vote backend.
 library;
 
+/// Structured authentication error exposed to the UI so it can be localized.
+///
+/// [code] selects the localized message template (e.g. `loginFailed`),
+/// while [detail] carries the underlying, often server-provided, text that
+/// is inserted into the template at display time.
+class AuthError {
+  final String code;
+  final String? detail;
+
+  const AuthError(this.code, [this.detail]);
+
+  @override
+  String toString() => 'AuthError($code${detail != null ? ': $detail' : ''})';
+}
+
 /// Request body for user registration.
 class RegisterRequest {
   final String username;

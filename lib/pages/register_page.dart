@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
+import '../l10n/app_localizations.dart';
+import '../l10n/auth_error_localization.dart';
 
 /// Page for user registration.
 class RegisterPage extends StatefulWidget {
@@ -79,6 +81,7 @@ class _RegisterPageState extends State<RegisterPage> {
         : _nationality;
 
     final authController = context.read<AuthController>();
+    final l10n = AppLocalizations.of(context);
     final success = await authController.register(
       username: _usernameController.text.trim(),
       email: _emailController.text.trim(),
@@ -91,8 +94,8 @@ class _RegisterPageState extends State<RegisterPage> {
     if (success && mounted) {
       // Show success message and navigate back to login
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Registration successful! Please sign in.'),
+        SnackBar(
+          content: Text(l10n.registrationSuccess),
           backgroundColor: Colors.green,
         ),
       );
@@ -102,6 +105,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -112,7 +116,7 @@ class _RegisterPageState extends State<RegisterPage> {
           icon: const Icon(Icons.arrow_back),
           onPressed: () => Navigator.pop(context),
         ),
-        title: const Text('Create Account'),
+        title: Text(l10n.createAccount),
       ),
       body: SafeArea(
         child: Center(
@@ -126,7 +130,7 @@ class _RegisterPageState extends State<RegisterPage> {
                 children: [
                   // Title
                   Text(
-                    'Join Vote',
+                    l10n.joinApp(l10n.appName),
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.bold,
                       color: colorScheme.onSurface,
@@ -135,7 +139,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Create an account to get started',
+                    l10n.createAccountSubtitle,
                     style: Theme.of(context).textTheme.bodyLarge?.copyWith(
                       color: colorScheme.onSurfaceVariant,
                     ),
@@ -153,7 +157,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         TextFormField(
                           controller: _usernameController,
                           decoration: InputDecoration(
-                            labelText: 'Username',
+                            labelText: l10n.usernameLabel,
                             prefixIcon: const Icon(Icons.person_outline),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -162,10 +166,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           textInputAction: TextInputAction.next,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Please enter a username';
+                              return l10n.usernameRequiredAlt;
                             }
                             if (value.trim().length < 3) {
-                              return 'Username must be at least 3 characters';
+                              return l10n.usernameMinLength;
                             }
                             return null;
                           },
@@ -176,7 +180,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         TextFormField(
                           controller: _emailController,
                           decoration: InputDecoration(
-                            labelText: 'Email',
+                            labelText: l10n.emailLabel,
                             prefixIcon: const Icon(Icons.email_outlined),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
@@ -186,12 +190,12 @@ class _RegisterPageState extends State<RegisterPage> {
                           textInputAction: TextInputAction.next,
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Please enter your email';
+                              return l10n.emailRequired;
                             }
                             if (!RegExp(
                               r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
                             ).hasMatch(value.trim())) {
-                              return 'Please enter a valid email';
+                              return l10n.emailInvalid;
                             }
                             return null;
                           },
@@ -200,19 +204,21 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         // Birth year field
                         DropdownButtonFormField<int>(
-                          value: _birthYear,
+                          initialValue: _birthYear,
                           decoration: InputDecoration(
-                            labelText: 'Birth Year',
+                            labelText: l10n.birthYearLabel,
                             prefixIcon: const Icon(Icons.cake_outlined),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           items: _birthYears
-                              .map((year) => DropdownMenuItem(
-                                    value: year,
-                                    child: Text(year.toString()),
-                                  ))
+                              .map(
+                                (year) => DropdownMenuItem(
+                                  value: year,
+                                  child: Text(year.toString()),
+                                ),
+                              )
                               .toList(),
                           onChanged: (value) {
                             setState(() {
@@ -224,20 +230,26 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         // Gender field
                         DropdownButtonFormField<String>(
-                          value: _gender,
+                          initialValue: _gender,
                           decoration: InputDecoration(
-                            labelText: 'Gender',
+                            labelText: l10n.genderLabel,
                             prefixIcon: const Icon(Icons.person_outline),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          items: const [
-                            DropdownMenuItem(value: 'm', child: Text('Male')),
-                            DropdownMenuItem(value: 'w', child: Text('Female')),
+                          items: [
+                            DropdownMenuItem(
+                              value: 'm',
+                              child: Text(l10n.genderMale),
+                            ),
+                            DropdownMenuItem(
+                              value: 'w',
+                              child: Text(l10n.genderFemale),
+                            ),
                             DropdownMenuItem(
                               value: 'd',
-                              child: Text('Diverse'),
+                              child: Text(l10n.genderDiverse),
                             ),
                           ],
                           onChanged: (value) {
@@ -250,19 +262,19 @@ class _RegisterPageState extends State<RegisterPage> {
 
                         // Nationality field
                         DropdownButtonFormField<String>(
-                          value: _nationality,
+                          initialValue: _nationality,
                           decoration: InputDecoration(
-                            labelText: 'Nationality',
+                            labelText: l10n.nationalityLabel,
                             prefixIcon: const Icon(Icons.flag_outlined),
                             border: OutlineInputBorder(
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
                           items: _nationalities
-                              .map((n) => DropdownMenuItem(
-                                    value: n,
-                                    child: Text(n),
-                                  ))
+                              .map(
+                                (n) =>
+                                    DropdownMenuItem(value: n, child: Text(n)),
+                              )
                               .toList(),
                           onChanged: (value) {
                             setState(() {
@@ -278,7 +290,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           TextFormField(
                             controller: _otherNationalityController,
                             decoration: InputDecoration(
-                              labelText: 'Please specify',
+                              labelText: l10n.nationalityOtherLabel,
                               prefixIcon: const Icon(Icons.edit_outlined),
                               border: OutlineInputBorder(
                                 borderRadius: BorderRadius.circular(12),
@@ -294,7 +306,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           controller: _passwordController,
                           obscureText: _obscurePassword,
                           decoration: InputDecoration(
-                            labelText: 'Password',
+                            labelText: l10n.passwordLabel,
                             prefixIcon: const Icon(Icons.lock_outline),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -315,10 +327,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           textInputAction: TextInputAction.next,
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please enter a password';
+                              return l10n.passwordRequiredAlt;
                             }
                             if (value.length < 6) {
-                              return 'Password must be at least 6 characters';
+                              return l10n.passwordMinLength;
                             }
                             return null;
                           },
@@ -330,7 +342,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           controller: _confirmPasswordController,
                           obscureText: _obscureConfirmPassword,
                           decoration: InputDecoration(
-                            labelText: 'Confirm Password',
+                            labelText: l10n.confirmPasswordLabel,
                             prefixIcon: const Icon(Icons.lock_outline),
                             suffixIcon: IconButton(
                               icon: Icon(
@@ -353,10 +365,10 @@ class _RegisterPageState extends State<RegisterPage> {
                           onFieldSubmitted: (_) => _handleRegister(),
                           validator: (value) {
                             if (value == null || value.isEmpty) {
-                              return 'Please confirm your password';
+                              return l10n.confirmPasswordRequired;
                             }
                             if (value != _passwordController.text) {
-                              return 'Passwords do not match';
+                              return l10n.passwordsDoNotMatch;
                             }
                             return null;
                           },
@@ -366,7 +378,7 @@ class _RegisterPageState extends State<RegisterPage> {
                         // Error message
                         Consumer<AuthController>(
                           builder: (context, auth, _) {
-                            if (auth.errorMessage == null) {
+                            if (auth.error == null) {
                               return const SizedBox.shrink();
                             }
                             return Container(
@@ -386,7 +398,7 @@ class _RegisterPageState extends State<RegisterPage> {
                                   const SizedBox(width: 8),
                                   Expanded(
                                     child: Text(
-                                      auth.errorMessage!,
+                                      localizedAuthError(l10n, auth.error),
                                       style: TextStyle(
                                         color: colorScheme.onErrorContainer,
                                         fontSize: 14,
@@ -423,8 +435,8 @@ class _RegisterPageState extends State<RegisterPage> {
                                         color: Colors.white,
                                       ),
                                     )
-                                  : const Text(
-                                      'Create Account',
+                                  : Text(
+                                      l10n.createAccount,
                                       style: TextStyle(fontSize: 16),
                                     ),
                             );
@@ -440,12 +452,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
-                        'Already have an account? ',
+                        l10n.haveAccountPrompt,
                         style: TextStyle(color: colorScheme.onSurfaceVariant),
                       ),
                       TextButton(
                         onPressed: () => Navigator.pop(context),
-                        child: const Text('Sign In'),
+                        child: Text(l10n.signIn),
                       ),
                     ],
                   ),
