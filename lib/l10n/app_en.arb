@@ -387,5 +387,22 @@
         "type": "String"
       }
     }
+  },
+
+  "userDetails": "My Details",
+  "@userDetails": {
+    "description": "Menu item that opens the account details dialog."
+  },
+  "userDetailsTitle": "Account Details",
+  "@userDetailsTitle": {
+    "description": "Title of the account details dialog."
+  },
+  "close": "Close",
+  "@close": {
+    "description": "Button label that closes the account details dialog."
+  },
+  "notAvailable": "Not available",
+  "@notAvailable": {
+    "description": "Fallback value shown for a user detail that is missing."
   }
 }

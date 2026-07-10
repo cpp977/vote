@@ -91,5 +91,10 @@
 
   "loginFailed": "Anmeldung fehlgeschlagen: {error}",
   "registrationFailed": "Registrierung fehlgeschlagen: {error}",
-  "requestFailedStatus": "Anfrage fehlgeschlagen mit Status {status}"
+  "requestFailedStatus": "Anfrage fehlgeschlagen mit Status {status}",
+
+  "userDetails": "Meine Daten",
+  "userDetailsTitle": "Kontodetails",
+  "close": "Schließen",
+  "notAvailable": "Nicht verfügbar"
 }

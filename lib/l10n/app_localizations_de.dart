@@ -281,4 +281,16 @@ class AppLocalizationsDe extends AppLocalizations {
   String requestFailedStatus(String status) {
     return 'Anfrage fehlgeschlagen mit Status $status';
   }
+
+  @override
+  String get userDetails => 'Meine Daten';
+
+  @override
+  String get userDetailsTitle => 'Kontodetails';
+
+  @override
+  String get close => 'Schließen';
+
+  @override
+  String get notAvailable => 'Nicht verfügbar';
 }

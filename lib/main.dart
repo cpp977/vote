@@ -454,6 +454,16 @@ class _MyHomePageState extends State<MyHomePage> {
     await authController.logout();
   }
 
+  /// Opens a dialog showing the currently logged-in user's profile details.
+  void _showUserDetailsDialog(BuildContext context) {
+    final authController = context.read<AuthController>();
+    showDialog(
+      context: context,
+      builder: (dialogContext) =>
+          UserDetailsDialog(authController: authController),
+    );
+  }
+
   Map<String, List<Question>> _groupQuestionsByCategory() {
     final Map<String, List<Question>> grouped = {};
     for (final question in _questions) {
@@ -584,6 +594,8 @@ class _MyHomePageState extends State<MyHomePage> {
             onSelected: (value) {
               if (value == 'logout') {
                 _handleLogout();
+              } else if (value == 'details') {
+                _showUserDetailsDialog(context);
               }
             },
             itemBuilder: (context) => [
@@ -596,10 +608,20 @@ class _MyHomePageState extends State<MyHomePage> {
               ),
               const PopupMenuDivider(),
               PopupMenuItem(
+                value: 'details',
+                child: Row(
+                  children: [
+                    const Icon(Icons.person_outline),
+                    const SizedBox(width: 8),
+                    Text(l10n.userDetails),
+                  ],
+                ),
+              ),
+              PopupMenuItem(
                 value: 'logout',
                 child: Row(
                   children: [
-                    Icon(Icons.logout),
+                    const Icon(Icons.logout),
                     const SizedBox(width: 8),
                     Text(l10n.logout),
                   ],
@@ -2104,6 +2126,130 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           ],
         ),
       ),
+    );
+  }
+}
+
+/// Dialog that displays the currently logged-in user's profile details
+/// (username, email, birth year, gender and nationality).
+class UserDetailsDialog extends StatefulWidget {
+  const UserDetailsDialog({super.key, required this.authController});
+
+  final AuthController authController;
+
+  @override
+  State<UserDetailsDialog> createState() => _UserDetailsDialogState();
+}
+
+class _UserDetailsDialogState extends State<UserDetailsDialog> {
+  // Created once so the `/me` request is not re-issued on every rebuild
+  // (e.g. when the controller notifies listeners).
+  late final Future<bool> _detailsFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _detailsFuture = widget.authController.loadUserDetails();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return FutureBuilder<bool>(
+      future: _detailsFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState != ConnectionState.done) {
+          return AlertDialog(
+            content: SizedBox(
+              height: 80,
+              child: Center(
+                child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                ),
+              ),
+            ),
+          );
+        }
+
+        final auth = widget.authController;
+        final notAvailable = l10n.notAvailable;
+
+        final genderText = auth.gender == null
+            ? notAvailable
+            : switch (auth.gender!) {
+                'm' => l10n.genderMale,
+                'w' => l10n.genderFemale,
+                'd' => l10n.genderDiverse,
+                _ => auth.gender!,
+              };
+
+        Widget detailRow(IconData icon, String label, String value) {
+          final theme = Theme.of(context);
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 6),
+            child: Row(
+              children: [
+                Icon(icon, size: 20, color: theme.colorScheme.primary),
+                const SizedBox(width: 12),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        label,
+                        style: theme.textTheme.labelSmall?.copyWith(
+                          color: theme.colorScheme.onSurfaceVariant,
+                        ),
+                      ),
+                      const SizedBox(height: 2),
+                      Text(value, style: theme.textTheme.bodyMedium),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return AlertDialog(
+          title: Text(l10n.userDetailsTitle),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                detailRow(
+                  Icons.person_outline,
+                  l10n.usernameLabel,
+                  auth.username ?? notAvailable,
+                ),
+                detailRow(
+                  Icons.email_outlined,
+                  l10n.emailLabel,
+                  auth.email ?? notAvailable,
+                ),
+                detailRow(
+                  Icons.cake_outlined,
+                  l10n.birthYearLabel,
+                  auth.birthYear?.toString() ?? notAvailable,
+                ),
+                detailRow(Icons.transgender, l10n.genderLabel, genderText),
+                detailRow(
+                  Icons.flag_outlined,
+                  l10n.nationalityLabel,
+                  auth.nationality ?? notAvailable,
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: Text(l10n.close),
+            ),
+          ],
+        );
+      },
     );
   }
 }

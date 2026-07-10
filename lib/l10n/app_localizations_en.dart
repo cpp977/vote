@@ -278,4 +278,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String requestFailedStatus(String status) {
     return 'Request failed with status $status';
   }
+
+  @override
+  String get userDetails => 'My Details';
+
+  @override
+  String get userDetailsTitle => 'Account Details';
+
+  @override
+  String get close => 'Close';
+
+  @override
+  String get notAvailable => 'Not available';
 }

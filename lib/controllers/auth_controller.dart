@@ -15,6 +15,7 @@ class AuthController extends ChangeNotifier {
   bool _isLoading = false;
   AuthError? _error;
   String? _username;
+  String? _email;
   int? _birthYear;
   String? _gender;
   String? _nationality;
@@ -37,6 +38,9 @@ class AuthController extends ChangeNotifier {
   /// The username of the currently logged-in user.
   String? get username => _username;
 
+  /// The email address of the currently logged-in user.
+  String? get email => _email;
+
   /// The birth year of the currently logged-in user.
   int? get birthYear => _birthYear;
 
@@ -57,6 +61,7 @@ class AuthController extends ChangeNotifier {
       final hasTokens = await _tokenStorage.hasTokens();
       if (hasTokens) {
         _username = await _tokenStorage.getUsername();
+        _email = await _tokenStorage.getEmail();
         _birthYear = await _tokenStorage.getBirthYear();
         _gender = await _tokenStorage.getGender();
         _nationality = await _tokenStorage.getNationality();
@@ -129,12 +134,21 @@ class AuthController extends ChangeNotifier {
 
       _username = username;
 
-      // Fetch user profile data (birth year, gender, nationality)
+      // Fetch user profile data (username, email, birth year, gender,
+      // nationality) so the account-details screen has everything it needs.
       try {
         final user = await _authService.getCurrentUser(response.accessToken);
+        _username = user.username;
+        _email = user.email;
         _birthYear = user.birthYear;
         _gender = user.gender;
         _nationality = user.nationality;
+        if (_username != null) {
+          await _tokenStorage.setUsername(_username!);
+        }
+        if (_email != null) {
+          await _tokenStorage.setEmail(_email!);
+        }
         if (_birthYear != null) {
           await _tokenStorage.setBirthYear(_birthYear!);
         }
@@ -193,11 +207,56 @@ class AuthController extends ChangeNotifier {
       await _tokenStorage.clearAll();
       _isAuthenticated = false;
       _username = null;
+      _email = null;
       _birthYear = null;
       _gender = null;
       _nationality = null;
       _categories = {};
       _setLoading(false);
+    }
+  }
+
+  /// Fetches the current user's profile from the backend (`/me`) and refreshes
+  /// the locally cached details (username, email, birth year, gender and
+  /// nationality).
+  ///
+  /// This is used by the account-details screen to populate fields that were
+  /// not available when an older session was restored from storage (e.g. the
+  /// email address).
+  ///
+  /// Returns `true` if the profile was successfully loaded, `false` otherwise.
+  /// Errors are swallowed so the UI can fall back to already-stored values.
+  Future<bool> loadUserDetails() async {
+    final accessToken = await _tokenStorage.getAccessToken();
+    if (accessToken == null) {
+      return false;
+    }
+    try {
+      final user = await _authService.getCurrentUser(accessToken);
+      _username = user.username;
+      _email = user.email;
+      _birthYear = user.birthYear;
+      _gender = user.gender;
+      _nationality = user.nationality;
+      if (_username != null) {
+        await _tokenStorage.setUsername(_username!);
+      }
+      if (_email != null) {
+        await _tokenStorage.setEmail(_email!);
+      }
+      if (_birthYear != null) {
+        await _tokenStorage.setBirthYear(_birthYear!);
+      }
+      if (_gender != null) {
+        await _tokenStorage.setGender(_gender!);
+      }
+      if (_nationality != null) {
+        await _tokenStorage.setNationality(_nationality!);
+      }
+      notifyListeners();
+      return true;
+    } catch (_) {
+      return false;
     }
   }
 

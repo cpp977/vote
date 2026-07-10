@@ -7,6 +7,7 @@ class TokenStorage {
   static const String _accessTokenKey = 'access_token';
   static const String _refreshTokenKey = 'refresh_token';
   static const String _usernameKey = 'username';
+  static const String _emailKey = 'email';
   static const String _birthYearKey = 'birth_year';
   static const String _genderKey = 'gender';
   static const String _nationalityKey = 'nationality';
@@ -46,6 +47,18 @@ class TokenStorage {
   Future<String?> getUsername() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString(_usernameKey);
+  }
+
+  /// Stores the user's email address.
+  Future<void> setEmail(String email) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_emailKey, email);
+  }
+
+  /// Retrieves the stored email address, or null if not set.
+  Future<String?> getEmail() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_emailKey);
   }
 
   /// Stores the user's birth year.
@@ -114,6 +127,7 @@ class TokenStorage {
     await prefs.remove(_accessTokenKey);
     await prefs.remove(_refreshTokenKey);
     await prefs.remove(_usernameKey);
+    await prefs.remove(_emailKey);
     await prefs.remove(_birthYearKey);
     await prefs.remove(_genderKey);
     await prefs.remove(_nationalityKey);

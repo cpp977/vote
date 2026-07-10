@@ -559,6 +559,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Request failed with status {status}'**
   String requestFailedStatus(String status);
+
+  /// Menu item that opens the account details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'My Details'**
+  String get userDetails;
+
+  /// Title of the account details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Account Details'**
+  String get userDetailsTitle;
+
+  /// Button label that closes the account details dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Close'**
+  String get close;
+
+  /// Fallback value shown for a user detail that is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Not available'**
+  String get notAvailable;
 }
 
 class _AppLocalizationsDelegate
