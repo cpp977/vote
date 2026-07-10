@@ -3,3 +3,6 @@ template-arb-file: app_en.arb
 output-localization-file: app_localizations.dart
 output-class: AppLocalizations
 nullable-getter: false
+# English is the template/source locale and must stay first so that it is used
+# as the fallback when a device's locale (e.g. French) has no ARB file.
+preferred-supported-locales: [en]
