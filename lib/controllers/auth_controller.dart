@@ -1,4 +1,4 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/widgets.dart';
 import '../models/auth_models.dart';
 import '../l10n/auth_error_localization.dart';
 import '../services/auth_service.dart';
@@ -162,9 +162,16 @@ class AuthController extends ChangeNotifier {
         // Profile fetch failed — demographics will be null
       }
 
-      // Fetch the available categories (category id -> name mapping).
+      // Fetch the available categories (category id -> name mapping) in the
+      // user's current locale so the category filter matches the language of
+      // the questions loaded by the home screen.
       try {
-        final cats = await _authService.getCategories(response.accessToken);
+        final languageCode =
+            WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+        final cats = await _authService.getCategories(
+          response.accessToken,
+          languageCode,
+        );
         final map = <int, String>{for (final c in cats) c.id: c.name};
         _categories = map;
         await _tokenStorage.setCategories(map);

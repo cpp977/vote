@@ -56,11 +56,11 @@ class AuthService {
     if (response.statusCode != 200 && response.statusCode != 204) {
       final body = response.body;
       if (body.isEmpty) {
-              throw ApiException(
-                'Logout failed with status ${response.statusCode}',
-                response.statusCode,
-                'logoutFailed',
-              );
+        throw ApiException(
+          'Logout failed with status ${response.statusCode}',
+          response.statusCode,
+          'logoutFailed',
+        );
       }
       final error = ApiError.fromJson(jsonDecode(body));
       throw ApiException(error.error, response.statusCode);
@@ -103,12 +103,20 @@ class AuthService {
     }
   }
 
-  /// Fetches the list of available question categories.
+  /// Fetches the list of available question categories for the given
+  /// [languageCode] (e.g. `en`, `de`).
+  ///
+  /// Uses the language-aware `GET /categories/lang/{languageCode}` endpoint so
+  /// that only categories matching the user's locale are returned.
+  ///
   /// Returns a [List<Category>] on success.
   /// Throws [ApiException] on failure.
-  Future<List<Category>> getCategories(String accessToken) async {
+  Future<List<Category>> getCategories(
+    String accessToken,
+    String languageCode,
+  ) async {
     final response = await http.get(
-      Uri.parse('$_baseUrl/categories'),
+      Uri.parse('$_baseUrl/categories/lang/$languageCode'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
