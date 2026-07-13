@@ -103,6 +103,32 @@ class AuthService {
     }
   }
 
+  /// Updates the current user's profile (email, gender and/or password) via
+  /// the `PATCH /me` endpoint.
+  ///
+  /// [request] carries the fields to change; `username` is never modifiable.
+  /// Returns the updated [User] on success.
+  /// Throws [ApiException] on failure.
+  Future<User> updateCurrentUser(
+    String accessToken,
+    UpdateUserRequest request,
+  ) async {
+    final response = await http.patch(
+      Uri.parse('$_baseUrl/me'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      return User.fromJson(jsonDecode(response.body));
+    } else {
+      throw _parseError(response);
+    }
+  }
+
   /// Fetches the list of available question categories for the given
   /// [languageCode] (e.g. `en`, `de`).
   ///

@@ -19,6 +19,7 @@ class AuthController extends ChangeNotifier {
   int? _birthYear;
   String? _gender;
   String? _nationality;
+  bool _isAdmin = false;
   Map<int, String> _categories = {};
 
   AuthController({AuthService? authService, TokenStorage? tokenStorage})
@@ -50,6 +51,9 @@ class AuthController extends ChangeNotifier {
   /// The nationality of the currently logged-in user.
   String? get nationality => _nationality;
 
+  /// Whether the currently logged-in user has administrator privileges.
+  bool get isAdmin => _isAdmin;
+
   /// The available question categories as a mapping of category id to name.
   Map<int, String> get categories => _categories;
 
@@ -65,6 +69,7 @@ class AuthController extends ChangeNotifier {
         _birthYear = await _tokenStorage.getBirthYear();
         _gender = await _tokenStorage.getGender();
         _nationality = await _tokenStorage.getNationality();
+        _isAdmin = await _tokenStorage.getIsAdmin();
         _categories = await _tokenStorage.getCategories();
         _isAuthenticated = true;
       } else {
@@ -158,6 +163,8 @@ class AuthController extends ChangeNotifier {
         if (_nationality != null) {
           await _tokenStorage.setNationality(_nationality!);
         }
+        _isAdmin = user.isAdmin;
+        await _tokenStorage.setIsAdmin(_isAdmin);
       } catch (_) {
         // Profile fetch failed — demographics will be null
       }
@@ -218,6 +225,7 @@ class AuthController extends ChangeNotifier {
       _birthYear = null;
       _gender = null;
       _nationality = null;
+      _isAdmin = false;
       _categories = {};
       _setLoading(false);
     }
@@ -260,9 +268,63 @@ class AuthController extends ChangeNotifier {
       if (_nationality != null) {
         await _tokenStorage.setNationality(_nationality!);
       }
+      _isAdmin = user.isAdmin;
+      await _tokenStorage.setIsAdmin(_isAdmin);
       notifyListeners();
       return true;
     } catch (_) {
+      return false;
+    }
+  }
+
+  /// Updates the authenticated user's own profile (email, gender and/or
+  /// password) via the `PATCH /me` endpoint.
+  ///
+  /// Returns `true` on success (the locally cached profile is refreshed from
+  /// the server response) and `false` on failure. On failure an [error] is set
+  /// so the UI can localize it via [localizedAuthError].
+  Future<bool> updateUser(UpdateUserRequest request) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final accessToken = await _tokenStorage.getAccessToken();
+      if (accessToken == null) {
+        _setError(const AuthError('profileUpdateFailed', 'Not authenticated'));
+        _setLoading(false);
+        return false;
+      }
+
+      final user = await _authService.updateCurrentUser(accessToken, request);
+      _email = user.email;
+      _gender = user.gender;
+      _isAdmin = user.isAdmin;
+      if (_email != null) {
+        await _tokenStorage.setEmail(_email!);
+      }
+      if (_gender != null) {
+        await _tokenStorage.setGender(_gender!);
+      }
+      await _tokenStorage.setIsAdmin(_isAdmin);
+      _setLoading(false);
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      if (e.code == 'requestFailed') {
+        _setError(
+          AuthError(
+            'profileUpdateFailed',
+            'Request failed with status ${e.statusCode}',
+          ),
+        );
+      } else {
+        _setError(AuthError('profileUpdateFailed', e.message));
+      }
+      _setLoading(false);
+      return false;
+    } catch (_) {
+      _setError(const AuthError('profileUpdateFailed', null));
+      _setLoading(false);
       return false;
     }
   }

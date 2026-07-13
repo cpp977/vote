@@ -11,6 +11,7 @@ class TokenStorage {
   static const String _birthYearKey = 'birth_year';
   static const String _genderKey = 'gender';
   static const String _nationalityKey = 'nationality';
+  static const String _isAdminKey = 'is_admin';
   static const String _categoriesKey = 'categories';
 
   /// Stores the access token.
@@ -97,6 +98,19 @@ class TokenStorage {
     return prefs.getString(_nationalityKey);
   }
 
+  /// Stores whether the logged-in user has administrator privileges.
+  Future<void> setIsAdmin(bool isAdmin) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_isAdminKey, isAdmin);
+  }
+
+  /// Retrieves whether the stored user is an administrator, or `false` if not
+  /// set.
+  Future<bool> getIsAdmin() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_isAdminKey) ?? false;
+  }
+
   /// Stores the available categories as a mapping of category id to name.
   Future<void> setCategories(Map<int, String> categories) async {
     final prefs = await SharedPreferences.getInstance();
@@ -131,6 +145,7 @@ class TokenStorage {
     await prefs.remove(_birthYearKey);
     await prefs.remove(_genderKey);
     await prefs.remove(_nationalityKey);
+    await prefs.remove(_isAdminKey);
     await prefs.remove(_categoriesKey);
   }
 

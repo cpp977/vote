@@ -17,6 +17,8 @@ String localizedAuthError(AppLocalizations l10n, AuthError? error) {
       return l10n.registrationFailed(error.detail ?? '');
     case 'requestFailed':
       return l10n.requestFailedStatus(error.detail ?? '');
+    case 'profileUpdateFailed':
+      return l10n.profileUpdateFailed(error.detail ?? '');
     case 'server':
     default:
       return error.detail ?? '';

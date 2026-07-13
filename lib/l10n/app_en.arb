@@ -404,5 +404,51 @@
   "notAvailable": "Not available",
   "@notAvailable": {
     "description": "Fallback value shown for a user detail that is missing."
+  },
+
+  "edit": "Edit",
+  "@edit": {
+    "description": "Button that switches the account details dialog to edit mode."
+  },
+  "save": "Save",
+  "@save": {
+    "description": "Button that saves the edited account details."
+  },
+  "editUserDetailsTitle": "Edit Account Details",
+  "@editUserDetailsTitle": {
+    "description": "Title of the account details dialog while editing."
+  },
+  "newPasswordLabel": "New Password",
+  "@newPasswordLabel": {
+    "description": "Label for the optional new-password field in the edit form."
+  },
+  "newPasswordConfirmLabel": "Confirm New Password",
+  "@newPasswordConfirmLabel": {
+    "description": "Label for the confirm-new-password field in the edit form."
+  },
+  "passwordChangeMinLength": "Password must be at least 8 characters",
+  "@passwordChangeMinLength": {
+    "description": "Validation error when the new password is too short (minimum 8 characters enforced by the backend)."
+  },
+  "profileUpdateSuccess": "Profile updated successfully",
+  "@profileUpdateSuccess": {
+    "description": "Success message shown after the profile was updated."
+  },
+  "profileUpdateFailed": "Failed to update profile: {error}",
+  "@profileUpdateFailed": {
+    "description": "Error shown when updating the profile fails; {error} is the underlying detail (server message or exception).",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "isAdminLabel": "Administrator",
+  "@isAdminLabel": {
+    "description": "Label for the read-only administrator status shown to admin users."
+  },
+  "yes": "Yes",
+  "@yes": {
+    "description": "Value shown for the administrator status when the user is an admin."
   }
 }

@@ -35,13 +35,13 @@ class RegisterRequest {
   });
 
   Map<String, dynamic> toJson() => {
-        'username': username,
-        'email': email,
-        'password': password,
-        if (birthYear != null) 'birth_year': birthYear,
-        if (gender != null) 'gender': gender,
-        if (nationality != null) 'nationality': nationality,
-      };
+    'username': username,
+    'email': email,
+    'password': password,
+    if (birthYear != null) 'birth_year': birthYear,
+    if (gender != null) 'gender': gender,
+    if (nationality != null) 'nationality': nationality,
+  };
 }
 
 /// Request body for user login.
@@ -49,15 +49,9 @@ class LoginRequest {
   final String username;
   final String password;
 
-  const LoginRequest({
-    required this.username,
-    required this.password,
-  });
+  const LoginRequest({required this.username, required this.password});
 
-  Map<String, dynamic> toJson() => {
-        'username': username,
-        'password': password,
-      };
+  Map<String, dynamic> toJson() => {'username': username, 'password': password};
 }
 
 /// Response from login/refresh endpoints containing JWT tokens.
@@ -65,10 +59,7 @@ class AuthResponse {
   final String accessToken;
   final String refreshToken;
 
-  const AuthResponse({
-    required this.accessToken,
-    required this.refreshToken,
-  });
+  const AuthResponse({required this.accessToken, required this.refreshToken});
 
   factory AuthResponse.fromJson(Map<String, dynamic> json) {
     return AuthResponse(
@@ -84,9 +75,7 @@ class RefreshRequest {
 
   const RefreshRequest({required this.refreshToken});
 
-  Map<String, dynamic> toJson() => {
-        'refresh_token': refreshToken,
-      };
+  Map<String, dynamic> toJson() => {'refresh_token': refreshToken};
 }
 
 /// Request body for logout.
@@ -95,9 +84,7 @@ class LogoutRequest {
 
   const LogoutRequest({required this.refreshToken});
 
-  Map<String, dynamic> toJson() => {
-        'refresh_token': refreshToken,
-      };
+  Map<String, dynamic> toJson() => {'refresh_token': refreshToken};
 }
 
 /// User model returned after registration.
@@ -108,6 +95,7 @@ class User {
   final int? birthYear;
   final String? gender;
   final String? nationality;
+  final bool isAdmin;
 
   const User({
     required this.id,
@@ -116,6 +104,7 @@ class User {
     this.birthYear,
     this.gender,
     this.nationality,
+    this.isAdmin = false,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -126,8 +115,30 @@ class User {
       birthYear: json['birth_year'] as int?,
       gender: json['gender'] as String?,
       nationality: json['nationality'] as String?,
+      isAdmin: json['is_admin'] as bool? ?? false,
     );
   }
+}
+
+/// Request body for updating the authenticated user's own profile via
+/// `PATCH`/`PUT` `/me`.
+///
+/// Only `email`, `gender` and `password` are modifiable; `username` is the
+/// user's identity and is never sent. `gender` and `password` are optional and
+/// are omitted from the JSON when `null` so that only the changed fields are
+/// transmitted (the backend accepts partial updates).
+class UpdateUserRequest {
+  final String email;
+  final String? gender;
+  final String? password;
+
+  const UpdateUserRequest({required this.email, this.gender, this.password});
+
+  Map<String, dynamic> toJson() => {
+    'email': email,
+    if (gender != null) 'gender': gender,
+    if (password != null) 'password': password,
+  };
 }
 
 /// Generic error response from the API.

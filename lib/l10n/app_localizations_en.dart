@@ -290,4 +290,37 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get notAvailable => 'Not available';
+
+  @override
+  String get edit => 'Edit';
+
+  @override
+  String get save => 'Save';
+
+  @override
+  String get editUserDetailsTitle => 'Edit Account Details';
+
+  @override
+  String get newPasswordLabel => 'New Password';
+
+  @override
+  String get newPasswordConfirmLabel => 'Confirm New Password';
+
+  @override
+  String get passwordChangeMinLength =>
+      'Password must be at least 8 characters';
+
+  @override
+  String get profileUpdateSuccess => 'Profile updated successfully';
+
+  @override
+  String profileUpdateFailed(String error) {
+    return 'Failed to update profile: $error';
+  }
+
+  @override
+  String get isAdminLabel => 'Administrator';
+
+  @override
+  String get yes => 'Yes';
 }

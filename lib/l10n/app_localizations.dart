@@ -583,6 +583,66 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Not available'**
   String get notAvailable;
+
+  /// Button that switches the account details dialog to edit mode.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit'**
+  String get edit;
+
+  /// Button that saves the edited account details.
+  ///
+  /// In en, this message translates to:
+  /// **'Save'**
+  String get save;
+
+  /// Title of the account details dialog while editing.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Account Details'**
+  String get editUserDetailsTitle;
+
+  /// Label for the optional new-password field in the edit form.
+  ///
+  /// In en, this message translates to:
+  /// **'New Password'**
+  String get newPasswordLabel;
+
+  /// Label for the confirm-new-password field in the edit form.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get newPasswordConfirmLabel;
+
+  /// Validation error when the new password is too short (minimum 8 characters enforced by the backend).
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get passwordChangeMinLength;
+
+  /// Success message shown after the profile was updated.
+  ///
+  /// In en, this message translates to:
+  /// **'Profile updated successfully'**
+  String get profileUpdateSuccess;
+
+  /// Error shown when updating the profile fails; {error} is the underlying detail (server message or exception).
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to update profile: {error}'**
+  String profileUpdateFailed(String error);
+
+  /// Label for the read-only administrator status shown to admin users.
+  ///
+  /// In en, this message translates to:
+  /// **'Administrator'**
+  String get isAdminLabel;
+
+  /// Value shown for the administrator status when the user is an admin.
+  ///
+  /// In en, this message translates to:
+  /// **'Yes'**
+  String get yes;
 }
 
 class _AppLocalizationsDelegate

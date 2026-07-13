@@ -14,20 +14,14 @@ class AuthMiddleware {
   final TokenStorage _tokenStorage;
   bool _isRefreshing = false;
 
-  AuthMiddleware({
-    AuthService? authService,
-    TokenStorage? tokenStorage,
-  })  : _authService = authService ?? AuthService(),
-        _tokenStorage = tokenStorage ?? TokenStorage();
+  AuthMiddleware({AuthService? authService, TokenStorage? tokenStorage})
+    : _authService = authService ?? AuthService(),
+      _tokenStorage = tokenStorage ?? TokenStorage();
 
   /// Performs an authenticated GET request.
   /// Automatically handles token refresh on 401 responses.
   Future<http.Response> get(String url, {Map<String, String>? headers}) async {
-    return _makeRequest(
-      'GET',
-      url,
-      headers: headers,
-    );
+    return _makeRequest('GET', url, headers: headers);
   }
 
   /// Performs an authenticated POST request.
@@ -37,12 +31,7 @@ class AuthMiddleware {
     Map<String, String>? headers,
     Object? body,
   }) async {
-    return _makeRequest(
-      'POST',
-      url,
-      headers: headers,
-      body: body,
-    );
+    return _makeRequest('POST', url, headers: headers, body: body);
   }
 
   /// Performs an authenticated PUT request.
@@ -52,12 +41,7 @@ class AuthMiddleware {
     Map<String, String>? headers,
     Object? body,
   }) async {
-    return _makeRequest(
-      'PUT',
-      url,
-      headers: headers,
-      body: body,
-    );
+    return _makeRequest('PUT', url, headers: headers, body: body);
   }
 
   /// Performs an authenticated DELETE request.
@@ -66,11 +50,7 @@ class AuthMiddleware {
     String url, {
     Map<String, String>? headers,
   }) async {
-    return _makeRequest(
-      'DELETE',
-      url,
-      headers: headers,
-    );
+    return _makeRequest('DELETE', url, headers: headers);
   }
 
   Future<http.Response> _makeRequest(
@@ -93,10 +73,18 @@ class AuthMiddleware {
         response = await http.get(Uri.parse(url), headers: requestHeaders);
         break;
       case 'POST':
-        response = await http.post(Uri.parse(url), headers: requestHeaders, body: body);
+        response = await http.post(
+          Uri.parse(url),
+          headers: requestHeaders,
+          body: body,
+        );
         break;
       case 'PUT':
-        response = await http.put(Uri.parse(url), headers: requestHeaders, body: body);
+        response = await http.put(
+          Uri.parse(url),
+          headers: requestHeaders,
+          body: body,
+        );
         break;
       case 'DELETE':
         response = await http.delete(Uri.parse(url), headers: requestHeaders);
@@ -110,7 +98,13 @@ class AuthMiddleware {
       final refreshed = await _refreshToken();
       if (refreshed) {
         // Retry the request with the new token
-        return _makeRequest(method, url, headers: headers, body: body, isRetry: true);
+        return _makeRequest(
+          method,
+          url,
+          headers: headers,
+          body: body,
+          isRetry: true,
+        );
       }
     }
 
