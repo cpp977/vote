@@ -304,6 +304,10 @@
       }
     }
   },
+  "alreadyAnswered": "You have already answered this question",
+  "@alreadyAnswered": {
+    "description": "Error snack bar shown when submitting a vote fails because the question was already answered (HTTP 409)."
+  },
 
   "votesNoun": "votes",
   "@votesNoun": {

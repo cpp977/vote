@@ -1809,14 +1809,15 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         tags['nationality'] = authController.nationality!;
       }
 
+      // The new endpoint encodes the question id in the path and expects a
+      // JSON object for `tags` (the backend validates `tags` with `isObject`).
       final body = jsonEncode({
-        'question_id': widget.question.id,
         'answer_id': answer.id,
-        if (tags.isNotEmpty) 'tags': jsonEncode(tags),
+        if (tags.isNotEmpty) 'tags': tags,
       });
 
       final response = await _authMiddleware.post(
-        '${ApiConfig.baseUrl}/useranswers',
+        '${ApiConfig.baseUrl}/questions/${widget.question.id}/answer',
         body: body,
       );
 
@@ -1836,6 +1837,22 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           SnackBar(
             content: Text(l10n.voteSubmitted(answer.text)),
             backgroundColor: Theme.of(context).colorScheme.primaryContainer,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else if (response.statusCode == 409) {
+        // The backend enforces "one answer per user" and returns 409 when the
+        // question has already been answered. The clicked option must NOT be
+        // highlighted as voted: the vote was not recorded and the chosen
+        // option may not even be the one previously submitted. Just clear the
+        // submitting state and inform the user.
+        setState(() {
+          _submittingAnswerIds.remove(answer.id);
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.alreadyAnswered),
+            backgroundColor: Theme.of(context).colorScheme.errorContainer,
             behavior: SnackBarBehavior.floating,
           ),
         );

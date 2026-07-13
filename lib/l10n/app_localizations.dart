@@ -476,6 +476,12 @@ abstract class AppLocalizations {
   /// **'Failed to submit vote: {error}'**
   String voteSubmitFailed(String error);
 
+  /// Error snack bar shown when submitting a vote fails because the question was already answered (HTTP 409).
+  ///
+  /// In en, this message translates to:
+  /// **'You have already answered this question'**
+  String get alreadyAnswered;
+
   /// Noun label shown in the center of the donut chart.
   ///
   /// In en, this message translates to:

@@ -214,6 +214,9 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get alreadyAnswered => 'You have already answered this question';
+
+  @override
   String get votesNoun => 'votes';
 
   @override

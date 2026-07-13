@@ -75,6 +75,7 @@
   "voteSubmitted": "Stimme für \"{answer}\" abgegeben!",
   "errorWithMessage": "Fehler: {message}",
   "voteSubmitFailed": "Stimme konnte nicht abgegeben werden: {error}",
+  "alreadyAnswered": "Du hast diese Frage bereits beantwortet",
 
   "votesNoun": "Stimmen",
   "noVotesYet": "Noch keine Stimmen",
