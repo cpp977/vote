@@ -108,5 +108,26 @@
   "profileUpdateSuccess": "Profil erfolgreich aktualisiert",
   "profileUpdateFailed": "Profil konnte nicht aktualisiert werden: {error}",
   "isAdminLabel": "Administrator",
-  "yes": "Ja"
+  "yes": "Ja",
+
+  "questions": "Fragen",
+  "mySubmissions": "Meine Einreichungen",
+  "mySubmissionsEmpty": "Du hast noch keine Fragen eingereicht.",
+  "createQuestion": "Neue Frage",
+  "newQuestionTitle": "Frage einreichen",
+  "questionTextLabel": "Frage",
+  "questionTextHint": "Gib deine Frage ein...",
+  "categoryLabel": "Kategorie",
+  "languageLabel": "Sprache",
+  "minAgeLabel": "Mindestalter (optional)",
+  "minAgeHint": "0 = alle",
+  "submit": "Einreichen",
+  "submissionCreated": "Frage zur Prüfung eingereicht",
+  "submissionFailed": "Frage konnte nicht eingereicht werden",
+  "submissionLoadFailed": "Deine Einreichungen konnten nicht geladen werden",
+  "submissionPending": "Ausstehend",
+  "submissionApproved": "Freigegeben",
+  "submissionRejected": "Abgelehnt",
+  "requiredField": "Dieses Feld ist erforderlich",
+  "submittedOn": "Eingereicht am {date}"
 }

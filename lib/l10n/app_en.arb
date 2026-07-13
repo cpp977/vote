@@ -454,5 +454,91 @@
   "yes": "Yes",
   "@yes": {
     "description": "Value shown for the administrator status when the user is an admin."
+  },
+
+  "questions": "Questions",
+  "@questions": {
+    "description": "Drawer / navigation label for the public list of questions."
+  },
+  "mySubmissions": "My Submissions",
+  "@mySubmissions": {
+    "description": "Drawer / page title for the current user's own question submissions."
+  },
+  "mySubmissionsEmpty": "You haven't submitted any questions yet.",
+  "@mySubmissionsEmpty": {
+    "description": "Empty-state message on the submissions page when the user has no submissions."
+  },
+  "createQuestion": "New Question",
+  "@createQuestion": {
+    "description": "Label of the floating action button that opens the submit-question dialog."
+  },
+  "newQuestionTitle": "Submit a Question",
+  "@newQuestionTitle": {
+    "description": "Title of the dialog used to submit a new question."
+  },
+  "questionTextLabel": "Question",
+  "@questionTextLabel": {
+    "description": "Label for the question text field in the submit dialog."
+  },
+  "questionTextHint": "Enter your question...",
+  "@questionTextHint": {
+    "description": "Hint for the question text field in the submit dialog."
+  },
+  "categoryLabel": "Category",
+  "@categoryLabel": {
+    "description": "Label for the category selector in the submit dialog."
+  },
+  "languageLabel": "Language",
+  "@languageLabel": {
+    "description": "Label for the language selector in the submit dialog."
+  },
+  "minAgeLabel": "Minimum age (optional)",
+  "@minAgeLabel": {
+    "description": "Label for the optional minimum-age field in the submit dialog."
+  },
+  "minAgeHint": "0 = everyone",
+  "@minAgeHint": {
+    "description": "Hint for the optional minimum-age field in the submit dialog."
+  },
+  "submit": "Submit",
+  "@submit": {
+    "description": "Button that submits a new question from the dialog."
+  },
+  "submissionCreated": "Question submitted for review",
+  "@submissionCreated": {
+    "description": "Success message shown after a question was submitted."
+  },
+  "submissionFailed": "Failed to submit the question",
+  "@submissionFailed": {
+    "description": "Error message shown when submitting a question fails."
+  },
+  "submissionLoadFailed": "Failed to load your submissions",
+  "@submissionLoadFailed": {
+    "description": "Error message shown when loading the user's submissions fails."
+  },
+  "submissionPending": "Pending",
+  "@submissionPending": {
+    "description": "Status chip label for a submission awaiting review."
+  },
+  "submissionApproved": "Approved",
+  "@submissionApproved": {
+    "description": "Status chip label for an approved submission."
+  },
+  "submissionRejected": "Rejected",
+  "@submissionRejected": {
+    "description": "Status chip label for a rejected submission."
+  },
+  "requiredField": "This field is required",
+  "@requiredField": {
+    "description": "Validation error shown when a required field is empty."
+  },
+  "submittedOn": "Submitted on {date}",
+  "@submittedOn": {
+    "description": "Label showing when a submission was created; {date} is the formatted date.",
+    "placeholders": {
+      "date": {
+        "type": "String"
+      }
+    }
   }
 }

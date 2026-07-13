@@ -329,4 +329,67 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get yes => 'Ja';
+
+  @override
+  String get questions => 'Fragen';
+
+  @override
+  String get mySubmissions => 'Meine Einreichungen';
+
+  @override
+  String get mySubmissionsEmpty => 'Du hast noch keine Fragen eingereicht.';
+
+  @override
+  String get createQuestion => 'Neue Frage';
+
+  @override
+  String get newQuestionTitle => 'Frage einreichen';
+
+  @override
+  String get questionTextLabel => 'Frage';
+
+  @override
+  String get questionTextHint => 'Gib deine Frage ein...';
+
+  @override
+  String get categoryLabel => 'Kategorie';
+
+  @override
+  String get languageLabel => 'Sprache';
+
+  @override
+  String get minAgeLabel => 'Mindestalter (optional)';
+
+  @override
+  String get minAgeHint => '0 = alle';
+
+  @override
+  String get submit => 'Einreichen';
+
+  @override
+  String get submissionCreated => 'Frage zur Prüfung eingereicht';
+
+  @override
+  String get submissionFailed => 'Frage konnte nicht eingereicht werden';
+
+  @override
+  String get submissionLoadFailed =>
+      'Deine Einreichungen konnten nicht geladen werden';
+
+  @override
+  String get submissionPending => 'Ausstehend';
+
+  @override
+  String get submissionApproved => 'Freigegeben';
+
+  @override
+  String get submissionRejected => 'Abgelehnt';
+
+  @override
+  String get requiredField => 'Dieses Feld ist erforderlich';
+
+  @override
+  String submittedOn(String date) {
+    return 'Eingereicht am $date';
+  }
 }

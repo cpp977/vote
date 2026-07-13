@@ -326,4 +326,66 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get yes => 'Yes';
+
+  @override
+  String get questions => 'Questions';
+
+  @override
+  String get mySubmissions => 'My Submissions';
+
+  @override
+  String get mySubmissionsEmpty => 'You haven\'t submitted any questions yet.';
+
+  @override
+  String get createQuestion => 'New Question';
+
+  @override
+  String get newQuestionTitle => 'Submit a Question';
+
+  @override
+  String get questionTextLabel => 'Question';
+
+  @override
+  String get questionTextHint => 'Enter your question...';
+
+  @override
+  String get categoryLabel => 'Category';
+
+  @override
+  String get languageLabel => 'Language';
+
+  @override
+  String get minAgeLabel => 'Minimum age (optional)';
+
+  @override
+  String get minAgeHint => '0 = everyone';
+
+  @override
+  String get submit => 'Submit';
+
+  @override
+  String get submissionCreated => 'Question submitted for review';
+
+  @override
+  String get submissionFailed => 'Failed to submit the question';
+
+  @override
+  String get submissionLoadFailed => 'Failed to load your submissions';
+
+  @override
+  String get submissionPending => 'Pending';
+
+  @override
+  String get submissionApproved => 'Approved';
+
+  @override
+  String get submissionRejected => 'Rejected';
+
+  @override
+  String get requiredField => 'This field is required';
+
+  @override
+  String submittedOn(String date) {
+    return 'Submitted on $date';
+  }
 }

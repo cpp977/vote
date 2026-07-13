@@ -649,6 +649,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Yes'**
   String get yes;
+
+  /// Drawer / navigation label for the public list of questions.
+  ///
+  /// In en, this message translates to:
+  /// **'Questions'**
+  String get questions;
+
+  /// Drawer / page title for the current user's own question submissions.
+  ///
+  /// In en, this message translates to:
+  /// **'My Submissions'**
+  String get mySubmissions;
+
+  /// Empty-state message on the submissions page when the user has no submissions.
+  ///
+  /// In en, this message translates to:
+  /// **'You haven\'t submitted any questions yet.'**
+  String get mySubmissionsEmpty;
+
+  /// Label of the floating action button that opens the submit-question dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'New Question'**
+  String get createQuestion;
+
+  /// Title of the dialog used to submit a new question.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit a Question'**
+  String get newQuestionTitle;
+
+  /// Label for the question text field in the submit dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Question'**
+  String get questionTextLabel;
+
+  /// Hint for the question text field in the submit dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your question...'**
+  String get questionTextHint;
+
+  /// Label for the category selector in the submit dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Category'**
+  String get categoryLabel;
+
+  /// Label for the language selector in the submit dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get languageLabel;
+
+  /// Label for the optional minimum-age field in the submit dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum age (optional)'**
+  String get minAgeLabel;
+
+  /// Hint for the optional minimum-age field in the submit dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'0 = everyone'**
+  String get minAgeHint;
+
+  /// Button that submits a new question from the dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit'**
+  String get submit;
+
+  /// Success message shown after a question was submitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Question submitted for review'**
+  String get submissionCreated;
+
+  /// Error message shown when submitting a question fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit the question'**
+  String get submissionFailed;
+
+  /// Error message shown when loading the user's submissions fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load your submissions'**
+  String get submissionLoadFailed;
+
+  /// Status chip label for a submission awaiting review.
+  ///
+  /// In en, this message translates to:
+  /// **'Pending'**
+  String get submissionPending;
+
+  /// Status chip label for an approved submission.
+  ///
+  /// In en, this message translates to:
+  /// **'Approved'**
+  String get submissionApproved;
+
+  /// Status chip label for a rejected submission.
+  ///
+  /// In en, this message translates to:
+  /// **'Rejected'**
+  String get submissionRejected;
+
+  /// Validation error shown when a required field is empty.
+  ///
+  /// In en, this message translates to:
+  /// **'This field is required'**
+  String get requiredField;
+
+  /// Label showing when a submission was created; {date} is the formatted date.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted on {date}'**
+  String submittedOn(String date);
 }
 
 class _AppLocalizationsDelegate
