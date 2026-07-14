@@ -388,4 +388,30 @@ class AppLocalizationsEn extends AppLocalizations {
   String submittedOn(String date) {
     return 'Submitted on $date';
   }
+
+  @override
+  String get answerOptionsLabel => 'Answer options';
+
+  @override
+  String answerOptionLabel(int number) {
+    return 'Answer option $number';
+  }
+
+  @override
+  String get answerOptionHint => 'Enter an answer option';
+
+  @override
+  String get addAnswerOption => 'Add answer option';
+
+  @override
+  String get removeAnswerOption => 'Remove answer option';
+
+  @override
+  String get atLeastOneAnswerOption =>
+      'Please provide at least one answer option';
+
+  @override
+  String maxAnswerOptionsReached(int max) {
+    return 'You can add at most $max answer options';
+  }
 }

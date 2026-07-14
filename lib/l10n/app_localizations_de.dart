@@ -392,4 +392,30 @@ class AppLocalizationsDe extends AppLocalizations {
   String submittedOn(String date) {
     return 'Eingereicht am $date';
   }
+
+  @override
+  String get answerOptionsLabel => 'Antwortmöglichkeiten';
+
+  @override
+  String answerOptionLabel(int number) {
+    return 'Antwortmöglichkeit $number';
+  }
+
+  @override
+  String get answerOptionHint => 'Antwortmöglichkeit eingeben';
+
+  @override
+  String get addAnswerOption => 'Antwortmöglichkeit hinzufügen';
+
+  @override
+  String get removeAnswerOption => 'Antwortmöglichkeit entfernen';
+
+  @override
+  String get atLeastOneAnswerOption =>
+      'Bitte gib mindestens eine Antwortmöglichkeit an';
+
+  @override
+  String maxAnswerOptionsReached(int max) {
+    return 'Du kannst höchstens $max Antwortmöglichkeiten hinzufügen';
+  }
 }

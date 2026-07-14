@@ -20,7 +20,9 @@ class SubmissionException implements Exception {
 ///  - [getMySubmissions] lists the authenticated user's own submissions
 ///    (any status) via `GET /questions/mine`.
 ///  - [submitQuestion] creates a new submission on behalf of the authenticated
-///    user via `POST /questions`; the backend stores it as `pending`.
+///    user via `POST /questions/submissions`; the question is submitted together
+///    with its [answerOptions] and the backend stores both atomically as
+///    `pending`.
 ///
 /// Requests go through [AuthMiddleware] so expired access tokens are refreshed
 /// transparently and retried.
@@ -56,24 +58,40 @@ class SubmissionService {
   ///
   /// The submission is stored as `pending` server-side; clients cannot
   /// self-approve. [language] must be a 2-character code (e.g. `en`, `de`) and
-  /// [minAge] defaults to `0` (no minimum age).
+  /// [minAge] defaults to `0` (no minimum age). [answerOptions] must contain
+  /// at least one non-empty answer; the backend inserts the question together
+  /// with its answer options in a single transaction and rejects submissions
+  /// with too few or too many (more than 50) options.
   ///
-  /// Returns the created [Submission] (status `pending`) on success.
-  /// Throws [SubmissionException] on failure.
+  /// Returns the created [Submission] (status `pending`, including its
+  /// [Submission.answerOptions]) on success.
+  /// Throws [SubmissionException] on failure, including when [answerOptions]
+  /// contains no usable (non-empty) entry.
   Future<Submission> submitQuestion({
     required String text,
     required int categoryId,
     required String language,
+    required List<String> answerOptions,
     int minAge = 0,
   }) async {
+    // Trim and drop empty entries so a submission never reaches the backend
+    // with blank options; the backend requires at least one.
+    final cleanedOptions = answerOptions
+        .map((o) => o.trim())
+        .where((o) => o.isNotEmpty)
+        .toList();
+    if (cleanedOptions.isEmpty) {
+      throw const SubmissionException('At least one answer option is required');
+    }
     final body = jsonEncode(<String, Object>{
       'text': text,
       'category_id': categoryId,
       'language': language,
       'min_age': minAge,
+      'answer_options': cleanedOptions,
     });
     final response = await _authMiddleware.post(
-      '${ApiConfig.baseUrl}/questions',
+      '${ApiConfig.baseUrl}/questions/submissions',
       body: body,
     );
     if (response.statusCode == 201) {

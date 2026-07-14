@@ -129,5 +129,13 @@
   "submissionApproved": "Freigegeben",
   "submissionRejected": "Abgelehnt",
   "requiredField": "Dieses Feld ist erforderlich",
-  "submittedOn": "Eingereicht am {date}"
+  "submittedOn": "Eingereicht am {date}",
+
+  "answerOptionsLabel": "Antwortmöglichkeiten",
+  "answerOptionLabel": "Antwortmöglichkeit {number}",
+  "answerOptionHint": "Antwortmöglichkeit eingeben",
+  "addAnswerOption": "Antwortmöglichkeit hinzufügen",
+  "removeAnswerOption": "Antwortmöglichkeit entfernen",
+  "atLeastOneAnswerOption": "Bitte gib mindestens eine Antwortmöglichkeit an",
+  "maxAnswerOptionsReached": "Du kannst höchstens {max} Antwortmöglichkeiten hinzufügen"
 }

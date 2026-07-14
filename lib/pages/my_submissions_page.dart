@@ -9,13 +9,18 @@ import '../services/submission_service.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/user_menu_button.dart';
 
+/// Maximum number of answer options a submission may carry. Mirrors the
+/// backend limit enforced for `POST /questions/submissions`.
+const int kMaxAnswerOptions = 50;
+
 /// The user's own question submissions.
 ///
 /// Lists everything the current user has submitted (pending, approved or
 /// rejected) via `GET /questions/mine`. Submissions start out `pending` and are
 /// only visible to the public once an administrator approves them. A floating
-/// action button opens a dialog to submit a new question, which is created as a
-/// `pending` submission through `POST /questions`.
+/// action button opens a dialog to submit a new question together with its
+/// answer options, which the backend stores as a `pending` submission through
+/// `POST /questions/submissions`.
 class MySubmissionsPage extends StatefulWidget {
   /// Called when the user picks a destination from the [AppDrawer]. Supplied by
   /// the composition root so this page never imports the questions page
@@ -92,6 +97,13 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
 
     final textController = TextEditingController();
     final minAgeController = TextEditingController();
+    // One text field per answer option. A submission must carry at least one
+    // non-empty option, so we start with two empty fields (a typical poll
+    // needs at least two choices).
+    final List<TextEditingController> answerControllers = [
+      TextEditingController(),
+      TextEditingController(),
+    ];
     final formKey = GlobalKey<FormState>();
     int? selectedCategoryId;
     String? errorText;
@@ -195,6 +207,64 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
                         ),
                         keyboardType: TextInputType.number,
                       ),
+                      const SizedBox(height: 20),
+                      Text(
+                        l10n.answerOptionsLabel,
+                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      ...answerControllers.asMap().entries.map((entry) {
+                        final index = entry.key;
+                        final controller = entry.value;
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: Row(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Expanded(
+                                child: TextFormField(
+                                  controller: controller,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.answerOptionLabel(
+                                      index + 1,
+                                    ),
+                                    hintText: l10n.answerOptionHint,
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  textInputAction: TextInputAction.next,
+                                ),
+                              ),
+                              if (answerControllers.length > 1)
+                                IconButton(
+                                  onPressed: () {
+                                    setDialogState(() {
+                                      answerControllers.removeAt(index);
+                                      controller.dispose();
+                                    });
+                                  },
+                                  icon: const Icon(Icons.remove_circle_outline),
+                                  tooltip: l10n.removeAnswerOption,
+                                  visualDensity: VisualDensity.compact,
+                                ),
+                            ],
+                          ),
+                        );
+                      }),
+                      OutlinedButton.icon(
+                        onPressed: answerControllers.length >= kMaxAnswerOptions
+                            ? null
+                            : () => setDialogState(
+                                () => answerControllers.add(
+                                  TextEditingController(),
+                                ),
+                              ),
+                        icon: const Icon(Icons.add),
+                        label: Text(l10n.addAnswerOption),
+                      ),
                     ],
                   ),
                 ),
@@ -211,6 +281,20 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
                       ? null
                       : () async {
                           if (!formKey.currentState!.validate()) return;
+                          // At least one non-empty answer option is required by
+                          // the backend; surface a localized error instead of
+                          // sending an empty submission.
+                          final options = answerControllers
+                              .map((c) => c.text.trim())
+                              .where((t) => t.isNotEmpty)
+                              .toList();
+                          if (options.isEmpty) {
+                            setDialogState(() {
+                              isSubmitting = false;
+                              errorText = l10n.atLeastOneAnswerOption;
+                            });
+                            return;
+                          }
                           final parsedMinAge = int.tryParse(
                             minAgeController.text.trim(),
                           );
@@ -223,6 +307,7 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
                               text: textController.text.trim(),
                               categoryId: selectedCategoryId!,
                               language: _currentLanguageCode(),
+                              answerOptions: options,
                               minAge: parsedMinAge ?? 0,
                             );
                             if (!context.mounted) return;
@@ -269,6 +354,13 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
         );
       },
     );
+    // Free the controllers created for the dialog (question, min age and all
+    // answer-option fields).
+    textController.dispose();
+    minAgeController.dispose();
+    for (final controller in answerControllers) {
+      controller.dispose();
+    }
   }
 
   /// Returns the 2-character language code for the device locale, constrained to

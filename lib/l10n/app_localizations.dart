@@ -769,6 +769,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Submitted on {date}'**
   String submittedOn(String date);
+
+  /// Section label for the answer-option fields in the submit-question dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer options'**
+  String get answerOptionsLabel;
+
+  /// Label for a single answer-option input; {number} is its 1-based position.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer option {number}'**
+  String answerOptionLabel(int number);
+
+  /// Hint text for an answer-option input in the submit-question dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter an answer option'**
+  String get answerOptionHint;
+
+  /// Button that appends another answer-option field in the submit-question dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Add answer option'**
+  String get addAnswerOption;
+
+  /// Tooltip for the button that removes an answer-option field in the submit-question dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove answer option'**
+  String get removeAnswerOption;
+
+  /// Error shown when the submit-question dialog has no answer options filled in.
+  ///
+  /// In en, this message translates to:
+  /// **'Please provide at least one answer option'**
+  String get atLeastOneAnswerOption;
+
+  /// Error shown when the user tries to add more than the allowed number of answer options; {max} is the limit.
+  ///
+  /// In en, this message translates to:
+  /// **'You can add at most {max} answer options'**
+  String maxAnswerOptionsReached(int max);
 }
 
 class _AppLocalizationsDelegate
