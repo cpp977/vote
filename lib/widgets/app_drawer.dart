@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
+import '../controllers/auth_controller.dart';
 import '../l10n/app_localizations.dart';
 
 /// Navigation drawer shared by the top-level pages.
@@ -24,6 +26,8 @@ class AppDrawer extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
+    // The review-queue entry is only shown to administrators.
+    final isAdmin = context.watch<AuthController>().isAdmin;
 
     return Drawer(
       child: Column(
@@ -65,6 +69,20 @@ class AppDrawer extends StatelessWidget {
               }
             },
           ),
+          if (isAdmin) ...[
+            const Divider(),
+            ListTile(
+              leading: const Icon(Icons.approval_outlined),
+              title: Text(l10n.adminReviewQueue),
+              selected: selectedRoute == 'admin',
+              onTap: () {
+                Navigator.pop(context);
+                if (selectedRoute != 'admin') {
+                  onSelect(context, 'admin');
+                }
+              },
+            ),
+          ],
         ],
       ),
     );

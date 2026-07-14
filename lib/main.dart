@@ -9,6 +9,7 @@ import 'controllers/auth_controller.dart';
 import 'services/auth_middleware.dart';
 import 'pages/login_page.dart';
 import 'pages/my_submissions_page.dart';
+import 'pages/admin_submissions_page.dart';
 import 'l10n/app_localizations.dart';
 import 'widgets/app_drawer.dart';
 import 'widgets/user_menu_button.dart';
@@ -154,12 +155,22 @@ class _HomeShellState extends State<HomeShell> {
 
   void _onSelect(BuildContext context, String route) {
     setState(() {
-      _selectedIndex = route == 'submissions' ? 1 : 0;
+      // Index 0 = public questions, 1 = own submissions, 2 = admin review queue.
+      if (route == 'submissions') {
+        _selectedIndex = 1;
+      } else if (route == 'admin') {
+        _selectedIndex = 2;
+      } else {
+        _selectedIndex = 0;
+      }
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    if (_selectedIndex == 2) {
+      return AdminSubmissionsPage(onNavigate: _onSelect);
+    }
     if (_selectedIndex == 1) {
       return MySubmissionsPage(onNavigate: _onSelect);
     }

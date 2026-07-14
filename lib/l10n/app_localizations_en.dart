@@ -414,4 +414,52 @@ class AppLocalizationsEn extends AppLocalizations {
   String maxAnswerOptionsReached(int max) {
     return 'You can add at most $max answer options';
   }
+
+  @override
+  String get adminReviewQueue => 'Review Queue';
+
+  @override
+  String get adminSubmissionsEmpty => 'There are no submissions to review.';
+
+  @override
+  String get adminSubmissionsLoadFailed => 'Failed to load submissions';
+
+  @override
+  String get approve => 'Approve';
+
+  @override
+  String get reject => 'Reject';
+
+  @override
+  String submittedBy(int id) {
+    return 'Submitted by user $id';
+  }
+
+  @override
+  String reviewedBy(int id) {
+    return 'Reviewed by user $id';
+  }
+
+  @override
+  String get submissionDetailsTitle => 'Submission Details';
+
+  @override
+  String get submissionApprovedMessage => 'Question approved';
+
+  @override
+  String get submissionRejectedMessage => 'Question rejected';
+
+  @override
+  String get approveFailed => 'Failed to approve the question';
+
+  @override
+  String get rejectFailed => 'Failed to reject the question';
+
+  @override
+  String get submissionAlreadyReviewed =>
+      'This submission has already been reviewed.';
+
+  @override
+  String get answersNotVisible =>
+      'The submitted answers are not available for review.';
 }

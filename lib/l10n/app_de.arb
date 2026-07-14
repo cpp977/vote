@@ -137,5 +137,20 @@
   "addAnswerOption": "Antwortmöglichkeit hinzufügen",
   "removeAnswerOption": "Antwortmöglichkeit entfernen",
   "atLeastOneAnswerOption": "Bitte gib mindestens eine Antwortmöglichkeit an",
-  "maxAnswerOptionsReached": "Du kannst höchstens {max} Antwortmöglichkeiten hinzufügen"
+  "maxAnswerOptionsReached": "Du kannst höchstens {max} Antwortmöglichkeiten hinzufügen",
+
+  "adminReviewQueue": "Freigabewarteschlange",
+  "adminSubmissionsEmpty": "Es gibt keine Einreichungen zu prüfen.",
+  "adminSubmissionsLoadFailed": "Einreichungen konnten nicht geladen werden",
+  "approve": "Freigeben",
+  "reject": "Ablehnen",
+  "submittedBy": "Eingereicht von Benutzer {id}",
+  "reviewedBy": "Geprüft von Benutzer {id}",
+  "submissionDetailsTitle": "Details der Einreichung",
+  "submissionApprovedMessage": "Frage freigegeben",
+  "submissionRejectedMessage": "Frage abgelehnt",
+  "approveFailed": "Frage konnte nicht freigegeben werden",
+  "rejectFailed": "Frage konnte nicht abgelehnt werden",
+  "submissionAlreadyReviewed": "Diese Einreichung wurde bereits geprüft.",
+  "answersNotVisible": "Die eingereichten Antworten sind für die Prüfung nicht verfügbar."
 }

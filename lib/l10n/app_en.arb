@@ -579,5 +579,72 @@
         "type": "int"
       }
     }
+  },
+
+  "adminReviewQueue": "Review Queue",
+  "@adminReviewQueue": {
+    "description": "Drawer / page title for the administrator review queue of submitted questions."
+  },
+  "adminSubmissionsEmpty": "There are no submissions to review.",
+  "@adminSubmissionsEmpty": {
+    "description": "Empty-state message on the admin review-queue page when there are no pending submissions."
+  },
+  "adminSubmissionsLoadFailed": "Failed to load submissions",
+  "@adminSubmissionsLoadFailed": {
+    "description": "Error message shown when loading the admin review queue fails."
+  },
+  "approve": "Approve",
+  "@approve": {
+    "description": "Button label that approves a submitted question (makes it publicly visible)."
+  },
+  "reject": "Reject",
+  "@reject": {
+    "description": "Button label that rejects a submitted question."
+  },
+  "submittedBy": "Submitted by user {id}",
+  "@submittedBy": {
+    "description": "Label showing the user id of the submitter; {id} is the numeric user id.",
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "reviewedBy": "Reviewed by user {id}",
+  "@reviewedBy": {
+    "description": "Label showing the user id of the reviewer; {id} is the numeric user id.",
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "submissionDetailsTitle": "Submission Details",
+  "@submissionDetailsTitle": {
+    "description": "App bar title of the admin submission detail screen."
+  },
+  "submissionApprovedMessage": "Question approved",
+  "@submissionApprovedMessage": {
+    "description": "Success snack bar shown after a question was approved."
+  },
+  "submissionRejectedMessage": "Question rejected",
+  "@submissionRejectedMessage": {
+    "description": "Success snack bar shown after a question was rejected."
+  },
+  "approveFailed": "Failed to approve the question",
+  "@approveFailed": {
+    "description": "Error message shown when approving a question fails."
+  },
+  "rejectFailed": "Failed to reject the question",
+  "@rejectFailed": {
+    "description": "Error message shown when rejecting a question fails."
+  },
+  "submissionAlreadyReviewed": "This submission has already been reviewed.",
+  "@submissionAlreadyReviewed": {
+    "description": "Note shown on a submission that has already been approved or rejected."
+  },
+  "answersNotVisible": "The submitted answers are not available for review.",
+  "@answersNotVisible": {
+    "description": "Note shown when the submitted answer options cannot be loaded for an admin review (e.g. the backend does not expose them for unapproved submissions)."
   }
 }

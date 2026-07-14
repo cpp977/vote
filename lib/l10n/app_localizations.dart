@@ -811,6 +811,90 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'You can add at most {max} answer options'**
   String maxAnswerOptionsReached(int max);
+
+  /// Drawer / page title for the administrator review queue of submitted questions.
+  ///
+  /// In en, this message translates to:
+  /// **'Review Queue'**
+  String get adminReviewQueue;
+
+  /// Empty-state message on the admin review-queue page when there are no pending submissions.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no submissions to review.'**
+  String get adminSubmissionsEmpty;
+
+  /// Error message shown when loading the admin review queue fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load submissions'**
+  String get adminSubmissionsLoadFailed;
+
+  /// Button label that approves a submitted question (makes it publicly visible).
+  ///
+  /// In en, this message translates to:
+  /// **'Approve'**
+  String get approve;
+
+  /// Button label that rejects a submitted question.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject'**
+  String get reject;
+
+  /// Label showing the user id of the submitter; {id} is the numeric user id.
+  ///
+  /// In en, this message translates to:
+  /// **'Submitted by user {id}'**
+  String submittedBy(int id);
+
+  /// Label showing the user id of the reviewer; {id} is the numeric user id.
+  ///
+  /// In en, this message translates to:
+  /// **'Reviewed by user {id}'**
+  String reviewedBy(int id);
+
+  /// App bar title of the admin submission detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'Submission Details'**
+  String get submissionDetailsTitle;
+
+  /// Success snack bar shown after a question was approved.
+  ///
+  /// In en, this message translates to:
+  /// **'Question approved'**
+  String get submissionApprovedMessage;
+
+  /// Success snack bar shown after a question was rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'Question rejected'**
+  String get submissionRejectedMessage;
+
+  /// Error message shown when approving a question fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to approve the question'**
+  String get approveFailed;
+
+  /// Error message shown when rejecting a question fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to reject the question'**
+  String get rejectFailed;
+
+  /// Note shown on a submission that has already been approved or rejected.
+  ///
+  /// In en, this message translates to:
+  /// **'This submission has already been reviewed.'**
+  String get submissionAlreadyReviewed;
+
+  /// Note shown when the submitted answer options cannot be loaded for an admin review (e.g. the backend does not expose them for unapproved submissions).
+  ///
+  /// In en, this message translates to:
+  /// **'The submitted answers are not available for review.'**
+  String get answersNotVisible;
 }
 
 class _AppLocalizationsDelegate

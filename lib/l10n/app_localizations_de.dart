@@ -418,4 +418,53 @@ class AppLocalizationsDe extends AppLocalizations {
   String maxAnswerOptionsReached(int max) {
     return 'Du kannst höchstens $max Antwortmöglichkeiten hinzufügen';
   }
+
+  @override
+  String get adminReviewQueue => 'Freigabewarteschlange';
+
+  @override
+  String get adminSubmissionsEmpty => 'Es gibt keine Einreichungen zu prüfen.';
+
+  @override
+  String get adminSubmissionsLoadFailed =>
+      'Einreichungen konnten nicht geladen werden';
+
+  @override
+  String get approve => 'Freigeben';
+
+  @override
+  String get reject => 'Ablehnen';
+
+  @override
+  String submittedBy(int id) {
+    return 'Eingereicht von Benutzer $id';
+  }
+
+  @override
+  String reviewedBy(int id) {
+    return 'Geprüft von Benutzer $id';
+  }
+
+  @override
+  String get submissionDetailsTitle => 'Details der Einreichung';
+
+  @override
+  String get submissionApprovedMessage => 'Frage freigegeben';
+
+  @override
+  String get submissionRejectedMessage => 'Frage abgelehnt';
+
+  @override
+  String get approveFailed => 'Frage konnte nicht freigegeben werden';
+
+  @override
+  String get rejectFailed => 'Frage konnte nicht abgelehnt werden';
+
+  @override
+  String get submissionAlreadyReviewed =>
+      'Diese Einreichung wurde bereits geprüft.';
+
+  @override
+  String get answersNotVisible =>
+      'Die eingereichten Antworten sind für die Prüfung nicht verfügbar.';
 }
