@@ -69,7 +69,7 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
     });
     try {
       final response = await _authMiddleware.get(
-        '${ApiConfig.baseUrl}/questions/${_submission.id}/answers',
+        '${ApiConfig.baseUrl}/admin/questions/${_submission.id}/answers',
       );
       if (!mounted) return;
       if (response.statusCode == 200) {
