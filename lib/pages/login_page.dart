@@ -64,7 +64,11 @@ class _LoginPageState extends State<LoginPage> {
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   // Logo/Title
-                  Icon(Icons.how_to_vote, size: 80, color: colorScheme.primary),
+                  Image.asset(
+                    'assets/icon/app_icon.png',
+                    width: 100,
+                    height: 100,
+                  ),
                   const SizedBox(height: 24),
                   Text(
                     l10n.welcomeToApp(l10n.appName),
