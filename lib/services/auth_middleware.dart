@@ -1,3 +1,4 @@
+import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import '../models/auth_models.dart';
 import 'auth_service.dart';
@@ -9,6 +10,7 @@ import 'token_storage.dart';
 /// - Automatically attaches Bearer token to requests
 /// - Handles 401 responses by refreshing the token
 /// - Retries failed requests with the new token
+/// - Re-fetches categories on token refresh to prevent stale data
 class AuthMiddleware {
   final AuthService _authService;
   final TokenStorage _tokenStorage;
@@ -112,6 +114,7 @@ class AuthMiddleware {
   }
 
   /// Attempts to refresh the access token using the stored refresh token.
+  /// Also re-fetches categories with the new token to prevent stale data.
   /// Returns true if successful, false otherwise.
   Future<bool> _refreshToken() async {
     if (_isRefreshing) {
@@ -134,6 +137,22 @@ class AuthMiddleware {
 
       await _tokenStorage.setAccessToken(response.accessToken);
       await _tokenStorage.setRefreshToken(response.refreshToken);
+
+      // Re-fetch categories with the new token to ensure they stay up-to-date
+      try {
+        final languageCode =
+            WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+        final cats = await _authService.getCategories(
+          response.accessToken,
+          languageCode,
+        );
+        final map = <int, String>{for (final c in cats) c.id: c.name};
+        await _tokenStorage.setCategories(map);
+      } catch (_) {
+        // Category fetch failed but token refresh succeeded.
+        // User can still browse questions without category filter.
+        debugPrint('Warning: Failed to refresh categories during token refresh');
+      }
 
       return true;
     } on ApiException catch (e) {
