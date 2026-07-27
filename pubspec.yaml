@@ -41,6 +41,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
+  dart_define: ^1.0.0
 
 dev_dependencies:
   flutter_test:
@@ -53,6 +54,23 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   flutter_launcher_icons: ^0.14.4
+
+dart_define:
+  dart: true
+  json: true
+  dart_path: lib/gen/dart_define.gen.dart
+  json_path: dart_define.json
+  class_name: DartDefine
+  variables:
+    - name: API_BASE_URL
+      description: Backend API base URL
+      default: 'http://127.0.0.1:8848'
+      required: false
+  flavors:
+    - name: dev
+      description: Development environment
+    - name: prod
+      description: Production environment
 
 flutter_launcher_icons:
   image_path: "assets/icon/app_icon.png"
@@ -93,7 +111,7 @@ flutter:
 
   # To add custom fonts to your application, add a fonts section here,
   # in this "flutter" section. Each entry in this list should have a
-  # "family" key with the font family name, and a "fonts" key with a
+  # family key with the family name, and a fonts key with a
   # list giving the asset and other descriptors for the font. For
   # example:
   # fonts:
