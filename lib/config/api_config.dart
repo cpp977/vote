@@ -1,4 +1,4 @@
-import 'gen/dart_define.gen.dart';
+import '../gen/dart_define.gen.dart';
 
 /// Centralized API configuration.
 ///
@@ -16,5 +16,5 @@ class ApiConfig {
   ///
   /// Configured via pubspec.yaml dart_define section.
   /// Defaults to `http://127.0.0.1:8848` for local development.
-  static const String baseUrl = DartDefine.apiBaseUrl;
+  static const String baseUrl = Dartdefine.apiBaseUrl;
 }

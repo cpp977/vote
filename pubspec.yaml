@@ -41,7 +41,7 @@ dependencies:
   flutter_localizations:
     sdk: flutter
   intl: ^0.20.2
-  dart_define: ^1.0.0
+  dart_define: ^2.0.0
 
 dev_dependencies:
   flutter_test:
@@ -66,11 +66,6 @@ dart_define:
       description: Backend API base URL
       default: 'http://127.0.0.1:8848'
       required: false
-  flavors:
-    - name: dev
-      description: Development environment
-    - name: prod
-      description: Production environment
 
 flutter_launcher_icons:
   image_path: "assets/icon/app_icon.png"
