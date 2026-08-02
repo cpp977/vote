@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import '../models/auth_models.dart';
 import 'auth_service.dart';
 import 'token_storage.dart';
+import 'navigation_service.dart';
 
 /// HTTP middleware that handles authentication token management.
 ///
@@ -93,6 +94,15 @@ class AuthMiddleware {
         break;
       default:
         throw UnsupportedError('HTTP method $method not supported');
+    }
+
+    // Handle account locked (423) immediately: clear stored tokens and navigate to the account-locked page.
+    if (response.statusCode == 423) {
+      await _tokenStorage.clearAll();
+      // Navigate to the account locked screen using the global navigator key.
+      NavigationService.navigatorKey.currentState?.pushReplacementNamed('/account-locked');
+      // Return the response so callers can still inspect it if needed.
+      return response;
     }
 
     // If unauthorized and not already retrying, attempt token refresh
