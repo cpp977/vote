@@ -6,6 +6,8 @@ import 'controllers/auth_controller.dart';
 import 'pages/login_page.dart';
 import 'pages/home_shell.dart';
 import 'l10n/app_localizations.dart';
+import 'services/navigation_service.dart';
+import 'pages/account_locked_page.dart';
 
 void main() {
   runApp(const MyApp());
@@ -20,11 +22,16 @@ class MyApp extends StatelessWidget {
       create: (_) => AuthController()..checkAuthStatus(),
       child: MaterialApp(
         title: 'Vote',
+        navigatorKey: NavigationService.navigatorKey,
         theme: ThemeData(
           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
           useMaterial3: true,
         ),
         home: const AuthGate(),
+        routes: {
+          '/login': (context) => const LoginPage(),
+          '/account-locked': (context) => const AccountLockedPage(),
+        },
         localizationsDelegates: AppLocalizations.localizationsDelegates,
         supportedLocales: AppLocalizations.supportedLocales,
       ),
