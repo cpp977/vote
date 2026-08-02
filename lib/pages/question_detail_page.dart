@@ -39,7 +39,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   String? _statsErrorMessage;
 
   // Gender-resolved statistics state
-  final List<String> _genders = ['m', 'f', 'd'];
+  final List<String> _genders = ['m', 'w', 'd'];
   final Map<String, List<AnswerStats>> _genderStats = {};
   final Map<String, bool> _genderLoading = {};
   final Map<String, String?> _genderErrors = {};
@@ -537,7 +537,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                       gender: gender,
                       label: gender == 'm'
                           ? l10n.genderMale
-                          : gender == 'f'
+                          : gender == 'w'
                           ? l10n.genderFemale
                           : l10n.genderDiverse,
                       stats: _genderStats[gender] ?? [],
