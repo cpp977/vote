@@ -13,6 +13,7 @@ import '../utils/constants.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/category_section.dart';
 import '../widgets/user_menu_button.dart';
+import 'question_detail_page.dart';
 
 class MyHomePage extends StatefulWidget {
   const MyHomePage({super.key, required this.title, required this.onNavigate});
@@ -337,13 +338,12 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   void _navigateToDetails(Question question) {
-    // TODO: Navigate to QuestionDetailsPage
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => QuestionDetailsPage(question: question),
-    //   ),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => QuestionDetailsPage(question: question),
+      ),
+    );
   }
 
   void showSearchDialog(BuildContext context) {
