@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/auth_controller.dart';
-import 'login_page.dart';
+import '../services/navigation_service.dart';
 
 class AccountLockedPage extends StatelessWidget {
   const AccountLockedPage({super.key});
@@ -32,7 +32,8 @@ class AccountLockedPage extends StatelessWidget {
                 // Ensure local storage is cleared and navigate to login.
                 final auth = Provider.of<AuthController>(context, listen: false);
                 await auth.logout();
-                Navigator.of(context).pushNamedAndRemoveUntil('/login', (r) => false);
+                NavigationService.navigatorKey.currentState
+                    ?.pushNamedAndRemoveUntil('/login', (r) => false);
               },
               child: const Text('Go to Login'),
             ),
