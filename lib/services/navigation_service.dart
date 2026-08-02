@@ -10,4 +10,16 @@ class NavigationService {
   static Future<void>? pushReplacementNamed(String routeName) {
     return navigatorKey.currentState?.pushReplacementNamed(routeName);
   }
+
+  /// Clears the entire navigation stack and pushes the login page.
+  ///
+  /// Use this when an unauthenticated user hits a restricted endpoint so
+  /// they are redirected to login and cannot navigate back to the
+  /// restricted page.
+  static Future<void>? navigateToLogin() {
+    return navigatorKey.currentState?.pushNamedAndRemoveUntil(
+      '/login',
+      (route) => false,
+    );
+  }
 }

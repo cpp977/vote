@@ -67,7 +67,7 @@ class _AdminSubmissionsPageState extends State<AdminSubmissionsPage> {
       if (e.statusCode == 401) {
         // Token refresh failed – the user has to log in again.
         setState(() => _isLoading = false);
-        context.read<AuthController>().logout();
+        context.read<AuthController>().logout(showLoginPage: true);
         return;
       }
       setState(() {

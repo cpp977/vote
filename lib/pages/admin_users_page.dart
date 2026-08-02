@@ -61,7 +61,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
       if (!mounted) return;
       if (e.statusCode == 401) {
         setState(() => _isLoading = false);
-        context.read<AuthController>().logout();
+        context.read<AuthController>().logout(showLoginPage: true);
         return;
       }
       setState(() {

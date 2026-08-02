@@ -39,6 +39,11 @@ class MyApp extends StatelessWidget {
 }
 
 /// Widget that shows login page or home page based on auth state.
+///
+/// Unauthenticated users see [HomeShell] (the public question listing)
+/// by default.  When [AuthController.showLoginPage] is `true` (e.g.
+/// after a 401 on a restricted endpoint) the [LoginPage] is shown
+/// instead so the user can sign in.
 class AuthGate extends StatelessWidget {
   const AuthGate({super.key});
 
@@ -54,7 +59,10 @@ class AuthGate extends StatelessWidget {
         if (auth.isAuthenticated) {
           return const HomeShell();
         }
-        return const LoginPage();
+        if (auth.showLoginPage) {
+          return const LoginPage();
+        }
+        return const HomeShell();
       },
     );
   }

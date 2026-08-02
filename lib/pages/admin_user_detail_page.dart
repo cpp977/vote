@@ -63,7 +63,7 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
       if (!mounted) return;
       if (e.statusCode == 401) {
         setState(() => _isLoading = false);
-        context.read<AuthController>().logout();
+        context.read<AuthController>().logout(showLoginPage: true);
         return;
       }
       setState(() {
@@ -99,7 +99,7 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
     } on AdminException catch (e) {
       if (!mounted) return;
       if (e.statusCode == 401) {
-        context.read<AuthController>().logout();
+        context.read<AuthController>().logout(showLoginPage: true);
         return;
       }
       if (mounted) {
@@ -143,7 +143,7 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
     } on AdminException catch (e) {
       if (!mounted) return;
       if (e.statusCode == 401) {
-        context.read<AuthController>().logout();
+        context.read<AuthController>().logout(showLoginPage: true);
         return;
       }
       if (mounted) {

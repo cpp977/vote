@@ -10,6 +10,7 @@ import '../models/answer_option.dart';
 import '../models/answer_stats.dart';
 import '../models/question.dart';
 import '../services/auth_middleware.dart';
+import '../services/navigation_service.dart';
 import '../widgets/question_stats_widget.dart';
 
 /// Detail page for a single question.
@@ -83,9 +84,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           _isLoading = false;
         });
       } else if (response.statusCode == 401) {
-        if (mounted) {
-          context.read<AuthController>().logout();
-        }
+        NavigationService.navigateToLogin();
       } else if (response.statusCode == 404) {
         setState(() {
           _errorMessage = l10n.questionNotFound;
@@ -127,9 +126,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           _isLoadingStats = false;
         });
       } else if (response.statusCode == 401) {
-        if (mounted) {
-          context.read<AuthController>().logout();
-        }
+        NavigationService.navigateToLogin();
       } else if (response.statusCode == 404) {
         setState(() {
           _statsErrorMessage = l10n.statsNotAvailable;
@@ -172,9 +169,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           _genderLoading[gender] = false;
         });
       } else if (response.statusCode == 401) {
-        if (mounted) {
-          context.read<AuthController>().logout();
-        }
+        NavigationService.navigateToLogin();
       } else if (response.statusCode == 404) {
         setState(() {
           _genderErrors[gender] = l10n.statsNotAvailable;
@@ -263,7 +258,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           ),
         );
       } else if (response.statusCode == 401) {
-        context.read<AuthController>().logout();
+        NavigationService.navigateToLogin();
       } else {
         setState(() {
           _submittingAnswerIds.remove(answer.id);

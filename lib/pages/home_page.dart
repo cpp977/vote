@@ -189,7 +189,7 @@ class _MyHomePageState extends State<MyHomePage> {
           _isLoadingMore = false;
         });
         if (mounted) {
-          context.read<AuthController>().logout();
+          context.read<AuthController>().logout(showLoginPage: true);
         }
       } else {
         setState(() {

@@ -69,7 +69,7 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
       if (e.statusCode == 401) {
         // Token refresh failed – the user has to log in again.
         setState(() => _isLoading = false);
-        context.read<AuthController>().logout();
+        context.read<AuthController>().logout(showLoginPage: true);
         return;
       }
       setState(() {
@@ -323,7 +323,7 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
                             if (e.statusCode == 401) {
                               if (!context.mounted) return;
                               Navigator.of(context).pop();
-                              context.read<AuthController>().logout();
+                              context.read<AuthController>().logout(showLoginPage: true);
                               return;
                             }
                             setDialogState(() {

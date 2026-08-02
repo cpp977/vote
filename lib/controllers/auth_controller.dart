@@ -13,6 +13,7 @@ class AuthController extends ChangeNotifier {
 
   bool _isAuthenticated = false;
   bool _isLoading = false;
+  bool _showLoginPage = false;
   AuthError? _error;
   String? _username;
   String? _email;
@@ -31,6 +32,10 @@ class AuthController extends ChangeNotifier {
 
   /// Whether an authentication operation is in progress.
   bool get isLoading => _isLoading;
+
+  /// Whether the login page should be shown instead of the home page
+  /// for unauthenticated users (e.g. after a 401 on a restricted endpoint).
+  bool get showLoginPage => _showLoginPage;
 
   /// The current authentication error, if any. UI code localizes it via the
   /// [localizedAuthError] helper using the [AuthError.code] and [detail].
@@ -61,6 +66,7 @@ class AuthController extends ChangeNotifier {
   /// Should be called on app startup.
   Future<void> checkAuthStatus() async {
     _setLoading(true);
+    _showLoginPage = false;
     try {
       final hasTokens = await _tokenStorage.hasTokens();
       if (hasTokens) {
@@ -203,7 +209,12 @@ class AuthController extends ChangeNotifier {
 
   /// Logs out the current user.
   /// Clears all stored tokens regardless of API response.
-  Future<void> logout() async {
+  ///
+  /// When [showLoginPage] is `true`, [AuthGate] will display the
+  /// login screen instead of the home screen after logout. This is
+  /// useful when an unauthenticated user hits a restricted endpoint
+  /// and needs to be redirected to login.
+  Future<void> logout({bool showLoginPage = false}) async {
     _setLoading(true);
 
     try {
@@ -227,6 +238,7 @@ class AuthController extends ChangeNotifier {
       _nationality = null;
       _isAdmin = false;
       _categories = {};
+      _showLoginPage = showLoginPage;
       _setLoading(false);
     }
   }

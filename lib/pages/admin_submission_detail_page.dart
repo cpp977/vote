@@ -82,7 +82,7 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
           _isLoadingAnswers = false;
         });
       } else if (response.statusCode == 401) {
-        if (mounted) context.read<AuthController>().logout();
+        if (mounted) context.read<AuthController>().logout(showLoginPage: true);
       } else if (response.statusCode == 404) {
         // Not visible to the reviewer (e.g. still pending) – inform, don't err.
         setState(() {
@@ -128,7 +128,7 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
     } on AdminException catch (e) {
       if (!mounted) return;
       if (e.statusCode == 401) {
-        context.read<AuthController>().logout();
+        context.read<AuthController>().logout(showLoginPage: true);
         return;
       }
       setState(() => _isReviewing = false);
