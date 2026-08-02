@@ -646,5 +646,34 @@
   "answersNotVisible": "The submitted answers are not available for review.",
   "@answersNotVisible": {
     "description": "Note shown when the submitted answer options cannot be loaded for an admin review (e.g. the backend does not expose them for unapproved submissions)."
+  },
+  "adminUsers": "Users",
+  "@adminUsers": {
+    "description": "Drawer / page title for the administrator user management page."
+  },
+  "adminUsersEmpty": "There are no users to display.",
+  "@adminUsersEmpty": {
+    "description": "Empty-state message on the admin user management page when there are no users."
+  },
+  "adminUsersLoadFailed": "Failed to load users",
+  "@adminUsersLoadFailed": {
+    "description": "Error message shown when loading the admin user list fails."
+  },
+  "adminUserId": "User {id}",
+  "@adminUserId": {
+    "description": "Label showing the user id; {id} is the numeric user id.",
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "adminUserDetailsTitle": "User Details",
+  "@adminUserDetailsTitle": {
+    "description": "App bar title of the admin user detail screen."
+  },
+  "adminUserDetailsLoadFailed": "Failed to load user details",
+  "@adminUserDetailsLoadFailed": {
+    "description": "Error message shown when loading a user's details fails."
   }
 }

@@ -895,6 +895,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'The submitted answers are not available for review.'**
   String get answersNotVisible;
+
+  /// Drawer / page title for the administrator user management page.
+  ///
+  /// In en, this message translates to:
+  /// **'Users'**
+  String get adminUsers;
+
+  /// Empty-state message on the admin user management page when there are no users.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no users to display.'**
+  String get adminUsersEmpty;
+
+  /// Error message shown when loading the admin user list fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load users'**
+  String get adminUsersLoadFailed;
+
+  /// Label showing the user id; {id} is the numeric user id.
+  ///
+  /// In en, this message translates to:
+  /// **'User {id}'**
+  String adminUserId(int id);
+
+  /// App bar title of the admin user detail screen.
+  ///
+  /// In en, this message translates to:
+  /// **'User Details'**
+  String get adminUserDetailsTitle;
+
+  /// Error message shown when loading a user's details fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load user details'**
+  String get adminUserDetailsLoadFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -152,5 +152,31 @@
   "approveFailed": "Frage konnte nicht freigegeben werden",
   "rejectFailed": "Frage konnte nicht abgelehnt werden",
   "submissionAlreadyReviewed": "Diese Einreichung wurde bereits geprüft.",
-  "answersNotVisible": "Die eingereichten Antworten sind für die Prüfung nicht verfügbar."
+  "answersNotVisible": "Die eingereichten Antworten sind für die Prüfung nicht verfügbar.",
+  "adminUsers": "Benutzer",
+  "@adminUsers": {
+    "description": "Drawer / page title for the administrator user management page."
+  },
+  "adminUsersEmpty": "Es gibt keine Benutzer anzuzeigen.",
+  "@adminUsersEmpty": {
+    "description": "Empty-state message on the admin user management page when there are no users."
+  },
+  "adminUsersLoadFailed": "Benutzer konnten nicht geladen werden",
+  "@adminUsersLoadFailed": {
+    "description": "Error message shown when loading the admin user list fails."
+  },
+  "adminUserId": "Benutzer {id}",
+  "@adminUserId": {
+    "description": "Label showing the user id; {id} is the numeric user id.",
+    "placeholders": {
+      "id": {
+        "type": "int"
+      }
+    }
+  },
+  "adminUserDetailsTitle": "Benutzerdetails",
+  "@adminUserDetailsTitle": {
+    "description": "App bar title of the admin user detail screen."
+  },
+  "adminUserDetailsLoadFailed": "Benutzerdetails konnten nicht geladen werden"
 }

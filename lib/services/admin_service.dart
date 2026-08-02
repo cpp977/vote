@@ -2,10 +2,11 @@ import 'dart:convert';
 
 import 'package:http/http.dart' as http;
 import 'package:vote/config/api_config.dart';
+import 'package:vote/models/auth_models.dart';
 import 'package:vote/models/submission_models.dart';
 import 'package:vote/services/auth_middleware.dart';
 
-/// Exception thrown when an administrator review-queue API call fails.
+/// Exception thrown when an administrator API call fails.
 class AdminException implements Exception {
   final String message;
   final int? statusCode;
@@ -16,13 +17,16 @@ class AdminException implements Exception {
   String toString() => 'AdminException($statusCode): $message';
 }
 
-/// Service for the administrator submission-review workflow:
+/// Service for administrator endpoints:
 ///  - [getSubmissions] lists every submission that is not yet approved via
 ///    `GET /admin/questions/submissions` (the review queue).
 ///  - [approveQuestion] marks a submission as `approved` (publicly visible)
 ///    through `POST /admin/questions/{id}/approve`.
 ///  - [rejectQuestion] marks a submission as `rejected` through
 ///    `POST /admin/questions/{id}/reject`.
+///  - [getUsers] lists all registered users via `GET /admin/users`.
+///  - [getUser] fetches detailed information for a single user via
+///    `GET /admin/users/{id}`.
 ///
 /// Requests go through [AuthMiddleware] so expired access tokens are refreshed
 /// transparently and retried.
@@ -71,6 +75,49 @@ class AdminService {
   /// Throws [AdminException] on failure (including `401`/`403`).
   Future<Submission> rejectQuestion(int id) async {
     return _review('${ApiConfig.baseUrl}/admin/questions/$id/reject', 'reject');
+  }
+
+  /// Lists all registered users via `GET /admin/users`.
+  ///
+  /// Returns a list of [User] objects containing at least `id` and
+  /// `username`. Throws [AdminException] on failure (including `401`/`403`).
+  Future<List<User>> getUsers() async {
+    final response = await _authMiddleware.get(
+      '${ApiConfig.baseUrl}/admin/users',
+    );
+    if (response.statusCode == 200) {
+      final List<dynamic> data =
+          (jsonDecode(response.body) as List?) ?? <dynamic>[];
+      return data
+          .map((e) => User.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const AdminException('Unauthorized', 401);
+    } else {
+      throw AdminException(_parseError(response), response.statusCode);
+    }
+  }
+
+  /// Fetches detailed information for the user with the given [id] via
+  /// `GET /admin/users/{id}`.
+  ///
+  /// Returns the full [User] object (all fields except `password_hash`).
+  /// Throws [AdminException] on failure (including `401`/`403`/`404`).
+  Future<User> getUser(int id) async {
+    final response = await _authMiddleware.get(
+      '${ApiConfig.baseUrl}/admin/users/$id',
+    );
+    if (response.statusCode == 200) {
+      return User.fromJson(
+        jsonDecode(response.body) as Map<String, dynamic>,
+      );
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const AdminException('Unauthorized', 401);
+    } else if (response.statusCode == 404) {
+      throw const AdminException('Not found', 404);
+    } else {
+      throw AdminException(_parseError(response), response.statusCode);
+    }
   }
 
   Future<Submission> _review(String url, String action) async {

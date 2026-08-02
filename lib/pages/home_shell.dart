@@ -3,9 +3,11 @@ import 'package:flutter/material.dart';
 import 'home_page.dart';
 import '../pages/my_submissions_page.dart';
 import '../pages/admin_submissions_page.dart';
+import '../pages/admin_users_page.dart';
 
-/// Hosts the three top-level destinations (public questions, user submissions,
-/// and admin review queue) behind a single shared navigation.
+/// Hosts the top-level destinations (public questions, user submissions,
+/// admin review queue, and admin user management) behind a single
+/// shared navigation.
 ///
 /// Switching between them uses [setState] rather than the [Navigator]. This
 /// keeps everything inside [AuthGate]'s `home`, so logging out (which swaps
@@ -23,11 +25,14 @@ class _HomeShellState extends State<HomeShell> {
 
   void _onSelect(BuildContext context, String route) {
     setState(() {
-      // Index 0 = public questions, 1 = own submissions, 2 = admin review queue.
+      // Index 0 = public questions, 1 = own submissions,
+      // 2 = admin review queue, 3 = admin user management.
       if (route == 'submissions') {
         _selectedIndex = 1;
       } else if (route == 'admin') {
         _selectedIndex = 2;
+      } else if (route == 'users') {
+        _selectedIndex = 3;
       } else {
         _selectedIndex = 0;
       }
@@ -36,6 +41,9 @@ class _HomeShellState extends State<HomeShell> {
 
   @override
   Widget build(BuildContext context) {
+    if (_selectedIndex == 3) {
+      return AdminUsersPage(onNavigate: _onSelect);
+    }
     if (_selectedIndex == 2) {
       return AdminSubmissionsPage(onNavigate: _onSelect);
     }

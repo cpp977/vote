@@ -82,6 +82,17 @@ class AppDrawer extends StatelessWidget {
                 }
               },
             ),
+            ListTile(
+              leading: const Icon(Icons.people_outline),
+              title: Text(l10n.adminUsers),
+              selected: selectedRoute == 'users',
+              onTap: () {
+                Navigator.pop(context);
+                if (selectedRoute != 'users') {
+                  onSelect(context, 'users');
+                }
+              },
+            ),
           ],
         ],
       ),

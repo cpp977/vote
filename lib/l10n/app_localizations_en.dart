@@ -462,4 +462,24 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get answersNotVisible =>
       'The submitted answers are not available for review.';
+
+  @override
+  String get adminUsers => 'Users';
+
+  @override
+  String get adminUsersEmpty => 'There are no users to display.';
+
+  @override
+  String get adminUsersLoadFailed => 'Failed to load users';
+
+  @override
+  String adminUserId(int id) {
+    return 'User $id';
+  }
+
+  @override
+  String get adminUserDetailsTitle => 'User Details';
+
+  @override
+  String get adminUserDetailsLoadFailed => 'Failed to load user details';
 }
