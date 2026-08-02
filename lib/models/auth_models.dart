@@ -96,6 +96,7 @@ class User {
   final String? gender;
   final String? nationality;
   final bool isAdmin;
+  final bool isActive;
 
   const User({
     required this.id,
@@ -105,6 +106,7 @@ class User {
     this.gender,
     this.nationality,
     this.isAdmin = false,
+    this.isActive = true,
   });
 
   factory User.fromJson(Map<String, dynamic> json) {
@@ -116,6 +118,7 @@ class User {
       gender: json['gender'] as String?,
       nationality: json['nationality'] as String?,
       isAdmin: json['is_admin'] as bool? ?? false,
+      isActive: json['is_active'] as bool? ?? true,
     );
   }
 }

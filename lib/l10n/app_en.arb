@@ -675,5 +675,37 @@
   "adminUserDetailsLoadFailed": "Failed to load user details",
   "@adminUserDetailsLoadFailed": {
     "description": "Error message shown when loading a user's details fails."
+  },
+  "adminUserActiveStatus": "Active",
+  "@adminUserActiveStatus": {
+    "description": "Status label shown when a user account is active."
+  },
+  "adminUserInactiveStatus": "Inactive",
+  "@adminUserInactiveStatus": {
+    "description": "Status label shown when a user account is inactive."
+  },
+  "activateUser": "Activate",
+  "@activateUser": {
+    "description": "Button label that activates a user account."
+  },
+  "deactivateUser": "Deactivate",
+  "@deactivateUser": {
+    "description": "Button label that deactivates a user account."
+  },
+  "activateUserSuccess": "User activated",
+  "@activateUserSuccess": {
+    "description": "Success snack bar shown after a user was activated."
+  },
+  "deactivateUserSuccess": "User deactivated",
+  "@deactivateUserSuccess": {
+    "description": "Success snack bar shown after a user was deactivated."
+  },
+  "activateUserFailed": "Failed to activate user",
+  "@activateUserFailed": {
+    "description": "Error message shown when activating a user fails."
+  },
+  "deactivateUserFailed": "Failed to deactivate user",
+  "@deactivateUserFailed": {
+    "description": "Error message shown when deactivating a user fails."
   }
 }

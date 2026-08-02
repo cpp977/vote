@@ -178,5 +178,37 @@
   "@adminUserDetailsTitle": {
     "description": "App bar title of the admin user detail screen."
   },
-  "adminUserDetailsLoadFailed": "Benutzerdetails konnten nicht geladen werden"
+  "adminUserDetailsLoadFailed": "Benutzerdetails konnten nicht geladen werden",
+  "adminUserActiveStatus": "Aktiv",
+  "@adminUserActiveStatus": {
+    "description": "Status label shown when a user account is active."
+  },
+  "adminUserInactiveStatus": "Inaktiv",
+  "@adminUserInactiveStatus": {
+    "description": "Status label shown when a user account is inactive."
+  },
+  "activateUser": "Aktivieren",
+  "@activateUser": {
+    "description": "Button label that activates a user account."
+  },
+  "deactivateUser": "Deaktivieren",
+  "@deactivateUser": {
+    "description": "Button label that deactivates a user account."
+  },
+  "activateUserSuccess": "Benutzer aktiviert",
+  "@activateUserSuccess": {
+    "description": "Success snack bar shown after a user was activated."
+  },
+  "deactivateUserSuccess": "Benutzer deaktiviert",
+  "@deactivateUserSuccess": {
+    "description": "Success snack bar shown after a user was deactivated."
+  },
+  "activateUserFailed": "Aktivieren fehlgeschlagen",
+  "@activateUserFailed": {
+    "description": "Error message shown when activating a user fails."
+  },
+  "deactivateUserFailed": "Deaktivieren fehlgeschlagen",
+  "@deactivateUserFailed": {
+    "description": "Error message shown when deactivating a user fails."
+  }
 }

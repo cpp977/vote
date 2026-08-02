@@ -27,6 +27,8 @@ class AdminException implements Exception {
 ///  - [getUsers] lists all registered users via `GET /admin/users`.
 ///  - [getUser] fetches detailed information for a single user via
 ///    `GET /admin/users/{id}`.
+///  - [activateUser] reactivates a user via `POST /admin/users/{id}/active`.
+///  - [deactivateUser] deactivates a user via `POST /admin/users/{id}/inactive`.
 ///
 /// Requests go through [AuthMiddleware] so expired access tokens are refreshed
 /// transparently and retried.
@@ -107,6 +109,46 @@ class AdminService {
     final response = await _authMiddleware.get(
       '${ApiConfig.baseUrl}/admin/users/$id',
     );
+    if (response.statusCode == 200) {
+      return User.fromJson(
+        jsonDecode(response.body) as Map<String, dynamic>,
+      );
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const AdminException('Unauthorized', 401);
+    } else if (response.statusCode == 404) {
+      throw const AdminException('Not found', 404);
+    } else {
+      throw AdminException(_parseError(response), response.statusCode);
+    }
+  }
+
+  /// Activates the user with the given [id] via
+  /// `POST /admin/users/{id}/active`.
+  ///
+  /// Returns the updated [User] object with `isActive` set to `true`.
+  /// Throws [AdminException] on failure (including `401`/`403`/`404`).
+  Future<User> activateUser(int id) async {
+    return _toggleActive(
+      '${ApiConfig.baseUrl}/admin/users/$id/active',
+      'activate',
+    );
+  }
+
+  /// Deactivates the user with the given [id] via
+  /// `POST /admin/users/{id}/inactive`.
+  ///
+  /// Returns the updated [User] object with `isActive` set to `false`.
+  /// Throws [AdminException] on failure (including `401`/`403`/`404`).
+  Future<User> deactivateUser(int id) async {
+    return _toggleActive(
+      '${ApiConfig.baseUrl}/admin/users/$id/inactive',
+      'deactivate',
+    );
+  }
+
+  /// Helper that sends a POST to [url] and parses the response as a [User].
+  Future<User> _toggleActive(String url, String action) async {
+    final response = await _authMiddleware.post(url);
     if (response.statusCode == 200) {
       return User.fromJson(
         jsonDecode(response.body) as Map<String, dynamic>,

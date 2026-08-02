@@ -482,4 +482,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adminUserDetailsLoadFailed => 'Failed to load user details';
+
+  @override
+  String get adminUserActiveStatus => 'Active';
+
+  @override
+  String get adminUserInactiveStatus => 'Inactive';
+
+  @override
+  String get activateUser => 'Activate';
+
+  @override
+  String get deactivateUser => 'Deactivate';
+
+  @override
+  String get activateUserSuccess => 'User activated';
+
+  @override
+  String get deactivateUserSuccess => 'User deactivated';
+
+  @override
+  String get activateUserFailed => 'Failed to activate user';
+
+  @override
+  String get deactivateUserFailed => 'Failed to deactivate user';
 }

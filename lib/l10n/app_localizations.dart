@@ -931,6 +931,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to load user details'**
   String get adminUserDetailsLoadFailed;
+
+  /// Status label shown when a user account is active.
+  ///
+  /// In en, this message translates to:
+  /// **'Active'**
+  String get adminUserActiveStatus;
+
+  /// Status label shown when a user account is inactive.
+  ///
+  /// In en, this message translates to:
+  /// **'Inactive'**
+  String get adminUserInactiveStatus;
+
+  /// Button label that activates a user account.
+  ///
+  /// In en, this message translates to:
+  /// **'Activate'**
+  String get activateUser;
+
+  /// Button label that deactivates a user account.
+  ///
+  /// In en, this message translates to:
+  /// **'Deactivate'**
+  String get deactivateUser;
+
+  /// Success snack bar shown after a user was activated.
+  ///
+  /// In en, this message translates to:
+  /// **'User activated'**
+  String get activateUserSuccess;
+
+  /// Success snack bar shown after a user was deactivated.
+  ///
+  /// In en, this message translates to:
+  /// **'User deactivated'**
+  String get deactivateUserSuccess;
+
+  /// Error message shown when activating a user fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to activate user'**
+  String get activateUserFailed;
+
+  /// Error message shown when deactivating a user fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to deactivate user'**
+  String get deactivateUserFailed;
 }
 
 class _AppLocalizationsDelegate

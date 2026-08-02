@@ -10,9 +10,13 @@ import '../services/admin_service.dart';
 ///
 /// Fetches the full user details from `GET /admin/users/{id}` when the
 /// page opens and displays them (id, username, email, birth year, gender,
-/// nationality, and admin status). This page is only reachable for users
-/// whose [AuthController.isAdmin] is `true` — it is opened by tapping a
-/// user entry on the [AdminUsersPage].
+/// nationality, admin status, and active status). This page is only
+/// reachable for users whose [AuthController.isAdmin] is `true` — it is
+/// opened by tapping a user entry on the [AdminUsersPage].
+///
+/// The page also provides [activate] and [deactivate] buttons so an
+/// admin can toggle the user's account status via the backend endpoints
+/// `POST /admin/users/{id}/active` and `POST /admin/users/{id}/inactive`.
 class AdminUserDetailPage extends StatefulWidget {
   final User user;
 
@@ -26,6 +30,7 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
   final AdminService _adminService = AdminService();
   late User _user;
   bool _isLoading = true;
+  bool _isToggling = false;
   String? _errorMessage;
 
   @override
@@ -71,6 +76,94 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
         _errorMessage = l10n.adminUserDetailsLoadFailed;
         _isLoading = false;
       });
+    }
+  }
+
+  /// Activates the user via `POST /admin/users/{id}/active`.
+  Future<void> _activateUser() async {
+    final l10n = AppLocalizations.of(context);
+    if (!mounted || _isToggling) return;
+    setState(() => _isToggling = true);
+    try {
+      final user = await _adminService.activateUser(_user.id);
+      if (!mounted) return;
+      setState(() => _user = user);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.activateUserSuccess),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } on AdminException catch (e) {
+      if (!mounted) return;
+      if (e.statusCode == 401) {
+        context.read<AuthController>().logout();
+        return;
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.activateUserFailed),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.activateUserFailed),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isToggling = false);
+    }
+  }
+
+  /// Deactivates the user via `POST /admin/users/{id}/inactive`.
+  Future<void> _deactivateUser() async {
+    final l10n = AppLocalizations.of(context);
+    if (!mounted || _isToggling) return;
+    setState(() => _isToggling = true);
+    try {
+      final user = await _adminService.deactivateUser(_user.id);
+      if (!mounted) return;
+      setState(() => _user = user);
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.deactivateUserSuccess),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      }
+    } on AdminException catch (e) {
+      if (!mounted) return;
+      if (e.statusCode == 401) {
+        context.read<AuthController>().logout();
+        return;
+      }
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.deactivateUserFailed),
+            backgroundColor: Colors.red,
+          ),
+        );
+      }
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.deactivateUserFailed),
+          backgroundColor: Colors.red,
+        ),
+      );
+    } finally {
+      if (mounted) setState(() => _isToggling = false);
     }
   }
 
@@ -146,10 +239,51 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
                             backgroundColor: colorScheme.primaryContainer,
                             visualDensity: VisualDensity.compact,
                           ),
+                        const SizedBox(width: 8),
+                        Chip(
+                          label: Text(
+                            _user.isActive
+                                ? l10n.adminUserActiveStatus
+                                : l10n.adminUserInactiveStatus,
+                          ),
+                          labelStyle: const TextStyle(
+                            fontWeight: FontWeight.w600,
+                            fontSize: 12,
+                          ),
+                          backgroundColor: _user.isActive
+                              ? Colors.green.shade100
+                              : Colors.red.shade100,
+                          visualDensity: VisualDensity.compact,
+                        ),
                       ],
                     ),
                   ),
                   const SizedBox(height: 24),
+
+                  // Activate / Deactivate buttons
+                  if (!_user.isActive || !_user.isAdmin) ...[
+                    Row(
+                      children: [
+                        if (_user.isActive)
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: _isToggling ? null : _deactivateUser,
+                              icon: const Icon(Icons.block_outlined),
+                              label: Text(l10n.deactivateUser),
+                            ),
+                          ),
+                        if (!_user.isActive)
+                          Expanded(
+                            child: FilledButton.icon(
+                              onPressed: _isToggling ? null : _activateUser,
+                              icon: const Icon(Icons.check_circle_outline),
+                              label: Text(l10n.activateUser),
+                            ),
+                          ),
+                      ],
+                    ),
+                    const SizedBox(height: 24),
+                  ],
 
                   // Details card
                   Card(
