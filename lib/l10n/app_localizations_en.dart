@@ -519,4 +519,43 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get deactivateUserFailed => 'Failed to deactivate user';
+
+  @override
+  String get configuration => 'Configuration';
+
+  @override
+  String get appearance => 'Appearance';
+
+  @override
+  String get themeColor => 'Theme Color';
+
+  @override
+  String get colorDeepPurple => 'Deep Purple';
+
+  @override
+  String get colorBlue => 'Blue';
+
+  @override
+  String get colorTeal => 'Teal';
+
+  @override
+  String get colorGreen => 'Green';
+
+  @override
+  String get colorOrange => 'Orange';
+
+  @override
+  String get colorRed => 'Red';
+
+  @override
+  String get colorPink => 'Pink';
+
+  @override
+  String get colorCyan => 'Cyan';
+
+  @override
+  String get colorIndigo => 'Indigo';
+
+  @override
+  String get colorAmber => 'Amber';
 }

@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/auth_error_localization.dart';
+import '../widgets/configuration_menu.dart';
 
 /// Page for user registration.
 class RegisterPage extends StatefulWidget {
@@ -117,6 +118,7 @@ class _RegisterPageState extends State<RegisterPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(l10n.createAccount),
+        actions: [const ConfigurationMenu()],
       ),
       body: SafeArea(
         child: Center(

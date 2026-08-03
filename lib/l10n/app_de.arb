@@ -227,5 +227,59 @@
   "deactivateUserFailed": "Deaktivieren fehlgeschlagen",
   "@deactivateUserFailed": {
     "description": "Error message shown when deactivating a user fails."
+  },
+
+  "configuration": "Konfiguration",
+  "@configuration": {
+    "description": "Top-level menu label for the app configuration menu in the AppBar."
+  },
+  "appearance": "Erscheinungsbild",
+  "@appearance": {
+    "description": "Submenu label under Configuration for appearance-related settings."
+  },
+  "themeColor": "Themenfarbe",
+  "@themeColor": {
+    "description": "Label for the theme color setting under the Appearance submenu."
+  },
+
+  "colorDeepPurple": "Tiefes Lila",
+  "@colorDeepPurple": {
+    "description": "Name of the Deep Purple theme color option."
+  },
+  "colorBlue": "Blau",
+  "@colorBlue": {
+    "description": "Name of the Blue theme color option."
+  },
+  "colorTeal": "Blaugrün",
+  "@colorTeal": {
+    "description": "Name of the Teal theme color option."
+  },
+  "colorGreen": "Grün",
+  "@colorGreen": {
+    "description": "Name of the Green theme color option."
+  },
+  "colorOrange": "Orange",
+  "@colorOrange": {
+    "description": "Name of the Orange theme color option."
+  },
+  "colorRed": "Rot",
+  "@colorRed": {
+    "description": "Name of the Red theme color option."
+  },
+  "colorPink": "Pink",
+  "@colorPink": {
+    "description": "Name of the Pink theme color option."
+  },
+  "colorCyan": "Cyan",
+  "@colorCyan": {
+    "description": "Name of the Cyan theme color option."
+  },
+  "colorIndigo": "Indigo",
+  "@colorIndigo": {
+    "description": "Name of the Indigo theme color option."
+  },
+  "colorAmber": "Bernstein",
+  "@colorAmber": {
+    "description": "Name of the Amber theme color option."
   }
 }

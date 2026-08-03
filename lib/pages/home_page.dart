@@ -12,6 +12,7 @@ import '../services/auth_middleware.dart';
 import '../utils/constants.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/category_section.dart';
+import '../widgets/configuration_menu.dart';
 import '../widgets/user_menu_button.dart';
 import 'question_detail_page.dart';
 
@@ -453,6 +454,7 @@ class _MyHomePageState extends State<MyHomePage> {
             icon: const Icon(Icons.refresh),
             tooltip: l10n.reload,
           ),
+          const ConfigurationMenu(),
         ],
       ),
       body: _isLoading

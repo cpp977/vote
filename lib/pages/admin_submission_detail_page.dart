@@ -10,6 +10,7 @@ import '../l10n/app_localizations.dart';
 import '../models/submission_models.dart';
 import '../services/admin_service.dart';
 import '../services/auth_middleware.dart';
+import '../widgets/configuration_menu.dart';
 
 /// Administrator detail view for a single submission.
 ///
@@ -208,6 +209,7 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
           onPressed: () => Navigator.pop(context, _reviewed),
         ),
         title: Text(l10n.submissionDetailsTitle),
+        actions: [const ConfigurationMenu()],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

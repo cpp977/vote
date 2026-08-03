@@ -7,6 +7,7 @@ import '../l10n/app_localizations.dart';
 import '../models/submission_models.dart';
 import '../services/submission_service.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/configuration_menu.dart';
 import '../widgets/user_menu_button.dart';
 
 /// Maximum number of answer options a submission may carry. Mirrors the
@@ -429,6 +430,7 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
             tooltip: l10n.reload,
           ),
           const UserMenuButton(),
+          const ConfigurationMenu(),
         ],
       ),
       body: _isLoading

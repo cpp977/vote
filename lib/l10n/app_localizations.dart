@@ -1003,6 +1003,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to deactivate user'**
   String get deactivateUserFailed;
+
+  /// Top-level menu label for the app configuration menu in the AppBar.
+  ///
+  /// In en, this message translates to:
+  /// **'Configuration'**
+  String get configuration;
+
+  /// Submenu label under Configuration for appearance-related settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Appearance'**
+  String get appearance;
+
+  /// Label for the theme color setting under the Appearance submenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme Color'**
+  String get themeColor;
+
+  /// Name of the Deep Purple theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Deep Purple'**
+  String get colorDeepPurple;
+
+  /// Name of the Blue theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Blue'**
+  String get colorBlue;
+
+  /// Name of the Teal theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Teal'**
+  String get colorTeal;
+
+  /// Name of the Green theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Green'**
+  String get colorGreen;
+
+  /// Name of the Orange theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Orange'**
+  String get colorOrange;
+
+  /// Name of the Red theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Red'**
+  String get colorRed;
+
+  /// Name of the Pink theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Pink'**
+  String get colorPink;
+
+  /// Name of the Cyan theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Cyan'**
+  String get colorCyan;
+
+  /// Name of the Indigo theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Indigo'**
+  String get colorIndigo;
+
+  /// Name of the Amber theme color option.
+  ///
+  /// In en, this message translates to:
+  /// **'Amber'**
+  String get colorAmber;
 }
 
 class _AppLocalizationsDelegate

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import 'controllers/auth_controller.dart';
+import 'controllers/configuration_controller.dart';
 import 'pages/login_page.dart';
 import 'pages/home_shell.dart';
 import 'l10n/app_localizations.dart';
@@ -17,22 +18,35 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ChangeNotifierProvider(
-      create: (_) => AuthController()..checkAuthStatus(),
-      child: MaterialApp(
-        title: 'Vote',
-        navigatorKey: NavigationService.navigatorKey,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-          useMaterial3: true,
+    return MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+          create: (_) => AuthController()..checkAuthStatus(),
         ),
-        home: const AuthGate(),
-        routes: {
-          '/login': (context) => const LoginPage(),
-          '/account-locked': (context) => const AccountLockedPage(),
+        ChangeNotifierProvider(
+          create: (_) => ConfigurationController()..loadSavedColor(),
+        ),
+      ],
+      child: Consumer<ConfigurationController>(
+        builder: (context, config, _) {
+          return MaterialApp(
+            title: 'Vote',
+            navigatorKey: NavigationService.navigatorKey,
+            theme: ThemeData(
+              colorScheme:
+                  ColorScheme.fromSeed(seedColor: config.seedColor),
+              useMaterial3: true,
+            ),
+            home: const AuthGate(),
+            routes: {
+              '/login': (context) => const LoginPage(),
+              '/account-locked': (context) => const AccountLockedPage(),
+            },
+            localizationsDelegates:
+                AppLocalizations.localizationsDelegates,
+            supportedLocales: AppLocalizations.supportedLocales,
+          );
         },
-        localizationsDelegates: AppLocalizations.localizationsDelegates,
-        supportedLocales: AppLocalizations.supportedLocales,
       ),
     );
   }

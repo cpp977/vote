@@ -6,6 +6,7 @@ import '../l10n/app_localizations.dart';
 import '../models/auth_models.dart';
 import '../services/admin_service.dart';
 import '../widgets/app_drawer.dart';
+import '../widgets/configuration_menu.dart';
 import '../widgets/user_menu_button.dart';
 import 'admin_user_detail_page.dart';
 
@@ -102,6 +103,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
             icon: const Icon(Icons.refresh),
             tooltip: l10n.reload,
           ),
+          const ConfigurationMenu(),
           const UserMenuButton(),
         ],
       ),

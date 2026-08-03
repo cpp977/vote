@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../controllers/auth_controller.dart';
 import '../services/navigation_service.dart';
+import '../widgets/configuration_menu.dart';
 
 class AccountLockedPage extends StatelessWidget {
   const AccountLockedPage({super.key});
@@ -12,6 +13,7 @@ class AccountLockedPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Account Locked'),
+        actions: [const ConfigurationMenu()],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

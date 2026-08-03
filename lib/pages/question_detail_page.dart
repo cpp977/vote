@@ -11,6 +11,7 @@ import '../models/answer_stats.dart';
 import '../models/question.dart';
 import '../services/auth_middleware.dart';
 import '../services/navigation_service.dart';
+import '../widgets/configuration_menu.dart';
 import '../widgets/question_stats_widget.dart';
 
 /// Detail page for a single question.
@@ -303,6 +304,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(l10n.questionDetailsTitle),
+        actions: [const ConfigurationMenu()],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

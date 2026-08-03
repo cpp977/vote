@@ -5,6 +5,7 @@ import '../controllers/auth_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../models/auth_models.dart';
 import '../services/admin_service.dart';
+import '../widgets/configuration_menu.dart';
 
 /// Administrator detail view for a single user.
 ///
@@ -181,6 +182,7 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(l10n.adminUserDetailsTitle),
+        actions: [const ConfigurationMenu()],
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
