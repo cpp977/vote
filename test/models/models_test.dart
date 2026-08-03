@@ -34,16 +34,19 @@ void main() {
       expect(question.categoryName, uncategorizedFallback);
     });
 
-    test('falls back to uncategorizedFallback when category_name is missing', () {
-      final question = Question.fromJson({
-        'id': 1,
-        'text': 'Missing category question',
-        'category_id': 0,
-        'language': 'en',
-      });
+    test(
+      'falls back to uncategorizedFallback when category_name is missing',
+      () {
+        final question = Question.fromJson({
+          'id': 1,
+          'text': 'Missing category question',
+          'category_id': 0,
+          'language': 'en',
+        });
 
-      expect(question.categoryName, uncategorizedFallback);
-    });
+        expect(question.categoryName, uncategorizedFallback);
+      },
+    );
 
     test('falls back to en when language is null', () {
       final question = Question.fromJson({
@@ -172,10 +175,7 @@ void main() {
     });
 
     test('includes gender when provided', () {
-      final request = UpdateUserRequest(
-        email: 'new@example.com',
-        gender: 'm',
-      );
+      final request = UpdateUserRequest(email: 'new@example.com', gender: 'm');
       final json = request.toJson();
 
       expect(json['email'], 'new@example.com');

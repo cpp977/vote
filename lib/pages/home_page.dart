@@ -523,13 +523,13 @@ class _MyHomePageState extends State<MyHomePage> {
                       runSpacing: 4,
                       children: [
                         ..._selectedCategoryIds.map((id) {
-                          final name = authController.categories[id] ??
+                          final name =
+                              authController.categories[id] ??
                               l10n.categoryFallback(id);
                           return Chip(
                             label: Text(name),
                             onDeleted: () {
-                              setState(
-                                  () => _selectedCategoryIds.remove(id));
+                              setState(() => _selectedCategoryIds.remove(id));
                               _fetchQuestions();
                             },
                           );
@@ -558,9 +558,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Text(
                         l10n.allQuestionsLoaded,
                         style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),
@@ -572,9 +570,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       child: Text(
                         l10n.noQuestionsFound,
                         style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurfaceVariant,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
                         ),
                       ),
                     ),

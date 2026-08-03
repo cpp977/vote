@@ -27,20 +27,20 @@ class ConfigurationController extends ChangeNotifier {
 
   /// Predefined seed colors the user can pick from.
   List<ColorOption> get availableColors => const [
-        ColorOption('Deep Purple', Colors.deepPurple),
-        ColorOption('Blue', Colors.blue),
-        ColorOption('Teal', Colors.teal),
-        ColorOption('Green', Colors.green),
-        ColorOption('Orange', Colors.orange),
-        ColorOption('Red', Colors.red),
-        ColorOption('Pink', Colors.pink),
-        ColorOption('Cyan', Colors.cyan),
-        ColorOption('Indigo', Colors.indigo),
-        ColorOption('Amber', Colors.amber),
-      ];
+    ColorOption('Deep Purple', Colors.deepPurple),
+    ColorOption('Blue', Colors.blue),
+    ColorOption('Teal', Colors.teal),
+    ColorOption('Green', Colors.green),
+    ColorOption('Orange', Colors.orange),
+    ColorOption('Red', Colors.red),
+    ColorOption('Pink', Colors.pink),
+    ColorOption('Cyan', Colors.cyan),
+    ColorOption('Indigo', Colors.indigo),
+    ColorOption('Amber', Colors.amber),
+  ];
 
   ConfigurationController({Color? initialSeedColor})
-      : _seedColor = initialSeedColor ?? Colors.deepPurple;
+    : _seedColor = initialSeedColor ?? Colors.deepPurple;
 
   /// Changes the theme seed color, notifies listeners, and persists the
   /// selection.

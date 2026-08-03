@@ -32,7 +32,10 @@ class AccountLockedPage extends StatelessWidget {
             ElevatedButton(
               onPressed: () async {
                 // Ensure local storage is cleared and navigate to login.
-                final auth = Provider.of<AuthController>(context, listen: false);
+                final auth = Provider.of<AuthController>(
+                  context,
+                  listen: false,
+                );
                 await auth.logout();
                 NavigationService.navigatorKey.currentState
                     ?.pushNamedAndRemoveUntil('/login', (r) => false);

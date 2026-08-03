@@ -324,7 +324,9 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
                             if (e.statusCode == 401) {
                               if (!context.mounted) return;
                               Navigator.of(context).pop();
-                              context.read<AuthController>().logout(showLoginPage: true);
+                              context.read<AuthController>().logout(
+                                showLoginPage: true,
+                              );
                               return;
                             }
                             setDialogState(() {

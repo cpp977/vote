@@ -39,10 +39,7 @@ class ConfigurationMenu extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircleAvatar(
-                  backgroundColor: colorOption.color,
-                  radius: 12,
-                ),
+                CircleAvatar(backgroundColor: colorOption.color, radius: 12),
                 const SizedBox(width: 12),
                 Text(colorOption.name),
                 if (config.seedColor == colorOption.color) ...[

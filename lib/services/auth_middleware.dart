@@ -100,7 +100,9 @@ class AuthMiddleware {
     if (response.statusCode == 423) {
       await _tokenStorage.clearAll();
       // Navigate to the account locked screen using the global navigator key.
-      NavigationService.navigatorKey.currentState?.pushReplacementNamed('/account-locked');
+      NavigationService.navigatorKey.currentState?.pushReplacementNamed(
+        '/account-locked',
+      );
       // Return the response so callers can still inspect it if needed.
       return response;
     }
@@ -161,7 +163,9 @@ class AuthMiddleware {
       } catch (_) {
         // Category fetch failed but token refresh succeeded.
         // User can still browse questions without category filter.
-        debugPrint('Warning: Failed to refresh categories during token refresh');
+        debugPrint(
+          'Warning: Failed to refresh categories during token refresh',
+        );
       }
 
       return true;

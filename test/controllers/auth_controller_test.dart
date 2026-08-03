@@ -169,10 +169,7 @@ void main() {
         );
         authService.categoriesResult = [];
 
-        await controller.login(
-          username: 'bob',
-          password: 'secret',
-        );
+        await controller.login(username: 'bob', password: 'secret');
 
         expect(tokenStorage.accessTokenStored, 'access-token');
         expect(tokenStorage.refreshTokenStored, 'refresh-token');
@@ -218,10 +215,7 @@ void main() {
         );
         authService.categoriesResult = [];
 
-        final future = controller.login(
-          username: 'alice',
-          password: 'secret',
-        );
+        final future = controller.login(username: 'alice', password: 'secret');
         expect(controller.isLoading, isTrue);
         await future;
         expect(controller.isLoading, isFalse);
@@ -390,10 +384,7 @@ void main() {
         tokenStorage.accessTokenResult = 'token';
 
         final result = await controller.updateUser(
-          const UpdateUserRequest(
-            email: 'updated@example.com',
-            gender: 'f',
-          ),
+          const UpdateUserRequest(email: 'updated@example.com', gender: 'f'),
         );
 
         expect(result, isTrue);
@@ -443,10 +434,7 @@ void main() {
         tokenStorage.accessTokenResult = 'token';
 
         await controller.updateUser(
-          const UpdateUserRequest(
-            email: 'persisted@example.com',
-            gender: 'm',
-          ),
+          const UpdateUserRequest(email: 'persisted@example.com', gender: 'm'),
         );
 
         expect(tokenStorage.emailStored, 'persisted@example.com');
@@ -490,10 +478,7 @@ void main() {
 
       test('returns false when API call fails', () async {
         authService.currentUserThrows = true;
-        authService.currentUserException = const ApiException(
-          'Not found',
-          404,
-        );
+        authService.currentUserException = const ApiException('Not found', 404);
         tokenStorage.accessTokenResult = 'token';
 
         final result = await controller.loadUserDetails();
@@ -544,8 +529,7 @@ class FakeAuthService extends AuthService {
   @override
   Future<AuthResponse> login(LoginRequest request) async {
     if (loginThrows) throw loginException!;
-    return loginResult ??
-        const AuthResponse(accessToken: '', refreshToken: '');
+    return loginResult ?? const AuthResponse(accessToken: '', refreshToken: '');
   }
 
   @override
@@ -558,8 +542,7 @@ class FakeAuthService extends AuthService {
   @override
   Future<AuthResponse> refresh(RefreshRequest request) async {
     if (loginThrows) throw loginException!;
-    return loginResult ??
-        const AuthResponse(accessToken: '', refreshToken: '');
+    return loginResult ?? const AuthResponse(accessToken: '', refreshToken: '');
   }
 
   @override

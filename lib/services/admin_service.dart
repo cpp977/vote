@@ -90,9 +90,7 @@ class AdminService {
     if (response.statusCode == 200) {
       final List<dynamic> data =
           (jsonDecode(response.body) as List?) ?? <dynamic>[];
-      return data
-          .map((e) => User.fromJson(e as Map<String, dynamic>))
-          .toList();
+      return data.map((e) => User.fromJson(e as Map<String, dynamic>)).toList();
     } else if (response.statusCode == 401 || response.statusCode == 403) {
       throw const AdminException('Unauthorized', 401);
     } else {
@@ -110,9 +108,7 @@ class AdminService {
       '${ApiConfig.baseUrl}/admin/users/$id',
     );
     if (response.statusCode == 200) {
-      return User.fromJson(
-        jsonDecode(response.body) as Map<String, dynamic>,
-      );
+      return User.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
     } else if (response.statusCode == 401 || response.statusCode == 403) {
       throw const AdminException('Unauthorized', 401);
     } else if (response.statusCode == 404) {
@@ -150,9 +146,7 @@ class AdminService {
   Future<User> _toggleActive(String url, String action) async {
     final response = await _authMiddleware.post(url);
     if (response.statusCode == 200) {
-      return User.fromJson(
-        jsonDecode(response.body) as Map<String, dynamic>,
-      );
+      return User.fromJson(jsonDecode(response.body) as Map<String, dynamic>);
     } else if (response.statusCode == 401 || response.statusCode == 403) {
       throw const AdminException('Unauthorized', 401);
     } else if (response.statusCode == 404) {

@@ -82,9 +82,7 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
   void _openDetails(User user) {
     Navigator.push(
       context,
-      MaterialPageRoute(
-        builder: (context) => AdminUserDetailPage(user: user),
-      ),
+      MaterialPageRoute(builder: (context) => AdminUserDetailPage(user: user)),
     );
   }
 
@@ -183,17 +181,13 @@ class _AdminUsersPageState extends State<AdminUsersPage> {
                               children: [
                                 Text(
                                   user.username,
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .titleMedium
+                                  style: Theme.of(context).textTheme.titleMedium
                                       ?.copyWith(fontWeight: FontWeight.w600),
                                 ),
                                 const SizedBox(height: 4),
                                 Text(
                                   l10n.adminUserId(user.id),
-                                  style: Theme.of(context)
-                                      .textTheme
-                                      .bodySmall
+                                  style: Theme.of(context).textTheme.bodySmall
                                       ?.copyWith(
                                         color: Theme.of(
                                           context,

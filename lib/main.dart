@@ -33,8 +33,7 @@ class MyApp extends StatelessWidget {
             title: 'Vote',
             navigatorKey: NavigationService.navigatorKey,
             theme: ThemeData(
-              colorScheme:
-                  ColorScheme.fromSeed(seedColor: config.seedColor),
+              colorScheme: ColorScheme.fromSeed(seedColor: config.seedColor),
               useMaterial3: true,
             ),
             home: const AuthGate(),
@@ -42,8 +41,7 @@ class MyApp extends StatelessWidget {
               '/login': (context) => const LoginPage(),
               '/account-locked': (context) => const AccountLockedPage(),
             },
-            localizationsDelegates:
-                AppLocalizations.localizationsDelegates,
+            localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
           );
         },

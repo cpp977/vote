@@ -7,7 +7,7 @@ import '../gen/dart_define.gen.dart';
 ///
 /// Configuration is managed via `pubspec.yaml` dart_define section.
 /// The dart_define package generates typed constants from the configuration.
-/// 
+///
 /// **Build commands:**
 /// - Development: `flutter run --flavor dev`
 /// - Production: `flutter run --flavor prod`
