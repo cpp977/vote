@@ -36,7 +36,9 @@ class _LoginPageState extends State<LoginPage> {
     );
 
     if (success && mounted) {
-      // Navigation will happen automatically via Consumer in main.dart
+      // Replace the entire stack so the /login route is removed and
+      // the home page (AuthGate → HomeShell) becomes the only route.
+      Navigator.of(context).pushNamedAndRemoveUntil('/', (route) => false);
     }
   }
 
