@@ -393,6 +393,23 @@
     }
   },
 
+  "login": "Login",
+  "@login": {
+    "description": "Menu item to navigate to the login screen when no user is authenticated."
+  },
+  "changeUser": "Change User",
+  "@changeUser": {
+    "description": "Menu item that prompts the user to confirm switching to a different account."
+  },
+  "changeUserConfirm": "Do you want to switch to a different user account?",
+  "@changeUserConfirm": {
+    "description": "Confirmation dialog message when the user selects Change User."
+  },
+  "no": "No",
+  "@no": {
+    "description": "Negative button label for the change-user confirmation dialog."
+  },
+
   "userDetails": "My Details",
   "@userDetails": {
     "description": "Menu item that opens the account details dialog."

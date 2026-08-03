@@ -286,6 +286,19 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get login => 'Anmelden';
+
+  @override
+  String get changeUser => 'Benutzer wechseln';
+
+  @override
+  String get changeUserConfirm =>
+      'Möchten Sie zu einem anderen Benutzerkonto wechseln?';
+
+  @override
+  String get no => 'Nein';
+
+  @override
   String get userDetails => 'Meine Daten';
 
   @override

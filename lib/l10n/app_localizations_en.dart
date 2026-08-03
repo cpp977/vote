@@ -283,6 +283,19 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get login => 'Login';
+
+  @override
+  String get changeUser => 'Change User';
+
+  @override
+  String get changeUserConfirm =>
+      'Do you want to switch to a different user account?';
+
+  @override
+  String get no => 'No';
+
+  @override
   String get userDetails => 'My Details';
 
   @override

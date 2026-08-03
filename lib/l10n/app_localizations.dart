@@ -566,6 +566,30 @@ abstract class AppLocalizations {
   /// **'Request failed with status {status}'**
   String requestFailedStatus(String status);
 
+  /// Menu item to navigate to the login screen when no user is authenticated.
+  ///
+  /// In en, this message translates to:
+  /// **'Login'**
+  String get login;
+
+  /// Menu item that prompts the user to confirm switching to a different account.
+  ///
+  /// In en, this message translates to:
+  /// **'Change User'**
+  String get changeUser;
+
+  /// Confirmation dialog message when the user selects Change User.
+  ///
+  /// In en, this message translates to:
+  /// **'Do you want to switch to a different user account?'**
+  String get changeUserConfirm;
+
+  /// Negative button label for the change-user confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'No'**
+  String get no;
+
   /// Menu item that opens the account details dialog.
   ///
   /// In en, this message translates to:
