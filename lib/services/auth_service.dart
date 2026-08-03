@@ -134,19 +134,22 @@ class AuthService {
   ///
   /// Uses the language-aware `GET /categories/lang/{languageCode}` endpoint so
   /// that only categories matching the user's locale are returned.
+  /// The endpoint is public; [accessToken] is optional and only used when
+  /// present.
   ///
   /// Returns a [List<Category>] on success.
   /// Throws [ApiException] on failure.
   Future<List<Category>> getCategories(
-    String accessToken,
-    String languageCode,
-  ) async {
+    String languageCode, {
+    String? accessToken,
+  }) async {
+    final headers = <String, String>{
+      'Content-Type': 'application/json',
+      if (accessToken != null) 'Authorization': 'Bearer $accessToken',
+    };
     final response = await http.get(
       Uri.parse('$_baseUrl/categories/lang/$languageCode'),
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer $accessToken',
-      },
+      headers: headers,
     );
 
     if (response.statusCode == 200) {

@@ -153,8 +153,8 @@ class AuthMiddleware {
         final languageCode =
             WidgetsBinding.instance.platformDispatcher.locale.languageCode;
         final cats = await _authService.getCategories(
-          response.accessToken,
           languageCode,
+          accessToken: response.accessToken,
         );
         final map = <int, String>{for (final c in cats) c.id: c.name};
         await _tokenStorage.setCategories(map);

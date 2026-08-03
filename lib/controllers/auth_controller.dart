@@ -81,6 +81,21 @@ class AuthController extends ChangeNotifier {
       } else {
         _isAuthenticated = false;
       }
+
+      // Categories are public — fetch them regardless of auth state so
+      // the category filter is available on the home page even without
+      // a login.
+      try {
+        final languageCode =
+            WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+        final cats = await _authService.getCategories(languageCode);
+        final map = <int, String>{for (final c in cats) c.id: c.name};
+        _categories = map;
+        await _tokenStorage.setCategories(map);
+      } catch (_) {
+        // Category fetch failed — the mapping stays empty; the user can
+        // still browse questions without a category filter.
+      }
     } catch (_) {
       _isAuthenticated = false;
     } finally {
@@ -182,8 +197,8 @@ class AuthController extends ChangeNotifier {
         final languageCode =
             WidgetsBinding.instance.platformDispatcher.locale.languageCode;
         final cats = await _authService.getCategories(
-          response.accessToken,
           languageCode,
+          accessToken: response.accessToken,
         );
         final map = <int, String>{for (final c in cats) c.id: c.name};
         _categories = map;
