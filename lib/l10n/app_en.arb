@@ -410,6 +410,22 @@
     "description": "Negative button label for the change-user confirmation dialog."
   },
 
+  "deleteAccount": "Delete Account",
+  "@deleteAccount": {
+    "description": "Menu item to delete the user's account."
+  },
+  "deleteAccountConfirm": "Are you sure you want to delete your account? This action cannot be undone.",
+  "@deleteAccountConfirm": {
+    "description": "Confirmation dialog message when the user selects delete account."
+  },
+  "deleteAccountCancel": "Cancel",
+  "@deleteAccountCancel": {
+    "description": "Negative button label for the delete-account confirmation dialog."
+  },
+  "deleteAccountPositive": "Delete",
+  "@deleteAccountPositive": {
+    "description": "Positive button label for the delete-account confirmation dialog."
+  },
   "userDetails": "My Details",
   "@userDetails": {
     "description": "Menu item that opens the account details dialog."
@@ -458,6 +474,15 @@
   "profileUpdateFailed": "Failed to update profile: {error}",
   "@profileUpdateFailed": {
     "description": "Error shown when updating the profile fails; {error} is the underlying detail (server message or exception).",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "deleteAccountFailed": "Failed to delete account: {error}",
+  "@deleteAccountFailed": {
+    "description": "Error shown when deleting the account fails; {error} is the underlying detail (server message or exception).",
     "placeholders": {
       "error": {
         "type": "String"

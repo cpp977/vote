@@ -41,6 +41,21 @@ class UserMenuButton extends StatelessWidget {
             NavigationService.navigatorKey.currentState
                 ?.pushNamedAndRemoveUntil('/login', (r) => false);
           }
+        } else if (value == 'deleteAccount') {
+          final confirmed = await _showDeleteAccountDialog(context);
+          if (confirmed == true && context.mounted) {
+            debugPrint(
+              'User confirmed delete account, calling deleteAccount()',
+            );
+            final success = await context
+                .read<AuthController>()
+                .deleteAccount();
+            debugPrint('deleteAccount returned: $success');
+            if (success && context.mounted) {
+              await NavigationService.navigatorKey.currentState
+                  ?.pushNamedAndRemoveUntil('/login', (r) => false);
+            }
+          }
         } else if (value == 'details') {
           if (!context.mounted) return;
           showDialog(
@@ -98,6 +113,19 @@ class UserMenuButton extends StatelessWidget {
             ),
           ),
           PopupMenuItem(
+            value: 'deleteAccount',
+            child: Row(
+              children: [
+                const Icon(Icons.delete_forever, color: Colors.red),
+                const SizedBox(width: 8),
+                Text(
+                  l10n.deleteAccount,
+                  style: const TextStyle(color: Colors.red),
+                ),
+              ],
+            ),
+          ),
+          PopupMenuItem(
             value: 'logout',
             child: Row(
               children: [
@@ -130,6 +158,30 @@ class UserMenuButton extends StatelessWidget {
           TextButton(
             onPressed: () => Navigator.pop(dialogContext, true),
             child: Text(l10n.yes),
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// Shows a confirmation dialog asking the user whether they want to
+  /// delete their account. Returns `true` if confirmed,
+  /// `false` if dismissed, and `null` if the widget is unmounted.
+  Future<bool?> _showDeleteAccountDialog(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    return showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.deleteAccount),
+        content: Text(l10n.deleteAccountConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.deleteAccountCancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.deleteAccountPositive),
           ),
         ],
       ),

@@ -111,6 +111,22 @@
     "description": "Negative button label for the change-user confirmation dialog."
   },
 
+  "deleteAccount": "Konto löschen",
+  "@deleteAccount": {
+    "description": "Menu item to delete the user's account."
+  },
+  "deleteAccountConfirm": "Möchten Sie wirklich Ihr Konto löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@deleteAccountConfirm": {
+    "description": "Confirmation dialog message when the user selects delete account."
+  },
+  "deleteAccountCancel": "Abbrechen",
+  "@deleteAccountCancel": {
+    "description": "Negative button label for the delete-account confirmation dialog."
+  },
+  "deleteAccountPositive": "Löschen",
+  "@deleteAccountPositive": {
+    "description": "Positive button label for the delete-account confirmation dialog."
+  },
   "userDetails": "Meine Daten",
   "userDetailsTitle": "Kontodetails",
   "close": "Schließen",
@@ -124,6 +140,7 @@
   "passwordChangeMinLength": "Das Passwort muss mindestens 8 Zeichen lang sein",
   "profileUpdateSuccess": "Profil erfolgreich aktualisiert",
   "profileUpdateFailed": "Profil konnte nicht aktualisiert werden: {error}",
+  "deleteAccountFailed": "Konto konnte nicht gelöscht werden: {error}",
   "isAdminLabel": "Administrator",
   "yes": "Ja",
 

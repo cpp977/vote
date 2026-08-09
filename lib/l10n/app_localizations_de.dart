@@ -299,6 +299,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get no => 'Nein';
 
   @override
+  String get deleteAccount => 'Konto löschen';
+
+  @override
+  String get deleteAccountConfirm =>
+      'Möchten Sie wirklich Ihr Konto löschen? Diese Aktion kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get deleteAccountCancel => 'Abbrechen';
+
+  @override
+  String get deleteAccountPositive => 'Löschen';
+
+  @override
   String get userDetails => 'Meine Daten';
 
   @override
@@ -335,6 +348,11 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String profileUpdateFailed(String error) {
     return 'Profil konnte nicht aktualisiert werden: $error';
+  }
+
+  @override
+  String deleteAccountFailed(String error) {
+    return 'Konto konnte nicht gelöscht werden: $error';
   }
 
   @override

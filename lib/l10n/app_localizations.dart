@@ -590,6 +590,30 @@ abstract class AppLocalizations {
   /// **'No'**
   String get no;
 
+  /// Menu item to delete the user's account.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Account'**
+  String get deleteAccount;
+
+  /// Confirmation dialog message when the user selects delete account.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete your account? This action cannot be undone.'**
+  String get deleteAccountConfirm;
+
+  /// Negative button label for the delete-account confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get deleteAccountCancel;
+
+  /// Positive button label for the delete-account confirmation dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get deleteAccountPositive;
+
   /// Menu item that opens the account details dialog.
   ///
   /// In en, this message translates to:
@@ -661,6 +685,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Failed to update profile: {error}'**
   String profileUpdateFailed(String error);
+
+  /// Error shown when deleting the account fails; {error} is the underlying detail (server message or exception).
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete account: {error}'**
+  String deleteAccountFailed(String error);
 
   /// Label for the read-only administrator status shown to admin users.
   ///

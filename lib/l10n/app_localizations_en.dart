@@ -296,6 +296,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get no => 'No';
 
   @override
+  String get deleteAccount => 'Delete Account';
+
+  @override
+  String get deleteAccountConfirm =>
+      'Are you sure you want to delete your account? This action cannot be undone.';
+
+  @override
+  String get deleteAccountCancel => 'Cancel';
+
+  @override
+  String get deleteAccountPositive => 'Delete';
+
+  @override
   String get userDetails => 'My Details';
 
   @override
@@ -332,6 +345,11 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String profileUpdateFailed(String error) {
     return 'Failed to update profile: $error';
+  }
+
+  @override
+  String deleteAccountFailed(String error) {
+    return 'Failed to delete account: $error';
   }
 
   @override

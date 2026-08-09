@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import 'package:flutter/foundation.dart' hide Category;
 import '../config/api_config.dart';
 import '../models/auth_models.dart';
 import '../models/category_models.dart';
@@ -160,6 +161,38 @@ class AuthService {
           .toList();
     } else {
       throw _parseError(response);
+    }
+  }
+
+  /// Deletes the authenticated user's account via the `/users/{id}/delete`
+  /// endpoint. Returns `true` on success, throws [ApiException] on failure.
+  Future<void> deleteAccount(String accessToken, int userId) async {
+    debugPrint(
+      'AuthService.deleteAccount: calling POST $_baseUrl/users/$userId/delete',
+    );
+    final response = await http.post(
+      Uri.parse('$_baseUrl/users/$userId/delete'),
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $accessToken',
+      },
+    );
+
+    debugPrint(
+      'AuthService.deleteAccount: response status ${response.statusCode}',
+    );
+
+    if (response.statusCode != 200 && response.statusCode != 204) {
+      final body = response.body;
+      if (body.isEmpty) {
+        throw ApiException(
+          'Delete failed with status ${response.statusCode}',
+          response.statusCode,
+          'deleteFailed',
+        );
+      }
+      final error = ApiError.fromJson(jsonDecode(body));
+      throw ApiException(error.error, response.statusCode);
     }
   }
 

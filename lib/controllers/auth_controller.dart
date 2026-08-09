@@ -17,6 +17,7 @@ class AuthController extends ChangeNotifier {
   AuthError? _error;
   String? _username;
   String? _email;
+  int? _userId;
   int? _birthYear;
   String? _gender;
   String? _nationality;
@@ -40,6 +41,9 @@ class AuthController extends ChangeNotifier {
   /// The current authentication error, if any. UI code localizes it via the
   /// [localizedAuthError] helper using the [AuthError.code] and [detail].
   AuthError? get error => _error;
+
+  /// The user ID of the currently logged-in user.
+  int? get userId => _userId;
 
   /// The username of the currently logged-in user.
   String? get username => _username;
@@ -70,6 +74,7 @@ class AuthController extends ChangeNotifier {
     try {
       final hasTokens = await _tokenStorage.hasTokens();
       if (hasTokens) {
+        _userId = await _tokenStorage.getUserId();
         _username = await _tokenStorage.getUsername();
         _email = await _tokenStorage.getEmail();
         _birthYear = await _tokenStorage.getBirthYear();
@@ -78,6 +83,45 @@ class AuthController extends ChangeNotifier {
         _isAdmin = await _tokenStorage.getIsAdmin();
         _categories = await _tokenStorage.getCategories();
         _isAuthenticated = true;
+
+        // If we have tokens but no userId (e.g. existing session before userId was added),
+        // fetch the user profile from the backend to get the userId.
+        if (_userId == null && _username != null) {
+          final accessToken = await _tokenStorage.getAccessToken();
+          if (accessToken != null) {
+            try {
+              final user = await _authService.getCurrentUser(accessToken);
+              _userId = user.id;
+              _username = user.username;
+              _email = user.email;
+              _birthYear = user.birthYear;
+              _gender = user.gender;
+              _nationality = user.nationality;
+              _isAdmin = user.isAdmin;
+              if (_userId != null) {
+                await _tokenStorage.setUserId(_userId!);
+              }
+              if (_username != null) {
+                await _tokenStorage.setUsername(_username!);
+              }
+              if (_email != null) {
+                await _tokenStorage.setEmail(_email!);
+              }
+              if (_birthYear != null) {
+                await _tokenStorage.setBirthYear(_birthYear!);
+              }
+              if (_gender != null) {
+                await _tokenStorage.setGender(_gender!);
+              }
+              if (_nationality != null) {
+                await _tokenStorage.setNationality(_nationality!);
+              }
+              await _tokenStorage.setIsAdmin(_isAdmin);
+            } catch (_) {
+              // Profile fetch failed — keep whatever we have from storage
+            }
+          }
+        }
       } else {
         _isAuthenticated = false;
       }
@@ -164,11 +208,15 @@ class AuthController extends ChangeNotifier {
       // nationality) so the account-details screen has everything it needs.
       try {
         final user = await _authService.getCurrentUser(response.accessToken);
+        _userId = user.id;
         _username = user.username;
         _email = user.email;
         _birthYear = user.birthYear;
         _gender = user.gender;
         _nationality = user.nationality;
+        if (_userId != null) {
+          await _tokenStorage.setUserId(_userId!);
+        }
         if (_username != null) {
           await _tokenStorage.setUsername(_username!);
         }
@@ -246,6 +294,7 @@ class AuthController extends ChangeNotifier {
     } finally {
       await _tokenStorage.clearAll();
       _isAuthenticated = false;
+      _userId = null;
       _username = null;
       _email = null;
       _birthYear = null;
@@ -255,6 +304,73 @@ class AuthController extends ChangeNotifier {
       _categories = {};
       _showLoginPage = showLoginPage;
       _setLoading(false);
+    }
+  }
+
+  /// Deletes the authenticated user's account via the `/users/{id}/delete`
+  /// endpoint.
+  /// Returns `true` on success, `false` on failure. On failure an [error] is set
+  /// so the UI can localize it via [localizedAuthError].
+  Future<bool> deleteAccount() async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final accessToken = await _tokenStorage.getAccessToken();
+      int? userId = await _tokenStorage.getUserId();
+      debugPrint(
+        'AuthController.deleteAccount: accessToken=$accessToken, userId=$userId',
+      );
+
+      // If userId is missing, try to fetch it from the backend
+      if (userId == null && accessToken != null) {
+        try {
+          final user = await _authService.getCurrentUser(accessToken);
+          userId = user.id;
+          await _tokenStorage.setUserId(userId);
+        } catch (_) {
+          // Failed to fetch userId
+        }
+      }
+
+      if (accessToken == null || userId == null) {
+        _setError(const AuthError('deleteAccountFailed', 'Not authenticated'));
+        _setLoading(false);
+        return false;
+      }
+
+      await _authService.deleteAccount(accessToken, userId);
+      // Account deleted - clear local state
+      await _tokenStorage.clearAll();
+      _isAuthenticated = false;
+      _userId = null;
+      _username = null;
+      _email = null;
+      _birthYear = null;
+      _gender = null;
+      _nationality = null;
+      _isAdmin = false;
+      _categories = {};
+      _setLoading(false);
+      notifyListeners();
+      return true;
+    } on ApiException catch (e) {
+      if (e.code == 'requestFailed') {
+        _setError(
+          AuthError(
+            'deleteAccountFailed',
+            'Request failed with status ${e.statusCode}',
+          ),
+        );
+      } else {
+        _setError(AuthError('deleteAccountFailed', e.message));
+      }
+      _setLoading(false);
+      return false;
+    } catch (_) {
+      _setError(const AuthError('deleteAccountFailed', null));
+      _setLoading(false);
+      return false;
     }
   }
 
@@ -275,11 +391,15 @@ class AuthController extends ChangeNotifier {
     }
     try {
       final user = await _authService.getCurrentUser(accessToken);
+      _userId = user.id;
       _username = user.username;
       _email = user.email;
       _birthYear = user.birthYear;
       _gender = user.gender;
       _nationality = user.nationality;
+      if (_userId != null) {
+        await _tokenStorage.setUserId(_userId!);
+      }
       if (_username != null) {
         await _tokenStorage.setUsername(_username!);
       }
