@@ -25,7 +25,6 @@ void main() {
     group('checkAuthStatus', () {
       test('sets isAuthenticated when tokens exist', () async {
         tokenStorage.hasTokensResult = true;
-        tokenStorage.userIdResult = 1;
         tokenStorage.usernameResult = 'alice';
         tokenStorage.emailResult = 'alice@example.com';
         tokenStorage.birthYearResult = 1990;
@@ -458,7 +457,6 @@ void main() {
           isAdmin: false,
         );
         tokenStorage.accessTokenResult = 'token';
-        tokenStorage.userIdResult = 1;
 
         final result = await controller.loadUserDetails();
 
@@ -575,7 +573,6 @@ class FakeAuthService extends AuthService {
 class FakeTokenStorage extends TokenStorage {
   String? accessTokenResult;
   String? refreshTokenResult;
-  int? userIdResult;
   String? usernameResult;
   String? emailResult;
   int? birthYearResult;
@@ -588,7 +585,6 @@ class FakeTokenStorage extends TokenStorage {
 
   String? accessTokenStored;
   String? refreshTokenStored;
-  int? userIdStored;
   String? usernameStored;
   String? emailStored;
   int? birthYearStored;
@@ -603,9 +599,6 @@ class FakeTokenStorage extends TokenStorage {
 
   @override
   Future<String?> getRefreshToken() async => refreshTokenResult;
-
-  @override
-  Future<int?> getUserId() async => userIdResult;
 
   @override
   Future<String?> getUsername() async => usernameResult;
@@ -642,11 +635,6 @@ class FakeTokenStorage extends TokenStorage {
   @override
   Future<void> setRefreshToken(String token) async {
     refreshTokenStored = token;
-  }
-
-  @override
-  Future<void> setUserId(int userId) async {
-    userIdStored = userId;
   }
 
   @override

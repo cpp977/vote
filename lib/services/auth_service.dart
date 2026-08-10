@@ -164,14 +164,14 @@ class AuthService {
     }
   }
 
-  /// Deletes the authenticated user's account via the `/users/{id}/delete`
-  /// endpoint. Returns `true` on success, throws [ApiException] on failure.
-  Future<void> deleteAccount(String accessToken, int userId) async {
+  /// Deletes the authenticated user's account via the `/users/me/delete`
+  /// endpoint. Throws [ApiException] on failure.
+  Future<void> deleteAccount(String accessToken) async {
     debugPrint(
-      'AuthService.deleteAccount: calling POST $_baseUrl/users/$userId/delete',
+      'AuthService.deleteAccount: calling DELETE $_baseUrl/users/me/delete',
     );
-    final response = await http.post(
-      Uri.parse('$_baseUrl/users/$userId/delete'),
+    final response = await http.delete(
+      Uri.parse('$_baseUrl/users/me/delete'),
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
