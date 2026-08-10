@@ -500,6 +500,24 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deleteQuestionFailed => 'Failed to delete the question';
 
   @override
+  String get changeQuestion => 'Change Question';
+
+  @override
+  String get changeQuestionTitle => 'Change Question Text';
+
+  @override
+  String get currentQuestionText => 'Current question text';
+
+  @override
+  String get newQuestionText => 'New question text';
+
+  @override
+  String get changeQuestionSuccess => 'Question text changed successfully';
+
+  @override
+  String get changeQuestionFailed => 'Failed to change the question text';
+
+  @override
   String get submissionAlreadyReviewed =>
       'This submission has already been reviewed.';
 

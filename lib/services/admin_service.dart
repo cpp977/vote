@@ -161,6 +161,29 @@ class AdminService {
     }
   }
 
+  /// Changes the question text with the given [id] via
+  /// `PATCH /admin/questions/{id}/change`.
+  ///
+  /// Throws [AdminException] on failure (including `401`/`403`/`404`).
+  Future<void> changeQuestionText(int id, String newText) async {
+    final body = jsonEncode({'text': newText});
+    final response = await _authMiddleware.patch(
+      '${ApiConfig.baseUrl}/admin/questions/$id/change',
+      body: body,
+    );
+    if (response.statusCode == 200) {
+      return;
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const AdminException('Unauthorized', 401);
+    } else if (response.statusCode == 404) {
+      throw const AdminException('Not found', 404);
+    } else if (response.statusCode == 400) {
+      throw AdminException(_parseError(response), response.statusCode);
+    } else {
+      throw AdminException(_parseError(response), response.statusCode);
+    }
+  }
+
   /// Helper that sends a POST to [url] and parses the response as a [User].
   Future<User> _toggleActive(String url, String action) async {
     final response = await _authMiddleware.post(url);

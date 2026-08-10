@@ -962,6 +962,42 @@ abstract class AppLocalizations {
   /// **'Failed to delete the question'**
   String get deleteQuestionFailed;
 
+  /// Button label to change a question text (admin only).
+  ///
+  /// In en, this message translates to:
+  /// **'Change Question'**
+  String get changeQuestion;
+
+  /// Title of the dialog to change question text.
+  ///
+  /// In en, this message translates to:
+  /// **'Change Question Text'**
+  String get changeQuestionTitle;
+
+  /// Label for the current question text display.
+  ///
+  /// In en, this message translates to:
+  /// **'Current question text'**
+  String get currentQuestionText;
+
+  /// Label for the new question text input field.
+  ///
+  /// In en, this message translates to:
+  /// **'New question text'**
+  String get newQuestionText;
+
+  /// Success message shown after a question text was changed.
+  ///
+  /// In en, this message translates to:
+  /// **'Question text changed successfully'**
+  String get changeQuestionSuccess;
+
+  /// Error message shown when changing a question text fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to change the question text'**
+  String get changeQuestionFailed;
+
   /// Note shown on a submission that has already been approved or rejected.
   ///
   /// In en, this message translates to:

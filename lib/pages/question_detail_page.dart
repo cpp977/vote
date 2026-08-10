@@ -51,6 +51,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   // Delete question state
   bool _isDeleting = false;
 
+  // Change question state
+  bool _isChanging = false;
+
   @override
   void initState() {
     super.initState();
@@ -144,6 +147,143 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     } finally {
       if (mounted) {
         setState(() => _isDeleting = false);
+      }
+    }
+  }
+
+  /// Changes the current question text (admin only).
+  Future<void> _changeQuestionText() async {
+    final l10n = AppLocalizations.of(context);
+    final authController = context.read<AuthController>();
+
+    if (!authController.isAdmin) return;
+
+    final TextEditingController textController = TextEditingController(
+      text: widget.question.text,
+    );
+
+    final result = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.changeQuestionTitle),
+        content: SizedBox(
+          width: 500,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                l10n.currentQuestionText,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              Container(
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).colorScheme.surfaceContainerHighest,
+                  borderRadius: BorderRadius.circular(8),
+                ),
+                child: Text(
+                  widget.question.text,
+                  style: Theme.of(context).textTheme.bodyMedium,
+                ),
+              ),
+              const SizedBox(height: 24),
+              Text(
+                l10n.newQuestionText,
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 8),
+              TextField(
+                controller: textController,
+                maxLines: 3,
+                minLines: 1,
+                decoration: InputDecoration(
+                  hintText: l10n.newQuestionText,
+                  border: const OutlineInputBorder(),
+                ),
+                autofocus: true,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: _isChanging
+                ? null
+                : () {
+                    if (textController.text.trim().isNotEmpty) {
+                      Navigator.pop(context, textController.text.trim());
+                    }
+                  },
+            child: _isChanging
+                ? SizedBox(
+                    width: 20,
+                    height: 20,
+                    child: CircularProgressIndicator(
+                      strokeWidth: 2,
+                      color: Theme.of(context).colorScheme.onPrimary,
+                    ),
+                  )
+                : Text(l10n.changeQuestion),
+          ),
+        ],
+      ),
+    );
+
+    if (result == null || result.isEmpty || !mounted) return;
+
+    setState(() => _isChanging = true);
+
+    try {
+      await _adminService.changeQuestionText(widget.question.id, result);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.changeQuestionSuccess),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      // Navigate back to home page with updated question
+      if (mounted) {
+        Navigator.pop(context, true);
+      }
+    } on AdminException catch (e) {
+      if (!mounted) return;
+      if (e.statusCode == 401 || e.statusCode == 403) {
+        context.read<AuthController>().logout(showLoginPage: true);
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.changeQuestionFailed),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.changeQuestionFailed),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isChanging = false);
       }
     }
   }
@@ -391,7 +531,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         ),
         title: Text(l10n.questionDetailsTitle),
         actions: [
-          if (authController.isAdmin)
+          if (authController.isAdmin) ...[
             IconButton(
               onPressed: _isDeleting ? null : _deleteQuestion,
               icon: _isDeleting
@@ -406,6 +546,21 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                   : const Icon(Icons.delete_outline),
               tooltip: l10n.deleteQuestion,
             ),
+            IconButton(
+              onPressed: _isChanging ? null : _changeQuestionText,
+              icon: _isChanging
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onSurface,
+                      ),
+                    )
+                  : const Icon(Icons.edit_outlined),
+              tooltip: l10n.changeQuestion,
+            ),
+          ],
           const ConfigurationMenu(),
         ],
       ),

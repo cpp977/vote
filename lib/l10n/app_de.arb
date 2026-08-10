@@ -201,6 +201,30 @@
   "@deleteQuestionFailed": {
     "description": "Error message shown when deleting a question fails."
   },
+  "changeQuestion": "Frage ändern",
+  "@changeQuestion": {
+    "description": "Button label to change a question text (admin only)."
+  },
+  "changeQuestionTitle": "Frage-Text ändern",
+  "@changeQuestionTitle": {
+    "description": "Title of the dialog to change question text."
+  },
+  "currentQuestionText": "Aktueller Frage-Text",
+  "@currentQuestionText": {
+    "description": "Label for the current question text display."
+  },
+  "newQuestionText": "Neuer Frage-Text",
+  "@newQuestionText": {
+    "description": "Label for the new question text input field."
+  },
+  "changeQuestionSuccess": "Frage-Text erfolgreich geändert",
+  "@changeQuestionSuccess": {
+    "description": "Success message shown after a question text was changed."
+  },
+  "changeQuestionFailed": "Frage-Text konnte nicht geändert werden",
+  "@changeQuestionFailed": {
+    "description": "Error message shown when changing a question text fails."
+  },
   "submissionAlreadyReviewed": "Diese Einreichung wurde bereits geprüft.",
   "answersNotVisible": "Die eingereichten Antworten sind für die Prüfung nicht verfügbar.",
   "adminUsers": "Benutzer",

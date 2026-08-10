@@ -697,6 +697,30 @@
   "@deleteQuestionFailed": {
     "description": "Error message shown when deleting a question fails."
   },
+  "changeQuestion": "Change Question",
+  "@changeQuestion": {
+    "description": "Button label to change a question text (admin only)."
+  },
+  "changeQuestionTitle": "Change Question Text",
+  "@changeQuestionTitle": {
+    "description": "Title of the dialog to change question text."
+  },
+  "currentQuestionText": "Current question text",
+  "@currentQuestionText": {
+    "description": "Label for the current question text display."
+  },
+  "newQuestionText": "New question text",
+  "@newQuestionText": {
+    "description": "Label for the new question text input field."
+  },
+  "changeQuestionSuccess": "Question text changed successfully",
+  "@changeQuestionSuccess": {
+    "description": "Success message shown after a question text was changed."
+  },
+  "changeQuestionFailed": "Failed to change the question text",
+  "@changeQuestionFailed": {
+    "description": "Error message shown when changing a question text fails."
+  },
   "submissionAlreadyReviewed": "This submission has already been reviewed.",
   "@submissionAlreadyReviewed": {
     "description": "Note shown on a submission that has already been approved or rejected."

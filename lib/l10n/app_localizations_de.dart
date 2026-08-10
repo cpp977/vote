@@ -505,6 +505,24 @@ class AppLocalizationsDe extends AppLocalizations {
   String get deleteQuestionFailed => 'Frage konnte nicht gelöscht werden';
 
   @override
+  String get changeQuestion => 'Frage ändern';
+
+  @override
+  String get changeQuestionTitle => 'Frage-Text ändern';
+
+  @override
+  String get currentQuestionText => 'Aktueller Frage-Text';
+
+  @override
+  String get newQuestionText => 'Neuer Frage-Text';
+
+  @override
+  String get changeQuestionSuccess => 'Frage-Text erfolgreich geändert';
+
+  @override
+  String get changeQuestionFailed => 'Frage-Text konnte nicht geändert werden';
+
+  @override
   String get submissionAlreadyReviewed =>
       'Diese Einreichung wurde bereits geprüft.';
 

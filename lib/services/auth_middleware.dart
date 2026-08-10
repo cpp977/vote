@@ -56,6 +56,16 @@ class AuthMiddleware {
     return _makeRequest('DELETE', url, headers: headers);
   }
 
+  /// Performs an authenticated PATCH request.
+  /// Automatically handles token refresh on 401 responses.
+  Future<http.Response> patch(
+    String url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    return _makeRequest('PATCH', url, headers: headers, body: body);
+  }
+
   Future<http.Response> _makeRequest(
     String method,
     String url, {
@@ -84,6 +94,13 @@ class AuthMiddleware {
         break;
       case 'PUT':
         response = await http.put(
+          Uri.parse(url),
+          headers: requestHeaders,
+          body: body,
+        );
+        break;
+      case 'PATCH':
+        response = await http.patch(
           Uri.parse(url),
           headers: requestHeaders,
           body: body,
