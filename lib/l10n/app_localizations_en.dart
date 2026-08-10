@@ -487,6 +487,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get rejectFailed => 'Failed to reject the question';
 
   @override
+  String get deleteQuestion => 'Delete Question';
+
+  @override
+  String get deleteQuestionConfirm =>
+      'Are you sure you want to delete this question? This action cannot be undone.';
+
+  @override
+  String get deleteQuestionSuccess => 'Question deleted successfully';
+
+  @override
+  String get deleteQuestionFailed => 'Failed to delete the question';
+
+  @override
   String get submissionAlreadyReviewed =>
       'This submission has already been reviewed.';
 

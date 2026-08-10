@@ -185,6 +185,22 @@
   "submissionRejectedMessage": "Frage abgelehnt",
   "approveFailed": "Frage konnte nicht freigegeben werden",
   "rejectFailed": "Frage konnte nicht abgelehnt werden",
+  "deleteQuestion": "Frage löschen",
+  "@deleteQuestion": {
+    "description": "Button label to delete a question (admin only)."
+  },
+  "deleteQuestionConfirm": "Möchten Sie diese Frage wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@deleteQuestionConfirm": {
+    "description": "Confirmation dialog message when deleting a question."
+  },
+  "deleteQuestionSuccess": "Frage erfolgreich gelöscht",
+  "@deleteQuestionSuccess": {
+    "description": "Success message shown after a question was deleted."
+  },
+  "deleteQuestionFailed": "Frage konnte nicht gelöscht werden",
+  "@deleteQuestionFailed": {
+    "description": "Error message shown when deleting a question fails."
+  },
   "submissionAlreadyReviewed": "Diese Einreichung wurde bereits geprüft.",
   "answersNotVisible": "Die eingereichten Antworten sind für die Prüfung nicht verfügbar.",
   "adminUsers": "Benutzer",

@@ -142,6 +142,25 @@ class AdminService {
     );
   }
 
+  /// Deletes the question with the given [id] via
+  /// `POST /admin/questions/{id}/delete`.
+  ///
+  /// Throws [AdminException] on failure (including `401`/`403`/`404`).
+  Future<void> deleteQuestion(int id) async {
+    final response = await _authMiddleware.post(
+      '${ApiConfig.baseUrl}/admin/questions/$id/delete',
+    );
+    if (response.statusCode == 200 || response.statusCode == 204) {
+      return;
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const AdminException('Unauthorized', 401);
+    } else if (response.statusCode == 404) {
+      throw const AdminException('Not found', 404);
+    } else {
+      throw AdminException(_parseError(response), response.statusCode);
+    }
+  }
+
   /// Helper that sends a POST to [url] and parses the response as a [User].
   Future<User> _toggleActive(String url, String action) async {
     final response = await _authMiddleware.post(url);

@@ -5,10 +5,11 @@ import 'package:provider/provider.dart';
 
 import '../config/api_config.dart';
 import '../controllers/auth_controller.dart';
-import '../l10n/app_localizations.dart';
+import '../l10n/app_localizations.dart' show AppLocalizations;
 import '../models/answer_option.dart';
 import '../models/answer_stats.dart';
 import '../models/question.dart';
+import '../services/admin_service.dart';
 import '../services/auth_middleware.dart';
 import '../services/navigation_service.dart';
 import '../widgets/configuration_menu.dart';
@@ -29,6 +30,7 @@ class QuestionDetailsPage extends StatefulWidget {
 
 class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   final AuthMiddleware _authMiddleware = AuthMiddleware();
+  final AdminService _adminService = AdminService();
   List<AnswerOption> _answers = [];
   String? _errorMessage;
   bool _isLoading = true;
@@ -46,6 +48,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   final Map<String, bool> _genderLoading = {};
   final Map<String, String?> _genderErrors = {};
 
+  // Delete question state
+  bool _isDeleting = false;
+
   @override
   void initState() {
     super.initState();
@@ -61,6 +66,86 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         _fetchStatsForGender(gender);
       }
     });
+  }
+
+  /// Deletes the current question (admin only).
+  Future<void> _deleteQuestion() async {
+    final l10n = AppLocalizations.of(context);
+    final authController = context.read<AuthController>();
+
+    if (!authController.isAdmin) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteQuestion),
+        content: Text(l10n.deleteQuestionConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(l10n.deleteQuestion),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    setState(() => _isDeleting = true);
+
+    try {
+      await _adminService.deleteQuestion(widget.question.id);
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.deleteQuestionSuccess),
+          backgroundColor: Colors.green,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+
+      // Navigate back to home page
+      if (mounted) {
+        Navigator.pop(
+          context,
+          true,
+        ); // Return true to indicate question was deleted
+      }
+    } on AdminException catch (e) {
+      if (!mounted) return;
+      if (e.statusCode == 401 || e.statusCode == 403) {
+        context.read<AuthController>().logout(showLoginPage: true);
+        return;
+      }
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.deleteQuestionFailed),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } catch (_) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(l10n.deleteQuestionFailed),
+          backgroundColor: Theme.of(context).colorScheme.errorContainer,
+          behavior: SnackBarBehavior.floating,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _isDeleting = false);
+      }
+    }
   }
 
   Future<void> _fetchAnswers() async {
@@ -294,6 +379,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
+    final authController = context.watch<AuthController>();
 
     return Scaffold(
       appBar: AppBar(
@@ -304,7 +390,24 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           onPressed: () => Navigator.pop(context),
         ),
         title: Text(l10n.questionDetailsTitle),
-        actions: [const ConfigurationMenu()],
+        actions: [
+          if (authController.isAdmin)
+            IconButton(
+              onPressed: _isDeleting ? null : _deleteQuestion,
+              icon: _isDeleting
+                  ? SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.onSurface,
+                      ),
+                    )
+                  : const Icon(Icons.delete_outline),
+              tooltip: l10n.deleteQuestion,
+            ),
+          const ConfigurationMenu(),
+        ],
       ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),

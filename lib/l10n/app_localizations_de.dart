@@ -492,6 +492,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get rejectFailed => 'Frage konnte nicht abgelehnt werden';
 
   @override
+  String get deleteQuestion => 'Frage löschen';
+
+  @override
+  String get deleteQuestionConfirm =>
+      'Möchten Sie diese Frage wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get deleteQuestionSuccess => 'Frage erfolgreich gelöscht';
+
+  @override
+  String get deleteQuestionFailed => 'Frage konnte nicht gelöscht werden';
+
+  @override
   String get submissionAlreadyReviewed =>
       'Diese Einreichung wurde bereits geprüft.';
 

@@ -938,6 +938,30 @@ abstract class AppLocalizations {
   /// **'Failed to reject the question'**
   String get rejectFailed;
 
+  /// Button label to delete a question (admin only).
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Question'**
+  String get deleteQuestion;
+
+  /// Confirmation dialog message when deleting a question.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete this question? This action cannot be undone.'**
+  String get deleteQuestionConfirm;
+
+  /// Success message shown after a question was deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Question deleted successfully'**
+  String get deleteQuestionSuccess;
+
+  /// Error message shown when deleting a question fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete the question'**
+  String get deleteQuestionFailed;
+
   /// Note shown on a submission that has already been approved or rejected.
   ///
   /// In en, this message translates to:
