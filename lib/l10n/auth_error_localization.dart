@@ -21,6 +21,12 @@ String localizedAuthError(AppLocalizations l10n, AuthError? error) {
       return l10n.profileUpdateFailed(error.detail ?? '');
     case 'deleteAccountFailed':
       return l10n.deleteAccountFailed(error.detail ?? '');
+    case 'forgotPasswordFailed':
+      return l10n.forgotPasswordFailed(error.detail ?? '');
+    case 'passwordResetTokenInvalid':
+      return error.detail ?? l10n.resetPasswordTokenInvalid;
+    case 'passwordResetFailed':
+      return l10n.passwordResetFailed(error.detail ?? '');
     case 'server':
     default:
       return error.detail ?? '';

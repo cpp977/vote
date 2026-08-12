@@ -259,6 +259,96 @@ class AuthController extends ChangeNotifier {
     }
   }
 
+  /// Requests a password-reset link by submitting the user's [email] to the
+  /// `/user/password/forgot` endpoint.
+  ///
+  /// The backend always returns a generic success response regardless of
+  /// whether the email belongs to an account — preventing enumeration. This
+  /// method always returns `true` on a 200 response so the UI can show the
+  /// same informational message in every case.
+  ///
+  /// Returns `false` only when the request fails due to a client-side issue
+  /// (e.g. missing email) or a network/server error.
+  Future<bool> forgotPassword(String email) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      final request = ForgotPasswordRequest(email: email);
+      await _authService.forgotPassword(request);
+      _setLoading(false);
+      return true;
+    } on ApiException catch (e) {
+      if (e.code == 'requestFailed') {
+        _setError(
+          AuthError(
+            'forgotPasswordFailed',
+            'Request failed with status ${e.statusCode}',
+          ),
+        );
+      } else {
+        _setError(AuthError('forgotPasswordFailed', e.message));
+      }
+      _setLoading(false);
+      return false;
+    } catch (_) {
+      _setError(const AuthError('forgotPasswordFailed', null));
+      _setLoading(false);
+      return false;
+    }
+  }
+
+  /// Consumes a password-reset [token] together with a new [password] via
+  /// the `/user/password/reset` endpoint.
+  ///
+  /// On success, all stored tokens are cleared (the backend revokes refresh
+  /// tokens as part of the reset) and the user is marked as unauthenticated.
+  ///
+  /// Returns `true` on success, `false` on failure. On failure an [error] is
+  /// set so the UI can localize it via [localizedAuthError].
+  Future<bool> resetPassword(String token, String password) async {
+    _setLoading(true);
+    _clearError();
+
+    try {
+      await _authService.resetPassword(token, password);
+
+      // The backend revokes all refresh tokens on password reset, so the
+      // local session is no longer valid — clear everything.
+      await _tokenStorage.clearAll();
+      _isAuthenticated = false;
+      _username = null;
+      _email = null;
+      _birthYear = null;
+      _gender = null;
+      _nationality = null;
+      _isAdmin = false;
+      _categories = {};
+
+      _setLoading(false);
+      return true;
+    } on ApiException catch (e) {
+      if (e.code == 'requestFailed') {
+        _setError(
+          AuthError(
+            'passwordResetTokenInvalid',
+            'Request failed with status ${e.statusCode}',
+          ),
+        );
+      } else {
+        // The backend returns a descriptive message for invalid/expired/used
+        // tokens (e.g. "Invalid or expired token"), so surface it directly.
+        _setError(AuthError('passwordResetTokenInvalid', e.message));
+      }
+      _setLoading(false);
+      return false;
+    } catch (_) {
+      _setError(const AuthError('passwordResetTokenInvalid', null));
+      _setLoading(false);
+      return false;
+    }
+  }
+
   /// Deletes the authenticated user's account via the `/users/me/delete`
   /// endpoint.
   /// Returns `true` on success, `false` on failure. On failure an [error] is set

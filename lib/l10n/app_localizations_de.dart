@@ -34,6 +34,69 @@ class AppLocalizationsDe extends AppLocalizations {
   String get signIn => 'Anmelden';
 
   @override
+  String get forgotPassword => 'Passwort vergessen?';
+
+  @override
+  String get forgotPasswordTitle => 'Passwort zurücksetzen';
+
+  @override
+  String get forgotPasswordPrompt =>
+      'Gib deine E-Mail-Adresse ein, und wir senden dir einen Link zum Zurücksetzen des Passworts.';
+
+  @override
+  String get forgotPasswordInfo =>
+      'Wenn ein Konto mit dieser E-Mail-Adresse existiert, wurde ein Link zum Zurücksetzen des Passworts gesendet.';
+
+  @override
+  String get sendResetLink => 'Reset-Link senden';
+
+  @override
+  String get backToLogin => 'Zurück zur Anmeldung';
+
+  @override
+  String get resetPasswordTitle => 'Neues Passwort festlegen';
+
+  @override
+  String get resetPasswordPrompt =>
+      'Gib ein neues Passwort ein. Es muss mindestens 8 Zeichen lang sein.';
+
+  @override
+  String get resetPasswordSuccess =>
+      'Dein Passwort wurde zurückgesetzt. Du kannst dich nun mit deinem neuen Passwort anmelden.';
+
+  @override
+  String get resetPasswordTokenMissing =>
+      'Es wurde kein Reset-Token in dem Link gefunden. Bitte fordere einen neuen Link zum Zurücksetzen des Passworts an.';
+
+  @override
+  String get resetPasswordTokenInvalid =>
+      'Dieser Link zum Zurücksetzen des Passworts ist ungültig, abgelaufen oder wurde bereits verwendet. Bitte fordere einen neuen an.';
+
+  @override
+  String get passwordMinLengthReset =>
+      'Das Passwort muss mindestens 8 Zeichen lang sein';
+
+  @override
+  String get confirmNewPasswordLabel => 'Neues Passwort bestätigen';
+
+  @override
+  String get passwordsDoNotMatchReset => 'Passwörter stimmen nicht überein';
+
+  @override
+  String forgotPasswordFailed(String error) {
+    return 'Reset-Link konnte nicht gesendet werden: $error';
+  }
+
+  @override
+  String passwordResetFailed(String error) {
+    return 'Passwort zurücksetzen fehlgeschlagen: $error';
+  }
+
+  @override
+  String get passwordResetTokenExpired =>
+      'Der Link zum Zurücksetzen des Passworts ist abgelaufen. Bitte fordere einen neuen an.';
+
+  @override
   String get usernameLabel => 'Benutzername';
 
   @override

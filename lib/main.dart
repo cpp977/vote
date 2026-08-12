@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -5,11 +7,15 @@ import 'controllers/auth_controller.dart';
 import 'controllers/configuration_controller.dart';
 import 'pages/login_page.dart';
 import 'pages/home_shell.dart';
+import 'pages/forgot_password_page.dart';
+import 'pages/reset_password_page.dart';
 import 'l10n/app_localizations.dart';
 import 'services/navigation_service.dart';
+import 'services/deep_link_service.dart';
 import 'pages/account_locked_page.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -36,9 +42,10 @@ class MyApp extends StatelessWidget {
               colorScheme: ColorScheme.fromSeed(seedColor: config.seedColor),
               useMaterial3: true,
             ),
-            home: const AuthGate(),
+            home: const DeepLinkWrapper(),
             routes: {
               '/login': (context) => const LoginPage(),
+              '/forgot-password': (context) => const ForgotPasswordPage(),
               '/account-locked': (context) => const AccountLockedPage(),
             },
             localizationsDelegates: AppLocalizations.localizationsDelegates,
@@ -77,5 +84,63 @@ class AuthGate extends StatelessWidget {
         return const HomeShell();
       },
     );
+  }
+}
+
+/// Wraps [AuthGate] and listens for password-reset deep links.
+///
+/// On startup this initialises [DeepLinkService], which:
+/// - reads the initial URI (cold-start link on mobile, `Uri.base` on web), and
+/// - subscribes to [DeepLinkService.uriStream] for links received while the
+///   app is already running (mobile only).
+///
+/// When a URI pointing at `/reset-password?token=…` is detected the
+/// [ResetPasswordPage] is pushed onto the navigation stack via
+/// [NavigationService.navigatorKey]. The subscription is stored in state so
+/// it is automatically disposed when the widget is unmounted.
+class DeepLinkWrapper extends StatefulWidget {
+  const DeepLinkWrapper({super.key});
+
+  @override
+  State<DeepLinkWrapper> createState() => _DeepLinkWrapperState();
+}
+
+class _DeepLinkWrapperState extends State<DeepLinkWrapper> {
+  StreamSubscription<Uri?>? _subscription;
+
+  @override
+  void initState() {
+    super.initState();
+    _initDeepLinks();
+  }
+
+  @override
+  void dispose() {
+    _subscription?.cancel();
+    super.dispose();
+  }
+
+  Future<void> _initDeepLinks() async {
+    final subscription = await DeepLinkService.init(_handleResetToken);
+    if (mounted) {
+      setState(() => _subscription = subscription);
+    }
+  }
+
+  /// Navigates to the [ResetPasswordPage] with the token extracted from the
+  /// deep link. A post-frame callback is used so that [MaterialApp]'s
+  /// navigator is available before we push.
+  void _handleResetToken(String token) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!mounted) return;
+      NavigationService.navigatorKey.currentState?.push(
+        MaterialPageRoute(builder: (_) => ResetPasswordPage(token: token)),
+      );
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return const AuthGate();
   }
 }

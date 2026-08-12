@@ -34,6 +34,68 @@ class AppLocalizationsEn extends AppLocalizations {
   String get signIn => 'Sign In';
 
   @override
+  String get forgotPassword => 'Forgot Password?';
+
+  @override
+  String get forgotPasswordTitle => 'Reset Your Password';
+
+  @override
+  String get forgotPasswordPrompt =>
+      'Enter your email address and we\'ll send you a link to reset your password.';
+
+  @override
+  String get forgotPasswordInfo =>
+      'If an account with that email exists, a password reset link has been sent.';
+
+  @override
+  String get sendResetLink => 'Send Reset Link';
+
+  @override
+  String get backToLogin => 'Back to Login';
+
+  @override
+  String get resetPasswordTitle => 'Set New Password';
+
+  @override
+  String get resetPasswordPrompt =>
+      'Enter a new password below. Your password must be at least 8 characters.';
+
+  @override
+  String get resetPasswordSuccess =>
+      'Your password has been reset. You can now sign in with your new password.';
+
+  @override
+  String get resetPasswordTokenMissing =>
+      'No reset token was found in the link. Please request a new password reset link.';
+
+  @override
+  String get resetPasswordTokenInvalid =>
+      'This password reset link is invalid, expired, or has already been used. Please request a new one.';
+
+  @override
+  String get passwordMinLengthReset => 'Password must be at least 8 characters';
+
+  @override
+  String get confirmNewPasswordLabel => 'Confirm New Password';
+
+  @override
+  String get passwordsDoNotMatchReset => 'Passwords do not match';
+
+  @override
+  String forgotPasswordFailed(String error) {
+    return 'Failed to send reset link: $error';
+  }
+
+  @override
+  String passwordResetFailed(String error) {
+    return 'Password reset failed: $error';
+  }
+
+  @override
+  String get passwordResetTokenExpired =>
+      'This password reset link has expired. Please request a new one.';
+
+  @override
   String get usernameLabel => 'Username';
 
   @override

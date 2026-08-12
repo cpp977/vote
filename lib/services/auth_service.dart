@@ -130,8 +130,53 @@ class AuthService {
     }
   }
 
+  /// Requests a password-reset link by submitting the user's [email].
+  ///
+  /// The endpoint always returns the same generic success response regardless
+  /// of whether the email belongs to an account — preventing user enumeration.
+  ///
+  /// Returns the server's [ForgotPasswordResponse] message on success (HTTP 200).
+  /// Throws [ApiException] on failure (e.g. invalid email format → HTTP 400).
+  Future<ForgotPasswordResponse> forgotPassword(
+    ForgotPasswordRequest request,
+  ) async {
+    final response = await http.post(
+      Uri.parse('$_baseUrl/user/password/forgot'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      return ForgotPasswordResponse.fromJson(jsonDecode(response.body));
+    } else {
+      throw _parseError(response);
+    }
+  }
+
+  /// Consumes a password-reset [token] together with a new [password].
+  ///
+  /// The backend validates the token (single-use, time-limited, attempt
+  /// counter) and atomically updates the user's password hash, marks the
+  /// token as used, and revokes all refresh tokens.
+  ///
+  /// Throws [ApiException] on failure (invalid/expired/used token, password
+  /// too short, max attempts exceeded, or DB error).
+  Future<void> resetPassword(String token, String password) async {
+    final request = ResetPasswordRequest(token: token, password: password);
+    final response = await http.post(
+      Uri.parse('$_baseUrl/user/password/reset'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode(request.toJson()),
+    );
+
+    if (response.statusCode == 200) {
+      return;
+    } else {
+      throw _parseError(response);
+    }
+  }
+
   /// Fetches the list of available question categories for the given
-  /// [languageCode] (e.g. `en`, `de`).
   ///
   /// Uses the language-aware `GET /categories/lang/{languageCode}` endpoint so
   /// that only categories matching the user's locale are returned.

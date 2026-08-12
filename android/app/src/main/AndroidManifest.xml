@@ -26,6 +26,24 @@
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
+
+            <!--
+                Android App Links: opens the app directly when the user taps
+                a password-reset link from an email. The link format is:
+
+                    https://vote.app/reset-password?token=<raw-token>
+
+                The domain (vote.app) must match the backend's `app_reset_url`
+                config and be verified via assetlinks.json. For local/dev
+                builds without assetlinks.json, Android will show a disambiguation
+                dialog — this is expected and the link still works.
+            -->
+            <intent-filter android:autoVerify="true">
+                <action android:name="android.intent.action.VIEW" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="https" android:host="vote.app" android:pathPrefix="/reset-password" />
+            </intent-filter>
         </activity>
         <!-- Don't delete the meta-data below.
              This is used by the Flutter tool to generate GeneratedPluginRegistrant.java -->

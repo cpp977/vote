@@ -148,7 +148,20 @@ class _LoginPageState extends State<LoginPage> {
                             return null;
                           },
                         ),
-                        const SizedBox(height: 24),
+                        const SizedBox(height: 8),
+
+                        // Forgot password link
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: TextButton(
+                            onPressed: () {
+                              Navigator.of(
+                                context,
+                              ).pushNamed('/forgot-password');
+                            },
+                            child: Text(l10n.forgotPassword),
+                          ),
+                        ),
 
                         // Error message
                         Consumer<AuthController>(

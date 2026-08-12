@@ -54,6 +54,45 @@ class LoginRequest {
   Map<String, dynamic> toJson() => {'username': username, 'password': password};
 }
 
+/// Request body for the forgot-password endpoint.
+///
+/// The backend always returns the same generic response regardless of
+/// whether the email exists, preventing user enumeration.
+class ForgotPasswordRequest {
+  final String email;
+
+  const ForgotPasswordRequest({required this.email});
+
+  Map<String, dynamic> toJson() => {'email': email};
+}
+
+/// Response from the forgot-password endpoint.
+///
+/// The message is intentionally generic — it does not reveal whether the
+/// email belongs to an account in the system.
+class ForgotPasswordResponse {
+  final String message;
+
+  const ForgotPasswordResponse({required this.message});
+
+  factory ForgotPasswordResponse.fromJson(Map<String, dynamic> json) {
+    return ForgotPasswordResponse(message: json['message'] as String? ?? '');
+  }
+}
+
+/// Request body for the reset-password endpoint.
+///
+/// [token] is the raw (un-hashed) token received from the email link.
+/// [password] is the user's new password (minimum 8 characters per backend).
+class ResetPasswordRequest {
+  final String token;
+  final String password;
+
+  const ResetPasswordRequest({required this.token, required this.password});
+
+  Map<String, dynamic> toJson() => {'token': token, 'password': password};
+}
+
 /// Response from login/refresh endpoints containing JWT tokens.
 class AuthResponse {
   final String accessToken;

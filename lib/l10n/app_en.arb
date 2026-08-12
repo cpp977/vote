@@ -44,6 +44,87 @@
     "description": "Button/link to sign in or go to the login screen."
   },
 
+  "forgotPassword": "Forgot Password?",
+  "@forgotPassword": {
+    "description": "Link on the login page that opens the forgot-password form."
+  },
+  "forgotPasswordTitle": "Reset Your Password",
+  "@forgotPasswordTitle": {
+    "description": "App bar title of the forgot-password page."
+  },
+  "forgotPasswordPrompt": "Enter your email address and we'll send you a link to reset your password.",
+  "@forgotPasswordPrompt": {
+    "description": "Subtitle on the forgot-password page explaining the flow."
+  },
+  "forgotPasswordInfo": "If an account with that email exists, a password reset link has been sent.",
+  "@forgotPasswordInfo": {
+    "description": "Info message shown after the user submits the forgot-password form. Identical regardless of whether the email belongs to an account, preventing user enumeration."
+  },
+  "sendResetLink": "Send Reset Link",
+  "@sendResetLink": {
+    "description": "Submit button on the forgot-password page."
+  },
+  "backToLogin": "Back to Login",
+  "@backToLogin": {
+    "description": "Link/button that returns to the login page after the forgot-password info message."
+  },
+
+  "resetPasswordTitle": "Set New Password",
+  "@resetPasswordTitle": {
+    "description": "App bar title of the reset-password page (reached via deep link)."
+  },
+  "resetPasswordPrompt": "Enter a new password below. Your password must be at least 8 characters.",
+  "@resetPasswordPrompt": {
+    "description": "Subtitle on the reset-password page."
+  },
+  "resetPasswordSuccess": "Your password has been reset. You can now sign in with your new password.",
+  "@resetPasswordSuccess": {
+    "description": "Success message shown after a successful password reset."
+  },
+  "resetPasswordTokenMissing": "No reset token was found in the link. Please request a new password reset link.",
+  "@resetPasswordTokenMissing": {
+    "description": "Error shown when the reset page is opened without a token in the URL."
+  },
+  "resetPasswordTokenInvalid": "This password reset link is invalid, expired, or has already been used. Please request a new one.",
+  "@resetPasswordTokenInvalid": {
+    "description": "Error shown when the backend rejects the reset token."
+  },
+  "passwordMinLengthReset": "Password must be at least 8 characters",
+  "@passwordMinLengthReset": {
+    "description": "Validation error when the new password is too short (minimum 8 characters enforced by the backend)."
+  },
+  "confirmNewPasswordLabel": "Confirm New Password",
+  "@confirmNewPasswordLabel": {
+    "description": "Label for the confirm-new-password field on the reset page."
+  },
+  "passwordsDoNotMatchReset": "Passwords do not match",
+  "@passwordsDoNotMatchReset": {
+    "description": "Validation error when the two password fields on the reset page differ."
+  },
+
+  "forgotPasswordFailed": "Failed to send reset link: {error}",
+  "@forgotPasswordFailed": {
+    "description": "Error shown when the forgot-password API call fails; {error} is the underlying detail (server message or exception).",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "passwordResetFailed": "Password reset failed: {error}",
+  "@passwordResetFailed": {
+    "description": "Error shown when the reset-password API call fails; {error} is the underlying detail (server message or exception).",
+    "placeholders": {
+      "error": {
+        "type": "String"
+      }
+    }
+  },
+  "passwordResetTokenExpired": "This password reset link has expired. Please request a new one.",
+  "@passwordResetTokenExpired": {
+    "description": "Error shown when the backend reports the token is expired."
+  },
+
   "usernameLabel": "Username",
   "@usernameLabel": {
     "description": "Label for the username input field."

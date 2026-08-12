@@ -140,6 +140,108 @@ abstract class AppLocalizations {
   /// **'Sign In'**
   String get signIn;
 
+  /// Link on the login page that opens the forgot-password form.
+  ///
+  /// In en, this message translates to:
+  /// **'Forgot Password?'**
+  String get forgotPassword;
+
+  /// App bar title of the forgot-password page.
+  ///
+  /// In en, this message translates to:
+  /// **'Reset Your Password'**
+  String get forgotPasswordTitle;
+
+  /// Subtitle on the forgot-password page explaining the flow.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter your email address and we\'ll send you a link to reset your password.'**
+  String get forgotPasswordPrompt;
+
+  /// Info message shown after the user submits the forgot-password form. Identical regardless of whether the email belongs to an account, preventing user enumeration.
+  ///
+  /// In en, this message translates to:
+  /// **'If an account with that email exists, a password reset link has been sent.'**
+  String get forgotPasswordInfo;
+
+  /// Submit button on the forgot-password page.
+  ///
+  /// In en, this message translates to:
+  /// **'Send Reset Link'**
+  String get sendResetLink;
+
+  /// Link/button that returns to the login page after the forgot-password info message.
+  ///
+  /// In en, this message translates to:
+  /// **'Back to Login'**
+  String get backToLogin;
+
+  /// App bar title of the reset-password page (reached via deep link).
+  ///
+  /// In en, this message translates to:
+  /// **'Set New Password'**
+  String get resetPasswordTitle;
+
+  /// Subtitle on the reset-password page.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter a new password below. Your password must be at least 8 characters.'**
+  String get resetPasswordPrompt;
+
+  /// Success message shown after a successful password reset.
+  ///
+  /// In en, this message translates to:
+  /// **'Your password has been reset. You can now sign in with your new password.'**
+  String get resetPasswordSuccess;
+
+  /// Error shown when the reset page is opened without a token in the URL.
+  ///
+  /// In en, this message translates to:
+  /// **'No reset token was found in the link. Please request a new password reset link.'**
+  String get resetPasswordTokenMissing;
+
+  /// Error shown when the backend rejects the reset token.
+  ///
+  /// In en, this message translates to:
+  /// **'This password reset link is invalid, expired, or has already been used. Please request a new one.'**
+  String get resetPasswordTokenInvalid;
+
+  /// Validation error when the new password is too short (minimum 8 characters enforced by the backend).
+  ///
+  /// In en, this message translates to:
+  /// **'Password must be at least 8 characters'**
+  String get passwordMinLengthReset;
+
+  /// Label for the confirm-new-password field on the reset page.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm New Password'**
+  String get confirmNewPasswordLabel;
+
+  /// Validation error when the two password fields on the reset page differ.
+  ///
+  /// In en, this message translates to:
+  /// **'Passwords do not match'**
+  String get passwordsDoNotMatchReset;
+
+  /// Error shown when the forgot-password API call fails; {error} is the underlying detail (server message or exception).
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to send reset link: {error}'**
+  String forgotPasswordFailed(String error);
+
+  /// Error shown when the reset-password API call fails; {error} is the underlying detail (server message or exception).
+  ///
+  /// In en, this message translates to:
+  /// **'Password reset failed: {error}'**
+  String passwordResetFailed(String error);
+
+  /// Error shown when the backend reports the token is expired.
+  ///
+  /// In en, this message translates to:
+  /// **'This password reset link has expired. Please request a new one.'**
+  String get passwordResetTokenExpired;
+
   /// Label for the username input field.
   ///
   /// In en, this message translates to:
