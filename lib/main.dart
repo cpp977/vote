@@ -1,7 +1,11 @@
 import 'dart:async';
+import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
+import 'package:http/io_client.dart';
 
 import 'controllers/auth_controller.dart';
 import 'controllers/configuration_controller.dart';
@@ -14,9 +18,25 @@ import 'services/navigation_service.dart';
 import 'services/deep_link_service.dart';
 import 'pages/account_locked_page.dart';
 
+import 'gen/dart_define.gen.dart';
+
 void main() {
-  WidgetsFlutterBinding.ensureInitialized();
-  runApp(const MyApp());
+  final bool allowBadCerts = Dartdefine.allowBadCertificates && !kReleaseMode;
+
+  if (allowBadCerts) {
+    http.runWithClient(
+      () {
+        WidgetsFlutterBinding.ensureInitialized();
+        runApp(const MyApp());
+      },
+      () => IOClient(
+        HttpClient()..badCertificateCallback = (cert, host, port) => true,
+      ),
+    );
+  } else {
+    WidgetsFlutterBinding.ensureInitialized();
+    runApp(const MyApp());
+  }
 }
 
 class MyApp extends StatelessWidget {
