@@ -21,7 +21,8 @@ import 'pages/account_locked_page.dart';
 import 'gen/dart_define.gen.dart';
 
 void main() {
-  final bool allowBadCerts = Dartdefine.flavor == Flavor.development && !kReleaseMode;
+  final bool allowBadCerts =
+      Dartdefine.flavor == Flavor.development && !kReleaseMode;
 
   if (allowBadCerts) {
     http.runWithClient(
