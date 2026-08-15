@@ -10,7 +10,7 @@
   <main class="container">
     <header>
       <h1>Privacy Policy for Vote4It</h1>
-      <p class="muted">Last updated: August, 8th 2026</p>
+      <p class="muted">Last updated: August, 15th 2026</p>
     </header>
 
     <section>
@@ -46,6 +46,10 @@
         Even with full access to the underlying database it is theoretically impossible to find which answers are given by a specific user.
         The only thing we save is that you voted for a given question. We do this securely by storing a hash value of user ids together with questions a user voted.
       </p>
+      <h3>3. Submitted questions</h3>
+      <p>
+        If you submit new questions for voting, we store that you submitted the question.
+      </p>
     </section>
 
     <section>
@@ -54,6 +58,9 @@
         <li>Your e-mail address is only used when you reset your password to send a link for setting a new password.;</li>
         <li>Device information (model, OS version, IP address) are stored in access logs for 30 days to ensure no misuse (apply rate-limits, diagnose misuse);</li>
         <li>We store the information of which questions are voted by a user to ensure that users can only vote once per question;</li>
+        <li>
+          We store which questions are submitted by your user account to be able to show the submission status of the question only to you and to prevent misuse.
+        </li>
       </ul>
     </section>
 
@@ -62,6 +69,7 @@
       <p>
         You can delete your account by clicking <em>Delete Account</em> in the user model.
         In this case, we will delete your e-mail address immediately with no way to recover the data.
+        It will also delete the information of which questions where answered by your account and which questions are submitted with your account.
       </p>
     </section>
 
@@ -83,7 +91,8 @@
     <section>
       <h2>Third-party Services</h2>
       <p>
-        The App does not use any third-party services.
+        We use the resend e-mail API to send out e-mails if a user requests resetting its password.
+        Take a look at resend's privacy policy <a href="https://resend.com/legal/privacy-policy">here</a>.
       </p>
     </section>
 
@@ -91,7 +100,20 @@
       <h2>Data Retention</h2>
       <p>
         We retain personal data only as long as necessary for the purposes described and to comply with legal obligations.
-        Specific retention periods: .
+        Specific retention periods:
+        <li>
+          Your e-mail address is stored until you delete your account.
+        </li>
+        <li>
+          The device information is stored for 30 days.
+        </li>
+        <li>
+          The data for which questions are answered with your user account is stored until you delete your account.
+        </li>
+        <li>
+          The data of questions submitted by your account are stored until you delete your account.
+        </li>
+
       </p>
     </section>
 
