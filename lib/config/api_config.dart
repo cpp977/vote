@@ -12,9 +12,12 @@ import '../gen/dart_define.gen.dart';
 /// - Development: `flutter run --flavor dev`
 /// - Production: `flutter run --flavor prod`
 class ApiConfig {
-  /// Base URL for the backend API server.
-  ///
-  /// Configured via pubspec.yaml dart_define section.
-  /// Defaults to `http://127.0.0.1:8848` for local development.
-  static const String baseUrl = Dartdefine.apiBaseUrl;
+  static final String baseUrl = Dartdefine.apiBaseUrl.isEmpty
+      ? _defaultBaseUrl
+      : Dartdefine.apiBaseUrl;
+
+  static final String _defaultBaseUrl = switch (Dartdefine.flavor) {
+    Flavor.development => 'https://vote-backend.local:8443',
+    Flavor.production => 'https://vote-backend.duckdns.org:8443',
+  };
 }

@@ -65,12 +65,14 @@ dart_define:
   variables:
     - name: API_BASE_URL
       description: Backend API base URL
-      default: 'http://127.0.0.1:8848'
+      default: ''
       required: false
-    - name: ALLOW_BAD_CERTIFICATES
-      description: Bypasses TLS certificate validation for local dev backend
-      default: false
-      required: false
+
+  flavors:
+    - name: production
+      description: Production environment
+    - name: development
+      description: Local development
 
 flutter_launcher_icons:
   image_path: "assets/icon/app_icon.png"

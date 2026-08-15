@@ -7,7 +7,7 @@ import '../models/category_models.dart';
 
 /// Service for making authentication-related API calls.
 class AuthService {
-  static const String _baseUrl = ApiConfig.baseUrl;
+  static final String _baseUrl = ApiConfig.baseUrl;
 
   /// Registers a new user.
   /// Returns the created [User] on success.
