@@ -11,7 +11,7 @@ void main() {
       'min_age': 18,
       'created_at': '2025-06-15T10:30:00Z',
       'submission_status': 'pending',
-      'submitted_by': 7,
+      'submitted_by': 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
       'reviewed_by': null,
       'answer_options': [
         {'id': 1, 'question_id': 42, 'text': 'Yes'},
@@ -29,7 +29,7 @@ void main() {
       expect(submission.minAge, 18);
       expect(submission.createdAt, '2025-06-15T10:30:00Z');
       expect(submission.submissionStatus, 'pending');
-      expect(submission.submittedBy, 7);
+      expect(submission.submittedBy, 'a1b2c3d4-e5f6-7890-abcd-ef1234567890');
       expect(submission.reviewedBy, isNull);
       expect(submission.answerOptions, hasLength(2));
       expect(submission.answerOptions![0].id, 1);

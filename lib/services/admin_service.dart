@@ -103,7 +103,7 @@ class AdminService {
   ///
   /// Returns the full [User] object (all fields except `password_hash`).
   /// Throws [AdminException] on failure (including `401`/`403`/`404`).
-  Future<User> getUser(int id) async {
+  Future<User> getUser(String id) async {
     final response = await _authMiddleware.get(
       '${ApiConfig.baseUrl}/admin/users/$id',
     );
@@ -123,7 +123,7 @@ class AdminService {
   ///
   /// Returns the updated [User] object with `isActive` set to `true`.
   /// Throws [AdminException] on failure (including `401`/`403`/`404`).
-  Future<User> activateUser(int id) async {
+  Future<User> activateUser(String id) async {
     return _toggleActive(
       '${ApiConfig.baseUrl}/admin/users/$id/active',
       'activate',
@@ -135,7 +135,7 @@ class AdminService {
   ///
   /// Returns the updated [User] object with `isActive` set to `false`.
   /// Throws [AdminException] on failure (including `401`/`403`/`404`).
-  Future<User> deactivateUser(int id) async {
+  Future<User> deactivateUser(String id) async {
     return _toggleActive(
       '${ApiConfig.baseUrl}/admin/users/$id/inactive',
       'deactivate',

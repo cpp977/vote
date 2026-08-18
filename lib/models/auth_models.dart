@@ -128,7 +128,7 @@ class LogoutRequest {
 
 /// User model returned after registration.
 class User {
-  final int id;
+  final String id;
   final String username;
   final String email;
   final int? birthYear;
@@ -150,7 +150,7 @@ class User {
 
   factory User.fromJson(Map<String, dynamic> json) {
     return User(
-      id: json['id'] as int,
+      id: json['id'] as String? ?? '',
       username: json['username'] as String? ?? '',
       email: json['email'] as String? ?? '',
       birthYear: json['birth_year'] as int?,

@@ -37,8 +37,8 @@ class Submission {
   final int minAge;
   final String createdAt;
   final String submissionStatus;
-  final int? submittedBy;
-  final int? reviewedBy;
+  final String? submittedBy;
+  final String? reviewedBy;
 
   /// The answer options the question can be voted on. Only present in the
   /// response of `POST /questions/submissions`; `null` for the rows returned by
@@ -75,8 +75,8 @@ class Submission {
       minAge: json['min_age'] as int? ?? 0,
       createdAt: json['created_at'] as String? ?? '',
       submissionStatus: json['submission_status'] as String? ?? 'pending',
-      submittedBy: json['submitted_by'] as int?,
-      reviewedBy: json['reviewed_by'] as int?,
+      submittedBy: json['submitted_by'] as String?,
+      reviewedBy: json['reviewed_by'] as String?,
       answerOptions: answerOptions,
     );
   }

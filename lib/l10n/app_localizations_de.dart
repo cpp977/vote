@@ -530,12 +530,12 @@ class AppLocalizationsDe extends AppLocalizations {
   String get reject => 'Ablehnen';
 
   @override
-  String submittedBy(int id) {
+  String submittedBy(String id) {
     return 'Eingereicht von Benutzer $id';
   }
 
   @override
-  String reviewedBy(int id) {
+  String reviewedBy(String id) {
     return 'Geprüft von Benutzer $id';
   }
 
@@ -603,7 +603,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get adminUsersLoadFailed => 'Benutzer konnten nicht geladen werden';
 
   @override
-  String adminUserId(int id) {
+  String adminUserId(String id) {
     return 'Benutzer $id';
   }
 

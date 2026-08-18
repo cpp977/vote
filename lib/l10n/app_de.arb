@@ -260,7 +260,23 @@
   "approve": "Freigeben",
   "reject": "Ablehnen",
   "submittedBy": "Eingereicht von Benutzer {id}",
+  "@submittedBy": {
+    "description": "Label showing the user id of the submitter; {id} is the user id.",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "reviewedBy": "Geprüft von Benutzer {id}",
+  "@reviewedBy": {
+    "description": "Label showing the user id of the reviewer; {id} is the user id.",
+    "placeholders": {
+      "id": {
+        "type": "String"
+      }
+    }
+  },
   "submissionDetailsTitle": "Details der Einreichung",
   "submissionApprovedMessage": "Frage freigegeben",
   "submissionRejectedMessage": "Frage abgelehnt",
@@ -322,10 +338,10 @@
   },
   "adminUserId": "Benutzer {id}",
   "@adminUserId": {
-    "description": "Label showing the user id; {id} is the numeric user id.",
+    "description": "Label showing the user id; {id} is the user id.",
     "placeholders": {
       "id": {
-        "type": "int"
+        "type": "String"
       }
     }
   },

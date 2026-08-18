@@ -998,17 +998,17 @@ abstract class AppLocalizations {
   /// **'Reject'**
   String get reject;
 
-  /// Label showing the user id of the submitter; {id} is the numeric user id.
+  /// Label showing the user id of the submitter; {id} is the user id.
   ///
   /// In en, this message translates to:
   /// **'Submitted by user {id}'**
-  String submittedBy(int id);
+  String submittedBy(String id);
 
-  /// Label showing the user id of the reviewer; {id} is the numeric user id.
+  /// Label showing the user id of the reviewer; {id} is the user id.
   ///
   /// In en, this message translates to:
   /// **'Reviewed by user {id}'**
-  String reviewedBy(int id);
+  String reviewedBy(String id);
 
   /// App bar title of the admin submission detail screen.
   ///
@@ -1130,11 +1130,11 @@ abstract class AppLocalizations {
   /// **'Failed to load users'**
   String get adminUsersLoadFailed;
 
-  /// Label showing the user id; {id} is the numeric user id.
+  /// Label showing the user id; {id} is the user id.
   ///
   /// In en, this message translates to:
   /// **'User {id}'**
-  String adminUserId(int id);
+  String adminUserId(String id);
 
   /// App bar title of the admin user detail screen.
   ///

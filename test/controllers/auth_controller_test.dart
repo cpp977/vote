@@ -96,7 +96,7 @@ void main() {
           refreshToken: 'refresh-token',
         );
         authService.currentUserResult = const User(
-          id: 1,
+          id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
           username: 'alice',
           email: 'alice@example.com',
           birthYear: 1990,
@@ -162,7 +162,7 @@ void main() {
           refreshToken: 'refresh-token',
         );
         authService.currentUserResult = const User(
-          id: 1,
+          id: 'b2c3d4e5-f6a7-8901-bcde-f12345678901',
           username: 'bob',
           email: 'bob@example.com',
           isAdmin: true,
@@ -183,7 +183,7 @@ void main() {
           refreshToken: 'refresh-token',
         );
         authService.currentUserResult = const User(
-          id: 1,
+          id: 'c3d4e5f6-a7b8-9012-cdef-123456789012',
           username: 'minimal',
           email: '',
           isAdmin: false,
@@ -208,12 +208,14 @@ void main() {
           refreshToken: 'refresh-token',
         );
         authService.currentUserResult = const User(
-          id: 1,
+          id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
           username: 'alice',
           email: 'alice@example.com',
           isAdmin: false,
         );
-        authService.categoriesResult = [];
+        authService.categoriesResult = [
+          const Category(id: 1, name: 'General', language: 'en'),
+        ];
 
         final future = controller.login(username: 'alice', password: 'secret');
         expect(controller.isLoading, isTrue);
@@ -227,7 +229,7 @@ void main() {
     group('register', () {
       test('returns true on successful registration', () async {
         authService.registerResult = const User(
-          id: 1,
+          id: 'd4e5f6a7-b8c9-0123-defa-123456789012',
           username: 'newuser',
           email: 'new@example.com',
           isAdmin: false,
@@ -278,7 +280,7 @@ void main() {
 
       test('passes optional fields to RegisterRequest', () async {
         authService.registerResult = const User(
-          id: 1,
+          id: 'd4e5f6a7-b8c9-0123-defa-123456789012',
           username: 'fulluser',
           email: 'full@example.com',
           isAdmin: false,
@@ -301,7 +303,7 @@ void main() {
 
       test('sets isLoading during registration', () async {
         authService.registerResult = const User(
-          id: 1,
+          id: 'd4e5f6a7-b8c9-0123-defa-123456789012',
           username: 'newuser',
           email: 'new@example.com',
           isAdmin: false,
@@ -375,7 +377,7 @@ void main() {
     group('updateUser', () {
       test('returns true on successful update', () async {
         authService.updateCurrentUserResult = const User(
-          id: 1,
+          id: 'e5f6a7b8-c9d0-1234-ef56-a7b8c9d0e1f2',
           username: 'alice',
           email: 'updated@example.com',
           gender: 'f',
@@ -425,7 +427,7 @@ void main() {
 
       test('persists updated fields to token storage', () async {
         authService.updateCurrentUserResult = const User(
-          id: 1,
+          id: 'f6a7b8c9-d0e1-2345-6a7b-8c9d0e1f2a3b',
           username: 'alice',
           email: 'persisted@example.com',
           gender: 'm',
@@ -448,7 +450,7 @@ void main() {
     group('loadUserDetails', () {
       test('returns true and updates fields on success', () async {
         authService.currentUserResult = const User(
-          id: 1,
+          id: 'a1b2c3d4-e5f6-7890-abcd-ef1234567890',
           username: 'alice',
           email: 'alice@example.com',
           birthYear: 1990,
@@ -523,7 +525,7 @@ class FakeAuthService extends AuthService {
   Future<User> register(RegisterRequest request) async {
     lastRegisterRequest = request;
     if (registerThrows) throw registerException!;
-    return registerResult ?? User(id: 0, username: '', email: '');
+    return registerResult ?? User(id: '00000000-0000-0000-0000-000000000000', username: '', email: '');
   }
 
   @override
@@ -548,7 +550,7 @@ class FakeAuthService extends AuthService {
   @override
   Future<User> getCurrentUser(String accessToken) async {
     if (currentUserThrows) throw currentUserException!;
-    return currentUserResult ?? User(id: 0, username: '', email: '');
+    return currentUserResult ?? User(id: '00000000-0000-0000-0000-000000000000', username: '', email: '');
   }
 
   @override
@@ -557,7 +559,7 @@ class FakeAuthService extends AuthService {
     UpdateUserRequest request,
   ) async {
     if (updateCurrentUserThrows) throw updateCurrentUserException!;
-    return updateCurrentUserResult ?? User(id: 0, username: '', email: '');
+    return updateCurrentUserResult ?? User(id: '00000000-0000-0000-0000-000000000000', username: '', email: '');
   }
 
   @override

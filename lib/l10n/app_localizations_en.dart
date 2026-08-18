@@ -524,12 +524,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reject => 'Reject';
 
   @override
-  String submittedBy(int id) {
+  String submittedBy(String id) {
     return 'Submitted by user $id';
   }
 
   @override
-  String reviewedBy(int id) {
+  String reviewedBy(String id) {
     return 'Reviewed by user $id';
   }
 
@@ -597,7 +597,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get adminUsersLoadFailed => 'Failed to load users';
 
   @override
-  String adminUserId(int id) {
+  String adminUserId(String id) {
     return 'User $id';
   }
 
