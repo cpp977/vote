@@ -354,6 +354,10 @@
   "@statsNotAvailable": {
     "description": "Error shown when statistics could not be loaded (404)."
   },
+  "statsInsufficientData": "Not enough responses yet to show statistics",
+  "@statsInsufficientData": {
+    "description": "Neutral hint shown when statistics are withheld because fewer than the privacy threshold of matching answers exist."
+  },
   "statsLoadFailed": "Failed to load statistics",
   "@statsLoadFailed": {
     "description": "Error shown when loading statistics fails for another reason."

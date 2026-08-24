@@ -30,11 +30,16 @@ class GenderStats {
   final bool isLoading;
   final String? errorMessage;
 
+  /// Neutral notice shown when the backend withheld this segment's statistics
+  /// because too few matching answers exist (`insufficient_data`).
+  final String? insufficientMessage;
+
   GenderStats({
     required this.gender,
     required this.label,
     required this.stats,
     required this.isLoading,
     this.errorMessage,
+    this.insufficientMessage,
   });
 }

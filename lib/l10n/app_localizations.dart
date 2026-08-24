@@ -554,6 +554,12 @@ abstract class AppLocalizations {
   /// **'Statistics not available'**
   String get statsNotAvailable;
 
+  /// Neutral hint shown when statistics are withheld because fewer than the privacy threshold of matching answers exist.
+  ///
+  /// In en, this message translates to:
+  /// **'Not enough responses yet to show statistics'**
+  String get statsInsufficientData;
+
   /// Error shown when loading statistics fails for another reason.
   ///
   /// In en, this message translates to:

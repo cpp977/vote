@@ -258,6 +258,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsNotAvailable => 'Statistics not available';
 
   @override
+  String get statsInsufficientData =>
+      'Not enough responses yet to show statistics';
+
+  @override
   String get statsLoadFailed => 'Failed to load statistics';
 
   @override

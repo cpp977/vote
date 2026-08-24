@@ -12,6 +12,11 @@ class QuestionStatsWidget extends StatefulWidget {
   final List<AnswerStats> stats;
   final bool isLoading;
   final String? errorMessage;
+
+  /// Neutral notice for the bar and donut views, shown when the backend
+  /// withheld statistics because too few matching answers exist
+  /// (`insufficient_data`). Rendered like the empty state, not as an error.
+  final String? insufficientDataMessage;
   final List<GenderStats> genderStats;
 
   const QuestionStatsWidget({
@@ -19,6 +24,7 @@ class QuestionStatsWidget extends StatefulWidget {
     required this.stats,
     required this.isLoading,
     this.errorMessage,
+    this.insufficientDataMessage,
     required this.genderStats,
   });
 
@@ -108,6 +114,9 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
         child: Center(child: CircularProgressIndicator()),
       );
     }
+    if (widget.insufficientDataMessage != null) {
+      return _buildEmpty(colorScheme, widget.insufficientDataMessage);
+    }
     if (widget.errorMessage != null) {
       return _buildError(widget.errorMessage!, colorScheme);
     }
@@ -147,6 +156,9 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
         height: 200,
         child: Center(child: CircularProgressIndicator()),
       );
+    }
+    if (widget.insufficientDataMessage != null) {
+      return _buildEmpty(colorScheme, widget.insufficientDataMessage);
     }
     if (widget.errorMessage != null) {
       return _buildError(widget.errorMessage!, colorScheme);
@@ -231,6 +243,9 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
         height: 120,
         child: Center(child: CircularProgressIndicator()),
       );
+    }
+    if (g.insufficientMessage != null) {
+      return _buildEmpty(colorScheme, g.insufficientMessage);
     }
     if (g.errorMessage != null) {
       return _buildError(g.errorMessage!, colorScheme);
@@ -320,7 +335,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
     );
   }
 
-  Widget _buildEmpty(ColorScheme colorScheme) {
+  Widget _buildEmpty(ColorScheme colorScheme, [String? message]) {
     final l10n = AppLocalizations.of(context);
     return SizedBox(
       height: 120,
@@ -335,7 +350,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
             ),
             const SizedBox(height: 8),
             Text(
-              l10n.noVotesYet,
+              message ?? l10n.noVotesYet,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                 color: colorScheme.onSurfaceVariant,
               ),

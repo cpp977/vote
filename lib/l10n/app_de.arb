@@ -152,6 +152,7 @@
   "statistics": "Statistik",
   "questionNotFound": "Frage nicht gefunden",
   "statsNotAvailable": "Statistik nicht verfügbar",
+  "statsInsufficientData": "Noch nicht genug Antworten für eine Statistik",
   "statsLoadFailed": "Statistik konnte nicht geladen werden",
   "voteSubmitted": "Stimme für \"{answer}\" abgegeben!",
   "errorWithMessage": "Fehler: {message}",

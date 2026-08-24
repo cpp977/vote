@@ -42,11 +42,16 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   bool _isLoadingStats = true;
   String? _statsErrorMessage;
 
+  // Neutral notice when the backend withheld statistics because too few
+  // matching answers exist (`insufficient_data`).
+  String? _statsInsufficientMessage;
+
   // Gender-resolved statistics state
   final List<String> _genders = ['m', 'w', 'd'];
   final Map<String, List<AnswerStats>> _genderStats = {};
   final Map<String, bool> _genderLoading = {};
   final Map<String, String?> _genderErrors = {};
+  final Map<String, String?> _genderInsufficient = {};
 
   // Delete question state
   bool _isDeleting = false;
@@ -335,6 +340,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     setState(() {
       _isLoadingStats = true;
       _statsErrorMessage = null;
+      _statsInsufficientMessage = null;
     });
 
     try {
@@ -343,8 +349,18 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
       );
 
       if (response.statusCode == 200) {
+        final Map<String, dynamic> envelope =
+            jsonDecode(response.body) as Map<String, dynamic>;
+        final String status = envelope['status'] as String? ?? '';
+        if (status == 'insufficient_data') {
+          setState(() {
+            _statsInsufficientMessage = l10n.statsInsufficientData;
+            _isLoadingStats = false;
+          });
+          return;
+        }
         final List<dynamic> data =
-            (jsonDecode(response.body) as List?) ?? <dynamic>[];
+            (envelope['answers'] as List?) ?? <dynamic>[];
         setState(() {
           _stats = data
               .map((e) => AnswerStats.fromJson(e as Map<String, dynamic>))
@@ -377,17 +393,28 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     setState(() {
       _genderLoading[gender] = true;
       _genderErrors[gender] = null;
+      _genderInsufficient[gender] = null;
     });
 
     try {
       final uri = Uri.parse(
         '${ApiConfig.baseUrl}/questions/${widget.question.id}/stats',
-      ).replace(queryParameters: {'tagKey': 'gender', 'tagValue': gender});
+      ).replace(queryParameters: {'gender': gender});
       final response = await _authMiddleware.get(uri.toString());
 
       if (response.statusCode == 200) {
+        final Map<String, dynamic> envelope =
+            jsonDecode(response.body) as Map<String, dynamic>;
+        final String status = envelope['status'] as String? ?? '';
+        if (status == 'insufficient_data') {
+          setState(() {
+            _genderInsufficient[gender] = l10n.statsInsufficientData;
+            _genderLoading[gender] = false;
+          });
+          return;
+        }
         final List<dynamic> data =
-            (jsonDecode(response.body) as List?) ?? <dynamic>[];
+            (envelope['answers'] as List?) ?? <dynamic>[];
         setState(() {
           _genderStats[gender] = data
               .map((e) => AnswerStats.fromJson(e as Map<String, dynamic>))
@@ -769,6 +796,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                   stats: _stats,
                   isLoading: _isLoadingStats,
                   errorMessage: _statsErrorMessage,
+                  insufficientDataMessage: _statsInsufficientMessage,
                   genderStats: _genders.map((gender) {
                     return GenderStats(
                       gender: gender,
@@ -780,6 +808,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                       stats: _genderStats[gender] ?? [],
                       isLoading: _genderLoading[gender] ?? true,
                       errorMessage: _genderErrors[gender],
+                      insufficientMessage: _genderInsufficient[gender],
                     );
                   }).toList(),
                 ),
