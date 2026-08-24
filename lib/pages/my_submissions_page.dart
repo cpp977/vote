@@ -97,7 +97,6 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
       ..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase()));
 
     final textController = TextEditingController();
-    final minAgeController = TextEditingController();
     // One text field per answer option. A submission must carry at least one
     // non-empty option, so we start with two empty fields (a typical poll
     // needs at least two choices).
@@ -196,18 +195,6 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
                                 ),
                           ),
                         ),
-                      const SizedBox(height: 16),
-                      TextFormField(
-                        controller: minAgeController,
-                        decoration: InputDecoration(
-                          labelText: l10n.minAgeLabel,
-                          hintText: l10n.minAgeHint,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        keyboardType: TextInputType.number,
-                      ),
                       const SizedBox(height: 20),
                       Text(
                         l10n.answerOptionsLabel,
@@ -296,9 +283,6 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
                             });
                             return;
                           }
-                          final parsedMinAge = int.tryParse(
-                            minAgeController.text.trim(),
-                          );
                           setDialogState(() {
                             isSubmitting = true;
                             errorText = null;
@@ -309,7 +293,6 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
                               categoryId: selectedCategoryId!,
                               language: _currentLanguageCode(),
                               answerOptions: options,
-                              minAge: parsedMinAge ?? 0,
                             );
                             if (!context.mounted) return;
                             Navigator.of(context).pop();
@@ -357,10 +340,9 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
         );
       },
     );
-    // Free the controllers created for the dialog (question, min age and all
+    // Free the controllers created for the dialog (question and all
     // answer-option fields).
     textController.dispose();
-    minAgeController.dispose();
     for (final controller in answerControllers) {
       controller.dispose();
     }

@@ -384,6 +384,22 @@
   "specialCategoryHealth": "Health",
   "specialCategorySexLifeOrOrientation": "Sex life or sexual orientation",
   "specialCategoryCriminalConvictions": "Criminal convictions",
+  "approvalSettingsTitle": "Approval settings",
+  "@approvalSettingsTitle": {
+    "description": "Section title for the min-age/special-category inputs shown to admins when approving a submission."
+  },
+  "approvalMinAgeLabel": "Minimum age",
+  "@approvalMinAgeLabel": {
+    "description": "Label of the minimum-age input an admin sets when approving a submission."
+  },
+  "specialCategoryLabel": "Special category",
+  "@specialCategoryLabel": {
+    "description": "Label of the special-category selector an admin sets when approving a submission."
+  },
+  "specialCategoryNone": "No special category",
+  "@specialCategoryNone": {
+    "description": "Selector entry marking a question as not carrying a GDPR Art. 9 category."
+  },
   "statsLoadFailed": "Failed to load statistics",
   "@statsLoadFailed": {
     "description": "Error shown when loading statistics fails for another reason."

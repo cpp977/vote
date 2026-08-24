@@ -632,6 +632,30 @@ abstract class AppLocalizations {
   /// **'Criminal convictions'**
   String get specialCategoryCriminalConvictions;
 
+  /// Section title for the min-age/special-category inputs shown to admins when approving a submission.
+  ///
+  /// In en, this message translates to:
+  /// **'Approval settings'**
+  String get approvalSettingsTitle;
+
+  /// Label of the minimum-age input an admin sets when approving a submission.
+  ///
+  /// In en, this message translates to:
+  /// **'Minimum age'**
+  String get approvalMinAgeLabel;
+
+  /// Label of the special-category selector an admin sets when approving a submission.
+  ///
+  /// In en, this message translates to:
+  /// **'Special category'**
+  String get specialCategoryLabel;
+
+  /// Selector entry marking a question as not carrying a GDPR Art. 9 category.
+  ///
+  /// In en, this message translates to:
+  /// **'No special category'**
+  String get specialCategoryNone;
+
   /// Error shown when loading statistics fails for another reason.
   ///
   /// In en, this message translates to:

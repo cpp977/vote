@@ -57,11 +57,12 @@ class SubmissionService {
   /// Creates a new question submission for the authenticated user.
   ///
   /// The submission is stored as `pending` server-side; clients cannot
-  /// self-approve. [language] must be a 2-character code (e.g. `en`, `de`) and
-  /// [minAge] defaults to `0` (no minimum age). [answerOptions] must contain
-  /// at least one non-empty answer; the backend inserts the question together
-  /// with its answer options in a single transaction and rejects submissions
-  /// with too few or too many (more than 50) options.
+  /// self-approve. [language] must be a 2-character code (e.g. `en`, `de`).
+  /// The submitting user does not choose a minimum age; admins set it (and the
+  /// special category) when approving. [answerOptions] must contain at least
+  /// one non-empty answer; the backend inserts the question together with its
+  /// answer options in a single transaction and rejects submissions with too
+  /// few or too many (more than 50) options.
   ///
   /// Returns the created [Submission] (status `pending`, including its
   /// [Submission.answerOptions]) on success.
@@ -72,7 +73,6 @@ class SubmissionService {
     required int categoryId,
     required String language,
     required List<String> answerOptions,
-    int minAge = 0,
   }) async {
     // Trim and drop empty entries so a submission never reaches the backend
     // with blank options; the backend requires at least one.
@@ -87,7 +87,6 @@ class SubmissionService {
       'text': text,
       'category_id': categoryId,
       'language': language,
-      'min_age': minAge,
       'answer_options': cleanedOptions,
     });
     final response = await _authMiddleware.post(

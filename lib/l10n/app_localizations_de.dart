@@ -309,6 +309,18 @@ class AppLocalizationsDe extends AppLocalizations {
       'Straftaten oder Strafverfolgung';
 
   @override
+  String get approvalSettingsTitle => 'Freigabe-Einstellungen';
+
+  @override
+  String get approvalMinAgeLabel => 'Mindestalter';
+
+  @override
+  String get specialCategoryLabel => 'Besondere Kategorie';
+
+  @override
+  String get specialCategoryNone => 'Keine besondere Kategorie';
+
+  @override
   String get statsLoadFailed => 'Statistik konnte nicht geladen werden';
 
   @override

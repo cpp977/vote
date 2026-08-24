@@ -3,6 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:vote/config/api_config.dart';
 import 'package:vote/models/auth_models.dart';
+import 'package:vote/models/special_category.dart';
 import 'package:vote/models/submission_models.dart';
 import 'package:vote/services/auth_middleware.dart';
 
@@ -62,12 +63,22 @@ class AdminService {
 
   /// Approves the submission with the given [id], making it publicly visible.
   ///
+  /// The approving admin sets the [minAge] restriction (integer 0–120,
+  /// defaulting to 0 = no restriction server-side) and the GDPR
+  /// [specialCategory] (defaulting to [SpecialCategory.none]); both are sent
+  /// in the request body and stored on the approved question.
+  ///
   /// Returns the updated [Submission] (status `approved`).
   /// Throws [AdminException] on failure (including `401`/`403`).
-  Future<Submission> approveQuestion(int id) async {
+  Future<Submission> approveQuestion(
+    int id, {
+    int? minAge,
+    SpecialCategory? specialCategory,
+  }) async {
     return _review(
       '${ApiConfig.baseUrl}/admin/questions/$id/approve',
       'approve',
+      body: {'min_age': ?minAge, 'special_category': ?specialCategory?.label},
     );
   }
 
@@ -198,8 +209,15 @@ class AdminService {
     }
   }
 
-  Future<Submission> _review(String url, String action) async {
-    final response = await _authMiddleware.post(url);
+  Future<Submission> _review(
+    String url,
+    String action, {
+    Map<String, Object?>? body,
+  }) async {
+    final response = await _authMiddleware.post(
+      url,
+      body: body == null ? null : jsonEncode(body),
+    );
     if (response.statusCode == 200) {
       return Submission.fromJson(
         jsonDecode(response.body) as Map<String, dynamic>,

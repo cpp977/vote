@@ -302,6 +302,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get specialCategoryCriminalConvictions => 'Criminal convictions';
 
   @override
+  String get approvalSettingsTitle => 'Approval settings';
+
+  @override
+  String get approvalMinAgeLabel => 'Minimum age';
+
+  @override
+  String get specialCategoryLabel => 'Special category';
+
+  @override
+  String get specialCategoryNone => 'No special category';
+
+  @override
   String get statsLoadFailed => 'Failed to load statistics';
 
   @override

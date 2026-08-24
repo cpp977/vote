@@ -1,12 +1,14 @@
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../config/api_config.dart';
 import '../controllers/auth_controller.dart';
 import '../l10n/app_localizations.dart';
+import '../models/special_category.dart';
 import '../models/submission_models.dart';
 import '../services/admin_service.dart';
 import '../services/auth_middleware.dart';
@@ -38,6 +40,14 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
   bool _reviewed = false;
   bool _isReviewing = false;
 
+  // Approval settings applied when approving a pending submission. The
+  // submitting user no longer chooses a minimum age; the reviewing admin sets
+  // it together with the GDPR special category.
+  final TextEditingController _minAgeController = TextEditingController(
+    text: '0',
+  );
+  SpecialCategory _selectedSpecialCategory = SpecialCategory.none;
+
   // Answer-options state.
   List<AnswerOption> _answers = [];
   bool _isLoadingAnswers = true;
@@ -54,6 +64,34 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (mounted) _fetchAnswers();
     });
+  }
+
+  @override
+  void dispose() {
+    _minAgeController.dispose();
+    super.dispose();
+  }
+
+  /// Localized display label for a special category.
+  String _specialCategoryLabel(SpecialCategory category) {
+    final l10n = AppLocalizations.of(context);
+    return switch (category) {
+      SpecialCategory.none => l10n.specialCategoryNone,
+      SpecialCategory.racialOrEthnicOrigin =>
+        l10n.specialCategoryRacialOrEthnicOrigin,
+      SpecialCategory.politicalOpinion => l10n.specialCategoryPoliticalOpinion,
+      SpecialCategory.religiousOrPhilosophicalBelief =>
+        l10n.specialCategoryReligiousOrPhilosophicalBelief,
+      SpecialCategory.tradeUnionMembership =>
+        l10n.specialCategoryTradeUnionMembership,
+      SpecialCategory.geneticData => l10n.specialCategoryGeneticData,
+      SpecialCategory.biometricData => l10n.specialCategoryBiometricData,
+      SpecialCategory.health => l10n.specialCategoryHealth,
+      SpecialCategory.sexLifeOrOrientation =>
+        l10n.specialCategorySexLifeOrOrientation,
+      SpecialCategory.criminalConvictions =>
+        l10n.specialCategoryCriminalConvictions,
+    };
   }
 
   /// Loads the submitted answer options via `GET /questions/{id}/answers`.
@@ -440,6 +478,64 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
 
             const SizedBox(height: 32),
 
+            // Approval settings: only relevant while a decision is pending.
+            if (!_alreadyReviewed) ...[
+              Text(
+                l10n.approvalSettingsTitle,
+                style: Theme.of(
+                  context,
+                ).textTheme.titleMedium?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _minAgeController,
+                      decoration: InputDecoration(
+                        labelText: l10n.approvalMinAgeLabel,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      keyboardType: TextInputType.number,
+                      inputFormatters: [FilteringTextInputFormatter.digitsOnly],
+                    ),
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: DropdownButtonFormField<SpecialCategory>(
+                      initialValue: _selectedSpecialCategory,
+                      decoration: InputDecoration(
+                        labelText: l10n.specialCategoryLabel,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      items: SpecialCategory.values
+                          .map(
+                            (category) => DropdownMenuItem(
+                              value: category,
+                              child: Text(
+                                _specialCategoryLabel(category),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          )
+                          .toList(),
+                      onChanged: (value) {
+                        if (value != null) {
+                          setState(() => _selectedSpecialCategory = value);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 24),
+            ],
+
             // Review actions
             if (_alreadyReviewed)
               Container(
@@ -480,11 +576,25 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
                     child: FilledButton.icon(
                       onPressed: actionsDisabled
                           ? null
-                          : () => _review(
-                              _adminService.approveQuestion,
-                              l10n.submissionApprovedMessage,
-                              l10n.approveFailed,
-                            ),
+                          : () {
+                              // The backend clamps/validates the value; a
+                              // missing or out-of-range input falls back to
+                              // the default (0 = no restriction).
+                              final minAge =
+                                  int.tryParse(
+                                    _minAgeController.text.trim(),
+                                  )?.clamp(0, 120) ??
+                                  0;
+                              _review(
+                                (id) => _adminService.approveQuestion(
+                                  id,
+                                  minAge: minAge,
+                                  specialCategory: _selectedSpecialCategory,
+                                ),
+                                l10n.submissionApprovedMessage,
+                                l10n.approveFailed,
+                              );
+                            },
                       icon: _isReviewing
                           ? const SizedBox(
                               width: 18,

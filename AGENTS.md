@@ -3,9 +3,9 @@
 ## Build / Lint / Test Commands
 - **Build**: `/opt/flutter/bin/dart compile exe lib/main.dart -o bin/vote` (or `flutter build` if applicable).
 - **Lint**: `/opt/flutter/bin/dart analyze` (or `flutter analyze`).
-- **Run all tests**: `/opt/flutter/bin/dart test`.
-- **Run a single test**: `/opt/flutter/bin/dart test path/to/file_test.dart -n "test name"`.
-- **Watch tests**: `/opt/flutter/bin/dart test --watch`.
+- **Run all tests**: `/opt/flutter/bin/flutter test --dart-define-from-file=devel_dart_define.json` (the dart-defines are required: `ApiConfig` throws without a valid `FLAVOR`).
+- **Run a single test**: `/opt/flutter/bin/flutter test --dart-define-from-file=devel_dart_define.json path/to/file_test.dart --plain-name "test name"`.
+- **Watch tests**: `/opt/flutter/bin/flutter test --dart-define-from-file=devel_dart_define.json --watch`.
 
 ## Code Style Guidelines
 - **Imports**: Order alphabetically, separate third‑party, package and relative imports with a blank line.

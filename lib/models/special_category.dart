@@ -32,4 +32,20 @@ enum SpecialCategory {
     'criminal_convictions' => criminalConvictions,
     _ => none,
   };
+
+  /// The database label of this enumerator (as sent to and received from the
+  /// backend).
+  String get label => switch (this) {
+    SpecialCategory.none => 'none',
+    SpecialCategory.racialOrEthnicOrigin => 'racial_or_ethnic_origin',
+    SpecialCategory.politicalOpinion => 'political_opinion',
+    SpecialCategory.religiousOrPhilosophicalBelief =>
+      'religious_or_philosophical_belief',
+    SpecialCategory.tradeUnionMembership => 'trade_union_membership',
+    SpecialCategory.geneticData => 'genetic_data',
+    SpecialCategory.biometricData => 'biometric_data',
+    SpecialCategory.health => 'health',
+    SpecialCategory.sexLifeOrOrientation => 'sex_life_or_orientation',
+    SpecialCategory.criminalConvictions => 'criminal_convictions',
+  };
 }
