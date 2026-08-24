@@ -266,6 +266,49 @@ class AppLocalizationsDe extends AppLocalizations {
       'Noch nicht genug Antworten für eine Statistik';
 
   @override
+  String get specialCategoryConsentTitle => 'Sensitive question';
+
+  @override
+  String specialCategoryConsentBody(String category) {
+    return 'Diese Frage gehört zur sensiblen Kategorie „$category“. Zum Beantworten ist deine ausdrückliche Einwilligung erforderlich; sie wird anonym zusammen mit deiner Antwort gespeichert.';
+  }
+
+  @override
+  String get specialCategoryConsentAccept =>
+      'Ich willige ein und möchte antworten';
+
+  @override
+  String get specialCategoryRacialOrEthnicOrigin => 'Ethnische Herkunft';
+
+  @override
+  String get specialCategoryPoliticalOpinion => 'Politische Meinung';
+
+  @override
+  String get specialCategoryReligiousOrPhilosophicalBelief =>
+      'Religiöse oder philosophische Überzeugung';
+
+  @override
+  String get specialCategoryTradeUnionMembership =>
+      'Gewerkschaftszugehörigkeit';
+
+  @override
+  String get specialCategoryGeneticData => 'Genetische Daten';
+
+  @override
+  String get specialCategoryBiometricData => 'Biometrische Daten';
+
+  @override
+  String get specialCategoryHealth => 'Gesundheit';
+
+  @override
+  String get specialCategorySexLifeOrOrientation =>
+      'Sexualleben oder sexuelle Orientierung';
+
+  @override
+  String get specialCategoryCriminalConvictions =>
+      'Straftaten oder Strafverfolgung';
+
+  @override
   String get statsLoadFailed => 'Statistik konnte nicht geladen werden';
 
   @override

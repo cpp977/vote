@@ -560,6 +560,78 @@ abstract class AppLocalizations {
   /// **'Not enough responses yet to show statistics'**
   String get statsInsufficientData;
 
+  /// Title of the consent dialog for questions with a special category.
+  ///
+  /// In en, this message translates to:
+  /// **'Sensitive question'**
+  String get specialCategoryConsentTitle;
+
+  /// Body of the consent dialog for special-category questions; {category} is the localized name of the GDPR Art. 9 category.
+  ///
+  /// In en, this message translates to:
+  /// **'This question deals with the sensitive category \"{category}\". Your explicit consent is required to answer it; it will be recorded anonymously together with your answer.'**
+  String specialCategoryConsentBody(String category);
+
+  /// Confirmation button of the consent dialog for special-category questions.
+  ///
+  /// In en, this message translates to:
+  /// **'I consent and want to answer'**
+  String get specialCategoryConsentAccept;
+
+  /// No description provided for @specialCategoryRacialOrEthnicOrigin.
+  ///
+  /// In en, this message translates to:
+  /// **'Racial or ethnic origin'**
+  String get specialCategoryRacialOrEthnicOrigin;
+
+  /// No description provided for @specialCategoryPoliticalOpinion.
+  ///
+  /// In en, this message translates to:
+  /// **'Political opinion'**
+  String get specialCategoryPoliticalOpinion;
+
+  /// No description provided for @specialCategoryReligiousOrPhilosophicalBelief.
+  ///
+  /// In en, this message translates to:
+  /// **'Religious or philosophical belief'**
+  String get specialCategoryReligiousOrPhilosophicalBelief;
+
+  /// No description provided for @specialCategoryTradeUnionMembership.
+  ///
+  /// In en, this message translates to:
+  /// **'Trade union membership'**
+  String get specialCategoryTradeUnionMembership;
+
+  /// No description provided for @specialCategoryGeneticData.
+  ///
+  /// In en, this message translates to:
+  /// **'Genetic data'**
+  String get specialCategoryGeneticData;
+
+  /// No description provided for @specialCategoryBiometricData.
+  ///
+  /// In en, this message translates to:
+  /// **'Biometric data'**
+  String get specialCategoryBiometricData;
+
+  /// No description provided for @specialCategoryHealth.
+  ///
+  /// In en, this message translates to:
+  /// **'Health'**
+  String get specialCategoryHealth;
+
+  /// No description provided for @specialCategorySexLifeOrOrientation.
+  ///
+  /// In en, this message translates to:
+  /// **'Sex life or sexual orientation'**
+  String get specialCategorySexLifeOrOrientation;
+
+  /// No description provided for @specialCategoryCriminalConvictions.
+  ///
+  /// In en, this message translates to:
+  /// **'Criminal convictions'**
+  String get specialCategoryCriminalConvictions;
+
   /// Error shown when loading statistics fails for another reason.
   ///
   /// In en, this message translates to:

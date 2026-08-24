@@ -262,6 +262,46 @@ class AppLocalizationsEn extends AppLocalizations {
       'Not enough responses yet to show statistics';
 
   @override
+  String get specialCategoryConsentTitle => 'Sensitive question';
+
+  @override
+  String specialCategoryConsentBody(String category) {
+    return 'This question deals with the sensitive category \"$category\". Your explicit consent is required to answer it; it will be recorded anonymously together with your answer.';
+  }
+
+  @override
+  String get specialCategoryConsentAccept => 'I consent and want to answer';
+
+  @override
+  String get specialCategoryRacialOrEthnicOrigin => 'Racial or ethnic origin';
+
+  @override
+  String get specialCategoryPoliticalOpinion => 'Political opinion';
+
+  @override
+  String get specialCategoryReligiousOrPhilosophicalBelief =>
+      'Religious or philosophical belief';
+
+  @override
+  String get specialCategoryTradeUnionMembership => 'Trade union membership';
+
+  @override
+  String get specialCategoryGeneticData => 'Genetic data';
+
+  @override
+  String get specialCategoryBiometricData => 'Biometric data';
+
+  @override
+  String get specialCategoryHealth => 'Health';
+
+  @override
+  String get specialCategorySexLifeOrOrientation =>
+      'Sex life or sexual orientation';
+
+  @override
+  String get specialCategoryCriminalConvictions => 'Criminal convictions';
+
+  @override
   String get statsLoadFailed => 'Failed to load statistics';
 
   @override

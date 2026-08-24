@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:vote/models/answer_stats.dart';
 import 'package:vote/models/auth_models.dart';
 import 'package:vote/models/question.dart';
+import 'package:vote/models/special_category.dart';
 import 'package:vote/utils/constants.dart';
 
 void main() {
@@ -20,6 +21,44 @@ void main() {
       expect(question.categoryId, 2);
       expect(question.categoryName, 'General');
       expect(question.language, 'de');
+    });
+
+    test('parses special_category when present', () {
+      final question = Question.fromJson({
+        'id': 8,
+        'text': 'Sensitive question',
+        'category_id': 1,
+        'category_name': 'Health',
+        'language': 'en',
+        'special_category': 'health',
+      });
+
+      expect(question.specialCategory, SpecialCategory.health);
+    });
+
+    test('falls back to none when special_category is missing', () {
+      final question = Question.fromJson({
+        'id': 1,
+        'text': 'Regular question',
+        'category_id': 1,
+        'category_name': 'General',
+        'language': 'en',
+      });
+
+      expect(question.specialCategory, SpecialCategory.none);
+    });
+
+    test('maps unknown special_category labels to none', () {
+      final question = Question.fromJson({
+        'id': 1,
+        'text': 'Question with unknown category',
+        'category_id': 1,
+        'category_name': 'General',
+        'language': 'en',
+        'special_category': 'something_new',
+      });
+
+      expect(question.specialCategory, SpecialCategory.none);
     });
 
     test('falls back to uncategorizedFallback when category_name is null', () {

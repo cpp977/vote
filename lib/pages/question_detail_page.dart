@@ -9,6 +9,7 @@ import '../l10n/app_localizations.dart' show AppLocalizations;
 import '../models/answer_option.dart';
 import '../models/answer_stats.dart';
 import '../models/question.dart';
+import '../models/special_category.dart';
 import '../services/admin_service.dart';
 import '../services/auth_middleware.dart';
 import '../services/navigation_service.dart';
@@ -442,15 +443,73 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     }
   }
 
+  /// Asks the user to consent to answering a special-category question.
+  ///
+  /// Returns true only when the user explicitly confirmed; cancelling or
+  /// dismissing the dialog returns false.
+  Future<bool> _requestSpecialCategoryConsent() async {
+    final l10n = AppLocalizations.of(context);
+    final categoryLabel = switch (widget.question.specialCategory) {
+      SpecialCategory.racialOrEthnicOrigin =>
+        l10n.specialCategoryRacialOrEthnicOrigin,
+      SpecialCategory.politicalOpinion => l10n.specialCategoryPoliticalOpinion,
+      SpecialCategory.religiousOrPhilosophicalBelief =>
+        l10n.specialCategoryReligiousOrPhilosophicalBelief,
+      SpecialCategory.tradeUnionMembership =>
+        l10n.specialCategoryTradeUnionMembership,
+      SpecialCategory.geneticData => l10n.specialCategoryGeneticData,
+      SpecialCategory.biometricData => l10n.specialCategoryBiometricData,
+      SpecialCategory.health => l10n.specialCategoryHealth,
+      SpecialCategory.sexLifeOrOrientation =>
+        l10n.specialCategorySexLifeOrOrientation,
+      SpecialCategory.criminalConvictions =>
+        l10n.specialCategoryCriminalConvictions,
+      SpecialCategory.none => '',
+    };
+
+    final consent = await showDialog<bool>(
+      context: context,
+      barrierDismissible: false,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.specialCategoryConsentTitle),
+        content: Text(l10n.specialCategoryConsentBody(categoryLabel)),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext, false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(dialogContext, true),
+            child: Text(l10n.specialCategoryConsentAccept),
+          ),
+        ],
+      ),
+    );
+    return consent ?? false;
+  }
+
   Future<void> _submitAnswer(AnswerOption answer) async {
     final l10n = AppLocalizations.of(context);
+
+    // Questions flagged with a special category may only be answered after
+    // explicit consent, which is sent along with the answer.
+    final bool needsConsent =
+        widget.question.specialCategory != SpecialCategory.none;
+    if (needsConsent) {
+      final consented = await _requestSpecialCategoryConsent();
+      if (!consented || !mounted) return;
+    }
+
     setState(() {
       _submittingAnswerIds.add(answer.id);
     });
 
     try {
       // Tags are derived by the backend from the user profile.
-      final body = jsonEncode({'answer_id': answer.id});
+      final body = jsonEncode({
+        'answer_id': answer.id,
+        if (needsConsent) 'special_category_consent': true,
+      });
 
       final response = await _authMiddleware.post(
         '${ApiConfig.baseUrl}/questions/${widget.question.id}/answer',

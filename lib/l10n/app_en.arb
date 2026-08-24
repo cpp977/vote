@@ -358,6 +358,32 @@
   "@statsInsufficientData": {
     "description": "Neutral hint shown when statistics are withheld because fewer than the privacy threshold of matching answers exist."
   },
+  "specialCategoryConsentTitle": "Sensitive question",
+  "@specialCategoryConsentTitle": {
+    "description": "Title of the consent dialog for questions with a special category."
+  },
+  "specialCategoryConsentBody": "This question deals with the sensitive category \"{category}\". Your explicit consent is required to answer it; it will be recorded anonymously together with your answer.",
+  "@specialCategoryConsentBody": {
+    "description": "Body of the consent dialog for special-category questions; {category} is the localized name of the GDPR Art. 9 category.",
+    "placeholders": {
+      "category": {
+        "type": "String"
+      }
+    }
+  },
+  "specialCategoryConsentAccept": "I consent and want to answer",
+  "@specialCategoryConsentAccept": {
+    "description": "Confirmation button of the consent dialog for special-category questions."
+  },
+  "specialCategoryRacialOrEthnicOrigin": "Racial or ethnic origin",
+  "specialCategoryPoliticalOpinion": "Political opinion",
+  "specialCategoryReligiousOrPhilosophicalBelief": "Religious or philosophical belief",
+  "specialCategoryTradeUnionMembership": "Trade union membership",
+  "specialCategoryGeneticData": "Genetic data",
+  "specialCategoryBiometricData": "Biometric data",
+  "specialCategoryHealth": "Health",
+  "specialCategorySexLifeOrOrientation": "Sex life or sexual orientation",
+  "specialCategoryCriminalConvictions": "Criminal convictions",
   "statsLoadFailed": "Failed to load statistics",
   "@statsLoadFailed": {
     "description": "Error shown when loading statistics fails for another reason."
