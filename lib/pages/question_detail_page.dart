@@ -422,26 +422,8 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     });
 
     try {
-      final authController = context.read<AuthController>();
-
-      // Build tags from user demographic data
-      final tags = <String, String>{};
-      if (authController.birthYear != null) {
-        tags['birth_year'] = authController.birthYear.toString();
-      }
-      if (authController.gender != null) {
-        tags['gender'] = authController.gender!;
-      }
-      if (authController.nationality != null) {
-        tags['nationality'] = authController.nationality!;
-      }
-
-      // The new endpoint encodes the question id in the path and expects a
-      // JSON object for `tags` (the backend validates `tags` with `isObject`).
-      final body = jsonEncode({
-        'answer_id': answer.id,
-        if (tags.isNotEmpty) 'tags': tags,
-      });
+      // Tags are derived by the backend from the user profile.
+      final body = jsonEncode({'answer_id': answer.id});
 
       final response = await _authMiddleware.post(
         '${ApiConfig.baseUrl}/questions/${widget.question.id}/answer',
