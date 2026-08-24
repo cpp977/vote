@@ -13,6 +13,7 @@ import '../models/submission_models.dart';
 import '../services/admin_service.dart';
 import '../services/auth_middleware.dart';
 import '../widgets/configuration_menu.dart';
+import '../widgets/snack_bars.dart';
 
 /// Administrator detail view for a single submission.
 ///
@@ -171,23 +172,11 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
         return;
       }
       setState(() => _isReviewing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(failureMessage),
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      showErrorSnackBar(context, failureMessage);
     } catch (_) {
       if (!mounted) return;
       setState(() => _isReviewing = false);
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(failureMessage),
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      showErrorSnackBar(context, failureMessage);
     }
   }
 

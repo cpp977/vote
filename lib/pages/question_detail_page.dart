@@ -15,6 +15,7 @@ import '../services/auth_middleware.dart';
 import '../services/navigation_service.dart';
 import '../widgets/configuration_menu.dart';
 import '../widgets/question_stats_widget.dart';
+import '../widgets/snack_bars.dart';
 
 /// Detail page for a single question.
 ///
@@ -134,22 +135,10 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         context.read<AuthController>().logout(showLoginPage: true);
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.deleteQuestionFailed),
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      showErrorSnackBar(context, l10n.deleteQuestionFailed);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.deleteQuestionFailed),
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      showErrorSnackBar(context, l10n.deleteQuestionFailed);
     } finally {
       if (mounted) {
         setState(() => _isDeleting = false);
@@ -271,22 +260,10 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         context.read<AuthController>().logout(showLoginPage: true);
         return;
       }
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.changeQuestionFailed),
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      showErrorSnackBar(context, l10n.changeQuestionFailed);
     } catch (_) {
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.changeQuestionFailed),
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      showErrorSnackBar(context, l10n.changeQuestionFailed);
     } finally {
       if (mounted) {
         setState(() => _isChanging = false);
@@ -544,13 +521,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         setState(() {
           _submittingAnswerIds.remove(answer.id);
         });
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.alreadyAnswered),
-            backgroundColor: Theme.of(context).colorScheme.errorContainer,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        showErrorSnackBar(context, l10n.alreadyAnswered);
       } else if (response.statusCode == 401) {
         NavigationService.navigateToLogin();
       } else {
@@ -560,26 +531,14 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         final errorMessage = response.body.isNotEmpty
             ? response.body.toString()
             : l10n.serverError;
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(l10n.errorWithMessage(errorMessage)),
-            backgroundColor: Theme.of(context).colorScheme.errorContainer,
-            behavior: SnackBarBehavior.floating,
-          ),
-        );
+        showErrorSnackBar(context, l10n.errorWithMessage(errorMessage));
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _submittingAnswerIds.remove(answer.id);
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text(l10n.voteSubmitFailed(e.toString())),
-          backgroundColor: Theme.of(context).colorScheme.errorContainer,
-          behavior: SnackBarBehavior.floating,
-        ),
-      );
+      showErrorSnackBar(context, l10n.voteSubmitFailed(e.toString()));
     }
   }
 
