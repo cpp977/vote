@@ -51,7 +51,7 @@ class MyApp extends StatelessWidget {
           create: (_) => AuthController()..checkAuthStatus(),
         ),
         ChangeNotifierProvider(
-          create: (_) => ConfigurationController()..loadSavedColor(),
+          create: (_) => ConfigurationController()..loadSavedConfiguration(),
         ),
       ],
       child: Consumer<ConfigurationController>(
@@ -63,6 +63,14 @@ class MyApp extends StatelessWidget {
               colorScheme: ColorScheme.fromSeed(seedColor: config.seedColor),
               useMaterial3: true,
             ),
+            darkTheme: ThemeData(
+              colorScheme: ColorScheme.fromSeed(
+                seedColor: config.seedColor,
+                brightness: Brightness.dark,
+              ),
+              useMaterial3: true,
+            ),
+            themeMode: config.themeMode,
             home: const DeepLinkWrapper(),
             routes: {
               '/login': (context) => const LoginPage(),

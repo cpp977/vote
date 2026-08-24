@@ -1316,6 +1316,30 @@ abstract class AppLocalizations {
   /// **'Theme Color'**
   String get themeColor;
 
+  /// Label for the dark view setting under the Appearance submenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark View'**
+  String get darkView;
+
+  /// Option to follow the system-wide light or dark appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'System'**
+  String get themeModeSystem;
+
+  /// Option to always use the light appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Light'**
+  String get themeModeLight;
+
+  /// Option to always use the dark appearance.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark'**
+  String get themeModeDark;
+
   /// Name of the Deep Purple theme color option.
   ///
   /// In en, this message translates to:

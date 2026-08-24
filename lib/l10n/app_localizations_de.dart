@@ -707,6 +707,18 @@ class AppLocalizationsDe extends AppLocalizations {
   String get themeColor => 'Themenfarbe';
 
   @override
+  String get darkView => 'Dunkle Ansicht';
+
+  @override
+  String get themeModeSystem => 'System';
+
+  @override
+  String get themeModeLight => 'Hell';
+
+  @override
+  String get themeModeDark => 'Dunkel';
+
+  @override
   String get colorDeepPurple => 'Tiefes Lila';
 
   @override

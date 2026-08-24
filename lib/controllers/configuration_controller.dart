@@ -14,16 +14,21 @@ class ColorOption {
 
 /// Controller for managing runtime theme configuration.
 ///
-/// Holds the current theme seed color and notifies listeners when it
-/// changes. The selected color is persisted via [shared_preferences] so
-/// it survives app restarts.
+/// Holds the current theme seed color and the desired [ThemeMode] and
+/// notifies listeners when either changes. Both settings are persisted via
+/// [shared_preferences] so they survive app restarts.
 class ConfigurationController extends ChangeNotifier {
-  static const _seedColorKey = 'theme_seed_color';
+  static const String _seedColorKey = 'theme_seed_color';
+  static const String _themeModeKey = 'theme_mode';
 
   Color _seedColor;
+  ThemeMode _themeMode;
 
   /// The current seed color used to generate the Material 3 [ColorScheme].
   Color get seedColor => _seedColor;
+
+  /// The desired theme mode (system, light or dark).
+  ThemeMode get themeMode => _themeMode;
 
   /// Predefined seed colors the user can pick from.
   List<ColorOption> get availableColors => const [
@@ -39,29 +44,64 @@ class ConfigurationController extends ChangeNotifier {
     ColorOption('Amber', Colors.amber),
   ];
 
-  ConfigurationController({Color? initialSeedColor})
-    : _seedColor = initialSeedColor ?? Colors.deepPurple;
+  ConfigurationController({
+    Color? initialSeedColor,
+    ThemeMode? initialThemeMode,
+  }) : _seedColor = initialSeedColor ?? Colors.deepPurple,
+       _themeMode = initialThemeMode ?? ThemeMode.system;
 
   /// Changes the theme seed color, notifies listeners, and persists the
   /// selection.
   Future<void> setSeedColor(Color color) async {
+    if (_seedColor == color) return;
     _seedColor = color;
     notifyListeners();
-    await _persistColor(color);
+    await _persistSeedColor(color);
   }
 
-  /// Loads the previously saved seed color from persistent storage.
-  Future<void> loadSavedColor() async {
-    final prefs = await SharedPreferences.getInstance();
-    final colorValue = prefs.getInt(_seedColorKey);
-    if (colorValue != null) {
+  /// Changes the desired theme mode, notifies listeners, and persists the
+  /// selection.
+  Future<void> setThemeMode(ThemeMode mode) async {
+    if (_themeMode == mode) return;
+    _themeMode = mode;
+    notifyListeners();
+    await _persistThemeMode(mode);
+  }
+
+  /// Loads the previously saved seed color and theme mode from persistent
+  /// storage and notifies listeners if either changed.
+  Future<void> loadSavedConfiguration() async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+
+    bool changed = false;
+
+    final int? colorValue = prefs.getInt(_seedColorKey);
+    if (colorValue != null && Color(colorValue) != _seedColor) {
       _seedColor = Color(colorValue);
+      changed = true;
+    }
+
+    final String? modeName = prefs.getString(_themeModeKey);
+    final ThemeMode? savedMode = modeName == null
+        ? null
+        : ThemeMode.values.asNameMap()[modeName];
+    if (savedMode != null && savedMode != _themeMode) {
+      _themeMode = savedMode;
+      changed = true;
+    }
+
+    if (changed) {
       notifyListeners();
     }
   }
 
-  Future<void> _persistColor(Color color) async {
-    final prefs = await SharedPreferences.getInstance();
+  Future<void> _persistSeedColor(Color color) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
     await prefs.setInt(_seedColorKey, color.toARGB32());
+  }
+
+  Future<void> _persistThemeMode(ThemeMode mode) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_themeModeKey, mode.name);
   }
 }

@@ -412,6 +412,22 @@
   "@themeColor": {
     "description": "Label for the theme color setting under the Appearance submenu."
   },
+  "darkView": "Dunkle Ansicht",
+  "@darkView": {
+    "description": "Label for the dark view setting under the Appearance submenu."
+  },
+  "themeModeSystem": "System",
+  "@themeModeSystem": {
+    "description": "Option to follow the system-wide light or dark appearance."
+  },
+  "themeModeLight": "Hell",
+  "@themeModeLight": {
+    "description": "Option to always use the light appearance."
+  },
+  "themeModeDark": "Dunkel",
+  "@themeModeDark": {
+    "description": "Option to always use the dark appearance."
+  },
 
   "colorDeepPurple": "Tiefes Lila",
   "@colorDeepPurple": {

@@ -930,6 +930,22 @@
   "@themeColor": {
     "description": "Label for the theme color setting under the Appearance submenu."
   },
+  "darkView": "Dark View",
+  "@darkView": {
+    "description": "Label for the dark view setting under the Appearance submenu."
+  },
+  "themeModeSystem": "System",
+  "@themeModeSystem": {
+    "description": "Option to follow the system-wide light or dark appearance."
+  },
+  "themeModeLight": "Light",
+  "@themeModeLight": {
+    "description": "Option to always use the light appearance."
+  },
+  "themeModeDark": "Dark",
+  "@themeModeDark": {
+    "description": "Option to always use the dark appearance."
+  },
 
   "colorDeepPurple": "Deep Purple",
   "@colorDeepPurple": {
