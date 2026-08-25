@@ -51,7 +51,9 @@ class MyApp extends StatelessWidget {
           create: (_) => AuthController()..checkAuthStatus(),
         ),
         ChangeNotifierProvider(
-          create: (_) => ConfigurationController()..loadSavedConfiguration(),
+          create: (_) => ConfigurationController()
+            ..registerAsAppConfiguration()
+            ..loadSavedConfiguration(),
         ),
       ],
       child: Consumer<ConfigurationController>(
@@ -71,6 +73,7 @@ class MyApp extends StatelessWidget {
               useMaterial3: true,
             ),
             themeMode: config.themeMode,
+            locale: config.locale,
             home: const DeepLinkWrapper(),
             routes: {
               '/login': (context) => const LoginPage(),

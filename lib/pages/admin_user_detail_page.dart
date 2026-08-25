@@ -5,6 +5,7 @@ import '../controllers/auth_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../models/auth_models.dart';
 import '../services/admin_service.dart';
+import '../utils/countries.dart';
 import '../widgets/configuration_menu.dart';
 
 /// Administrator detail view for a single user.
@@ -340,7 +341,7 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
                             Icons.public_outlined,
                             l10n.nationalityLabel,
                             _user.nationality != null
-                                ? _user.nationality!
+                                ? countryDisplayName(l10n, _user.nationality!)
                                 : l10n.notAvailable,
                           ),
                         ],

@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 
 import 'package:flutter/material.dart';
@@ -13,6 +14,7 @@ import '../models/special_category.dart';
 import '../services/admin_service.dart';
 import '../services/auth_middleware.dart';
 import '../services/navigation_service.dart';
+import '../services/question_stats_service.dart';
 import '../widgets/configuration_menu.dart';
 import '../widgets/question_stats_widget.dart';
 import '../widgets/snack_bars.dart';
@@ -39,21 +41,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   final Set<int> _submittingAnswerIds = {};
   final Set<int> _votedAnswerIds = {};
 
-  // Statistics state
-  List<AnswerStats> _stats = [];
-  bool _isLoadingStats = true;
-  String? _statsErrorMessage;
-
-  // Neutral notice when the backend withheld statistics because too few
-  // matching answers exist (`insufficient_data`).
-  String? _statsInsufficientMessage;
-
-  // Gender-resolved statistics state
-  final List<String> _genders = ['m', 'w', 'd'];
-  final Map<String, List<AnswerStats>> _genderStats = {};
-  final Map<String, bool> _genderLoading = {};
-  final Map<String, String?> _genderErrors = {};
-  final Map<String, String?> _genderInsufficient = {};
+  // Statistics controller owning the active segment, lazy fetching and the
+  // per-segment cache (see [QuestionStatsController]).
+  late final QuestionStatsController _statsController;
 
   // Delete question state
   bool _isDeleting = false;
@@ -64,18 +54,29 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   @override
   void initState() {
     super.initState();
-    // Defer the initial fetches until after the first frame is built so the
+    // Overall statistics need no build context (localization happens inside
+    // the stats widget), so loading can start right away. Further segments
+    // load lazily when the user selects them.
+    _statsController = QuestionStatsController(
+      questionId: widget.question.id,
+      onUnauthorized: NavigationService.navigateToLogin,
+    );
+    _statsController.select(StatsQuery());
+    // Refresh the statistics tag contract (bucket width, nationalities,
+    // newly added tags); failures keep the built-in fallback dimensions.
+    unawaited(_statsController.loadMeta());
+    // Defer other initial fetches until after the first frame is built so the
     // build context can depend on inherited widgets such as `AppLocalizations`.
-    // Accessing `AppLocalizations.of(context)` from `initState` directly throws
-    // because inherited widgets are not yet available at that point.
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (!mounted) return;
       _fetchAnswers();
-      _fetchStats();
-      for (final gender in _genders) {
-        _fetchStatsForGender(gender);
-      }
     });
+  }
+
+  @override
+  void dispose() {
+    _statsController.dispose();
+    super.dispose();
   }
 
   /// Deletes the current question (admin only).
@@ -313,113 +314,6 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     }
   }
 
-  Future<void> _fetchStats() async {
-    final l10n = AppLocalizations.of(context);
-    setState(() {
-      _isLoadingStats = true;
-      _statsErrorMessage = null;
-      _statsInsufficientMessage = null;
-    });
-
-    try {
-      final response = await _authMiddleware.get(
-        '${ApiConfig.baseUrl}/questions/${widget.question.id}/stats',
-      );
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> envelope =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        final String status = envelope['status'] as String? ?? '';
-        if (status == 'insufficient_data') {
-          setState(() {
-            _statsInsufficientMessage = l10n.statsInsufficientData;
-            _isLoadingStats = false;
-          });
-          return;
-        }
-        final List<dynamic> data =
-            (envelope['answers'] as List?) ?? <dynamic>[];
-        setState(() {
-          _stats = data
-              .map((e) => AnswerStats.fromJson(e as Map<String, dynamic>))
-              .toList();
-          _isLoadingStats = false;
-        });
-      } else if (response.statusCode == 401) {
-        NavigationService.navigateToLogin();
-      } else if (response.statusCode == 404) {
-        setState(() {
-          _statsErrorMessage = l10n.statsNotAvailable;
-          _isLoadingStats = false;
-        });
-      } else {
-        setState(() {
-          _statsErrorMessage = l10n.statsLoadFailed;
-          _isLoadingStats = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _statsErrorMessage = l10n.connectionError(e.toString());
-        _isLoadingStats = false;
-      });
-    }
-  }
-
-  Future<void> _fetchStatsForGender(String gender) async {
-    final l10n = AppLocalizations.of(context);
-    setState(() {
-      _genderLoading[gender] = true;
-      _genderErrors[gender] = null;
-      _genderInsufficient[gender] = null;
-    });
-
-    try {
-      final uri = Uri.parse(
-        '${ApiConfig.baseUrl}/questions/${widget.question.id}/stats',
-      ).replace(queryParameters: {'gender': gender});
-      final response = await _authMiddleware.get(uri.toString());
-
-      if (response.statusCode == 200) {
-        final Map<String, dynamic> envelope =
-            jsonDecode(response.body) as Map<String, dynamic>;
-        final String status = envelope['status'] as String? ?? '';
-        if (status == 'insufficient_data') {
-          setState(() {
-            _genderInsufficient[gender] = l10n.statsInsufficientData;
-            _genderLoading[gender] = false;
-          });
-          return;
-        }
-        final List<dynamic> data =
-            (envelope['answers'] as List?) ?? <dynamic>[];
-        setState(() {
-          _genderStats[gender] = data
-              .map((e) => AnswerStats.fromJson(e as Map<String, dynamic>))
-              .toList();
-          _genderLoading[gender] = false;
-        });
-      } else if (response.statusCode == 401) {
-        NavigationService.navigateToLogin();
-      } else if (response.statusCode == 404) {
-        setState(() {
-          _genderErrors[gender] = l10n.statsNotAvailable;
-          _genderLoading[gender] = false;
-        });
-      } else {
-        setState(() {
-          _genderErrors[gender] = l10n.statsLoadFailed;
-          _genderLoading[gender] = false;
-        });
-      }
-    } catch (e) {
-      setState(() {
-        _genderErrors[gender] = l10n.connectionError(e.toString());
-        _genderLoading[gender] = false;
-      });
-    }
-  }
-
   /// Asks the user to consent to answering a special-category question.
   ///
   /// Returns true only when the user explicitly confirmed; cancelling or
@@ -500,11 +394,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
           _submittingAnswerIds.remove(answer.id);
           _votedAnswerIds.add(answer.id);
         });
-        // Refresh statistics to reflect the new vote
-        _fetchStats();
-        for (final gender in _genders) {
-          _fetchStatsForGender(gender);
-        }
+        // Refresh statistics (cached segments are dropped) so the visible
+        // segment reflects the new vote.
+        unawaited(_statsController.refresh());
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(l10n.voteSubmitted(answer.text)),
@@ -810,26 +702,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
               color: colorScheme.surface,
               child: Padding(
                 padding: const EdgeInsets.all(18),
-                child: QuestionStatsWidget(
-                  stats: _stats,
-                  isLoading: _isLoadingStats,
-                  errorMessage: _statsErrorMessage,
-                  insufficientDataMessage: _statsInsufficientMessage,
-                  genderStats: _genders.map((gender) {
-                    return GenderStats(
-                      gender: gender,
-                      label: gender == 'm'
-                          ? l10n.genderMale
-                          : gender == 'w'
-                          ? l10n.genderFemale
-                          : l10n.genderDiverse,
-                      stats: _genderStats[gender] ?? [],
-                      isLoading: _genderLoading[gender] ?? true,
-                      errorMessage: _genderErrors[gender],
-                      insufficientMessage: _genderInsufficient[gender],
-                    );
-                  }).toList(),
-                ),
+                child: QuestionStatsWidget(controller: _statsController),
               ),
             ),
           ],

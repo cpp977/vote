@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../config/api_config.dart';
 import '../controllers/auth_controller.dart';
+import '../controllers/configuration_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../models/question.dart';
 import '../services/auth_middleware.dart';
@@ -51,6 +52,15 @@ class _MyHomePageState extends State<MyHomePage> {
   /// Internal mutex guarding against concurrent fetches.
   bool _isFetching = false;
 
+  /// The app locale observed during the last [didChangeDependencies] pass,
+  /// used to detect language changes.
+  Locale? _observedLocale;
+
+  /// Set when the language changed while a question fetch was running; the
+  /// questions are refetched once that fetch finishes so the list is never
+  /// left in the old language.
+  bool _pendingLanguageRefresh = false;
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +81,38 @@ class _MyHomePageState extends State<MyHomePage> {
     _debounceTimer?.cancel();
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final ConfigurationController config = context
+        .watch<ConfigurationController>();
+    final Locale? previous = _observedLocale;
+    _observedLocale = config.locale;
+    // The first pass only records the initial locale; the initial load is
+    // triggered from initState.
+    if (previous == null || config.locale == previous) return;
+    _reloadLanguageDependentData();
+  }
+
+  /// Reloads everything that depends on the app language after the user
+  /// changed it in the settings: the category filter names and the question
+  /// list (refetched from the first page).
+  void _reloadLanguageDependentData() {
+    context.read<AuthController>().reloadCategories(
+      ConfigurationController.currentLanguageCode,
+    );
+    _refreshQuestionsForCurrentLanguage();
+  }
+
+  /// Refetches the question list, deferring to after any in-flight fetch.
+  void _refreshQuestionsForCurrentLanguage() {
+    if (_isFetching) {
+      _pendingLanguageRefresh = true;
+      return;
+    }
+    _fetchQuestions(reset: true);
   }
 
   /// Triggers loading the next page when the user scrolls near the bottom.
@@ -128,8 +170,7 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     }
 
-    final languageCode =
-        WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    final languageCode = ConfigurationController.currentLanguageCode;
     final preAuth = context.read<AuthController>();
     final preBirthYear = preAuth.birthYear;
     debugPrint('Fetching questions for language: $languageCode');
@@ -209,6 +250,12 @@ class _MyHomePageState extends State<MyHomePage> {
       });
     } finally {
       _isFetching = false;
+      // A language change arrived while this fetch was running; refetch now
+      // so the list does not keep stale results in the old language.
+      if (_pendingLanguageRefresh && mounted) {
+        _pendingLanguageRefresh = false;
+        _refreshQuestionsForCurrentLanguage();
+      }
     }
   }
 

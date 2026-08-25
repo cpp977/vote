@@ -3,6 +3,7 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/auth_controller.dart';
+import '../controllers/configuration_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../models/submission_models.dart';
 import '../services/submission_service.dart';
@@ -348,10 +349,10 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
     }
   }
 
-  /// Returns the 2-character language code for the device locale, constrained to
-  /// the languages the app actually supports.
+  /// Returns the 2-character language code backend requests should use,
+  /// constrained to the languages the app actually supports.
   String _currentLanguageCode() {
-    final code = WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+    final code = ConfigurationController.currentLanguageCode;
     return code == 'de' ? 'de' : 'en';
   }
 

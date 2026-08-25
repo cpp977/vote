@@ -378,7 +378,77 @@ class AppLocalizationsDe extends AppLocalizations {
   String get viewDonut => 'Donut';
 
   @override
-  String get viewGender => 'Geschlecht';
+  String get breakdownLabel => 'Aufschlüsselung';
+
+  @override
+  String get filterEveryone => 'Alle';
+
+  @override
+  String get addFilter => 'Filter hinzufügen';
+
+  @override
+  String get statsFilterSheetTitle => 'Ergebnisse aufschlüsseln';
+
+  @override
+  String get statsFilterSheetHint =>
+      'Beliebig viele Merkmale kombinieren. Segmente mit zu wenigen Antworten bleiben ausgeblendet.';
+
+  @override
+  String get removeFilterTooltip => 'Filter entfernen';
+
+  @override
+  String get dimensionAge => 'Alter';
+
+  @override
+  String get dimensionNationality => 'Nationalität';
+
+  @override
+  String get ageUnder18 => 'Unter 18';
+
+  @override
+  String get age18To29 => '18–29';
+
+  @override
+  String get age30To39 => '30–39';
+
+  @override
+  String get age40To49 => '40–49';
+
+  @override
+  String get age50To59 => '50–59';
+
+  @override
+  String get age60Plus => '60 oder älter';
+
+  @override
+  String get nationalityGermany => 'Deutschland';
+
+  @override
+  String get nationalityAustria => 'Österreich';
+
+  @override
+  String get nationalitySwitzerland => 'Schweiz';
+
+  @override
+  String get nationalityFrance => 'Frankreich';
+
+  @override
+  String get nationalityItaly => 'Italien';
+
+  @override
+  String get nationalityNetherlands => 'Niederlande';
+
+  @override
+  String get nationalityPoland => 'Polen';
+
+  @override
+  String get nationalitySpain => 'Spanien';
+
+  @override
+  String get nationalityTurkey => 'Türkei';
+
+  @override
+  String get nationalityUkraine => 'Ukraine';
 
   @override
   String get uncategorized => 'Ohne Kategorie';
@@ -717,6 +787,18 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get themeModeDark => 'Dunkel';
+
+  @override
+  String get language => 'Sprache';
+
+  @override
+  String get languageSystem => 'Systemsprache';
+
+  @override
+  String get languageEnglish => 'Englisch';
+
+  @override
+  String get languageGerman => 'Deutsch';
 
   @override
   String get colorDeepPurple => 'Tiefes Lila';

@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
+import '../controllers/configuration_controller.dart';
 import '../models/auth_models.dart';
 import 'auth_service.dart';
 import 'token_storage.dart';
@@ -169,8 +170,7 @@ class AuthMiddleware {
 
       // Re-fetch categories with the new token to ensure they stay up-to-date
       try {
-        final languageCode =
-            WidgetsBinding.instance.platformDispatcher.locale.languageCode;
+        final languageCode = ConfigurationController.currentLanguageCode;
         final cats = await _authService.getCategories(
           languageCode,
           accessToken: response.accessToken,

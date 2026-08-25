@@ -704,7 +704,7 @@ abstract class AppLocalizations {
   /// **'{count, plural, =0{No votes} =1{{count} vote total}other{{count} votes total}}'**
   String totalVotes(num count);
 
-  /// Per-gender vote count; {count} is the number of votes.
+  /// Per-segment vote count; {count} is the number of votes.
   ///
   /// In en, this message translates to:
   /// **'{count, plural, =0{No votes} =1{{count} vote}other{{count} votes}}'**
@@ -722,11 +722,149 @@ abstract class AppLocalizations {
   /// **'Donut'**
   String get viewDonut;
 
-  /// Tooltip for the gender-comparison view toggle.
+  /// Label above the statistics segment/filter chips row.
   ///
   /// In en, this message translates to:
-  /// **'Gender'**
-  String get viewGender;
+  /// **'Breakdown'**
+  String get breakdownLabel;
+
+  /// Chip resetting the statistics to all respondents (no filters).
+  ///
+  /// In en, this message translates to:
+  /// **'Everyone'**
+  String get filterEveryone;
+
+  /// Action chip opening the statistics filter sheet.
+  ///
+  /// In en, this message translates to:
+  /// **'Add filter'**
+  String get addFilter;
+
+  /// Title of the bottom sheet for selecting statistics segments.
+  ///
+  /// In en, this message translates to:
+  /// **'Break down the results'**
+  String get statsFilterSheetTitle;
+
+  /// Hint under the filter-sheet title explaining combinations and k-anonymity.
+  ///
+  /// In en, this message translates to:
+  /// **'Combine any number of characteristics. Segments with too few responses stay hidden.'**
+  String get statsFilterSheetHint;
+
+  /// Tooltip on the delete icon of an active statistics filter chip.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove filter'**
+  String get removeFilterTooltip;
+
+  /// Statistics dimension: age group of respondents.
+  ///
+  /// In en, this message translates to:
+  /// **'Age'**
+  String get dimensionAge;
+
+  /// Statistics dimension: nationality of respondents.
+  ///
+  /// In en, this message translates to:
+  /// **'Nationality'**
+  String get dimensionNationality;
+
+  /// Age-group option below 18 years.
+  ///
+  /// In en, this message translates to:
+  /// **'Under 18'**
+  String get ageUnder18;
+
+  /// Age-group option from 18 to 29 years.
+  ///
+  /// In en, this message translates to:
+  /// **'18–29'**
+  String get age18To29;
+
+  /// Age-group option from 30 to 39 years.
+  ///
+  /// In en, this message translates to:
+  /// **'30–39'**
+  String get age30To39;
+
+  /// Age-group option from 40 to 49 years.
+  ///
+  /// In en, this message translates to:
+  /// **'40–49'**
+  String get age40To49;
+
+  /// Age-group option from 50 to 59 years.
+  ///
+  /// In en, this message translates to:
+  /// **'50–59'**
+  String get age50To59;
+
+  /// Age-group option of 60 years and older.
+  ///
+  /// In en, this message translates to:
+  /// **'60 or older'**
+  String get age60Plus;
+
+  /// Nationality option Germany.
+  ///
+  /// In en, this message translates to:
+  /// **'Germany'**
+  String get nationalityGermany;
+
+  /// Nationality option Austria.
+  ///
+  /// In en, this message translates to:
+  /// **'Austria'**
+  String get nationalityAustria;
+
+  /// Nationality option Switzerland.
+  ///
+  /// In en, this message translates to:
+  /// **'Switzerland'**
+  String get nationalitySwitzerland;
+
+  /// Nationality option France.
+  ///
+  /// In en, this message translates to:
+  /// **'France'**
+  String get nationalityFrance;
+
+  /// Nationality option Italy.
+  ///
+  /// In en, this message translates to:
+  /// **'Italy'**
+  String get nationalityItaly;
+
+  /// Nationality option Netherlands.
+  ///
+  /// In en, this message translates to:
+  /// **'Netherlands'**
+  String get nationalityNetherlands;
+
+  /// Nationality option Poland.
+  ///
+  /// In en, this message translates to:
+  /// **'Poland'**
+  String get nationalityPoland;
+
+  /// Nationality option Spain.
+  ///
+  /// In en, this message translates to:
+  /// **'Spain'**
+  String get nationalitySpain;
+
+  /// Nationality option Türkiye.
+  ///
+  /// In en, this message translates to:
+  /// **'Türkiye'**
+  String get nationalityTurkey;
+
+  /// Nationality option Ukraine.
+  ///
+  /// In en, this message translates to:
+  /// **'Ukraine'**
+  String get nationalityUkraine;
 
   /// Fallback category name when the backend returns none.
   ///
@@ -1339,6 +1477,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark'**
   String get themeModeDark;
+
+  /// Label for the language setting under the Appearance submenu.
+  ///
+  /// In en, this message translates to:
+  /// **'Language'**
+  String get language;
+
+  /// Option to infer the app language from the system locale.
+  ///
+  /// In en, this message translates to:
+  /// **'System Language'**
+  String get languageSystem;
+
+  /// Name of the English language option.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get languageEnglish;
+
+  /// Name of the German language option.
+  ///
+  /// In en, this message translates to:
+  /// **'German'**
+  String get languageGerman;
 
   /// Name of the Deep Purple theme color option.
   ///

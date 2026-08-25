@@ -455,7 +455,7 @@
   },
   "votesCount": "{count, plural, =0{No votes} =1{{count} vote}other{{count} votes}}",
   "@votesCount": {
-    "description": "Per-gender vote count; {count} is the number of votes.",
+    "description": "Per-segment vote count; {count} is the number of votes.",
     "placeholders": {
       "count": {
         "type": "num"
@@ -470,9 +470,101 @@
   "@viewDonut": {
     "description": "Tooltip for the donut-chart view toggle."
   },
-  "viewGender": "Gender",
-  "@viewGender": {
-    "description": "Tooltip for the gender-comparison view toggle."
+  "breakdownLabel": "Breakdown",
+  "@breakdownLabel": {
+    "description": "Label above the statistics segment/filter chips row."
+  },
+  "filterEveryone": "Everyone",
+  "@filterEveryone": {
+    "description": "Chip resetting the statistics to all respondents (no filters)."
+  },
+  "addFilter": "Add filter",
+  "@addFilter": {
+    "description": "Action chip opening the statistics filter sheet."
+  },
+  "statsFilterSheetTitle": "Break down the results",
+  "@statsFilterSheetTitle": {
+    "description": "Title of the bottom sheet for selecting statistics segments."
+  },
+  "statsFilterSheetHint": "Combine any number of characteristics. Segments with too few responses stay hidden.",
+  "@statsFilterSheetHint": {
+    "description": "Hint under the filter-sheet title explaining combinations and k-anonymity."
+  },
+  "removeFilterTooltip": "Remove filter",
+  "@removeFilterTooltip": {
+    "description": "Tooltip on the delete icon of an active statistics filter chip."
+  },
+  "dimensionAge": "Age",
+  "@dimensionAge": {
+    "description": "Statistics dimension: age group of respondents."
+  },
+  "dimensionNationality": "Nationality",
+  "@dimensionNationality": {
+    "description": "Statistics dimension: nationality of respondents."
+  },
+  "ageUnder18": "Under 18",
+  "@ageUnder18": {
+    "description": "Age-group option below 18 years."
+  },
+  "age18To29": "18–29",
+  "@age18To29": {
+    "description": "Age-group option from 18 to 29 years."
+  },
+  "age30To39": "30–39",
+  "@age30To39": {
+    "description": "Age-group option from 30 to 39 years."
+  },
+  "age40To49": "40–49",
+  "@age40To49": {
+    "description": "Age-group option from 40 to 49 years."
+  },
+  "age50To59": "50–59",
+  "@age50To59": {
+    "description": "Age-group option from 50 to 59 years."
+  },
+  "age60Plus": "60 or older",
+  "@age60Plus": {
+    "description": "Age-group option of 60 years and older."
+  },
+  "nationalityGermany": "Germany",
+  "@nationalityGermany": {
+    "description": "Nationality option Germany."
+  },
+  "nationalityAustria": "Austria",
+  "@nationalityAustria": {
+    "description": "Nationality option Austria."
+  },
+  "nationalitySwitzerland": "Switzerland",
+  "@nationalitySwitzerland": {
+    "description": "Nationality option Switzerland."
+  },
+  "nationalityFrance": "France",
+  "@nationalityFrance": {
+    "description": "Nationality option France."
+  },
+  "nationalityItaly": "Italy",
+  "@nationalityItaly": {
+    "description": "Nationality option Italy."
+  },
+  "nationalityNetherlands": "Netherlands",
+  "@nationalityNetherlands": {
+    "description": "Nationality option Netherlands."
+  },
+  "nationalityPoland": "Poland",
+  "@nationalityPoland": {
+    "description": "Nationality option Poland."
+  },
+  "nationalitySpain": "Spain",
+  "@nationalitySpain": {
+    "description": "Nationality option Spain."
+  },
+  "nationalityTurkey": "Türkiye",
+  "@nationalityTurkey": {
+    "description": "Nationality option Türkiye."
+  },
+  "nationalityUkraine": "Ukraine",
+  "@nationalityUkraine": {
+    "description": "Nationality option Ukraine."
   },
 
   "uncategorized": "Uncategorized",
@@ -945,6 +1037,22 @@
   "themeModeDark": "Dark",
   "@themeModeDark": {
     "description": "Option to always use the dark appearance."
+  },
+  "language": "Language",
+  "@language": {
+    "description": "Label for the language setting under the Appearance submenu."
+  },
+  "languageSystem": "System Language",
+  "@languageSystem": {
+    "description": "Option to infer the app language from the system locale."
+  },
+  "languageEnglish": "English",
+  "@languageEnglish": {
+    "description": "Name of the English language option."
+  },
+  "languageGerman": "German",
+  "@languageGerman": {
+    "description": "Name of the German language option."
   },
 
   "colorDeepPurple": "Deep Purple",

@@ -31,6 +31,11 @@ void main() {
         tokenStorage.genderResult = 'f';
         tokenStorage.nationalityResult = 'US';
         tokenStorage.isAdminResult = false;
+        // checkAuthStatus refreshes the categories from the backend, so the
+        // service result (not the stored copy) determines the mapping.
+        authService.categoriesResult = [
+          const Category(id: 1, name: 'General', language: 'en'),
+        ];
         tokenStorage.categoriesResult = {1: 'General'};
 
         await controller.checkAuthStatus();
@@ -84,6 +89,44 @@ void main() {
         expect(controller.isLoading, isTrue);
         await future;
         expect(controller.isLoading, isFalse);
+      });
+    });
+
+    // ── reloadCategories ─────────────────────
+
+    group('reloadCategories', () {
+      test('updates and persists the category mapping', () async {
+        authService.categoriesResult = [
+          const Category(id: 1, name: 'Allgemein', language: 'de'),
+          const Category(id: 2, name: 'Umwelt', language: 'de'),
+        ];
+
+        await controller.reloadCategories('de');
+
+        expect(controller.categories, {1: 'Allgemein', 2: 'Umwelt'});
+        expect(tokenStorage.categoriesStored, {1: 'Allgemein', 2: 'Umwelt'});
+      });
+
+      test('notifies listeners on success', () async {
+        int notifications = 0;
+        controller.addListener(() => notifications++);
+
+        await controller.reloadCategories('en');
+
+        expect(notifications, 1);
+      });
+
+      test('keeps the previous mapping when the fetch fails', () async {
+        authService.categoriesResult = [
+          const Category(id: 1, name: 'General', language: 'en'),
+        ];
+        await controller.reloadCategories('en');
+        final previous = controller.categories;
+
+        authService.categoriesThrows = true;
+        await controller.reloadCategories('de');
+
+        expect(controller.categories, previous);
       });
     });
 
@@ -525,7 +568,12 @@ class FakeAuthService extends AuthService {
   Future<User> register(RegisterRequest request) async {
     lastRegisterRequest = request;
     if (registerThrows) throw registerException!;
-    return registerResult ?? User(id: '00000000-0000-0000-0000-000000000000', username: '', email: '');
+    return registerResult ??
+        User(
+          id: '00000000-0000-0000-0000-000000000000',
+          username: '',
+          email: '',
+        );
   }
 
   @override
@@ -550,7 +598,12 @@ class FakeAuthService extends AuthService {
   @override
   Future<User> getCurrentUser(String accessToken) async {
     if (currentUserThrows) throw currentUserException!;
-    return currentUserResult ?? User(id: '00000000-0000-0000-0000-000000000000', username: '', email: '');
+    return currentUserResult ??
+        User(
+          id: '00000000-0000-0000-0000-000000000000',
+          username: '',
+          email: '',
+        );
   }
 
   @override
@@ -559,7 +612,12 @@ class FakeAuthService extends AuthService {
     UpdateUserRequest request,
   ) async {
     if (updateCurrentUserThrows) throw updateCurrentUserException!;
-    return updateCurrentUserResult ?? User(id: '00000000-0000-0000-0000-000000000000', username: '', email: '');
+    return updateCurrentUserResult ??
+        User(
+          id: '00000000-0000-0000-0000-000000000000',
+          username: '',
+          email: '',
+        );
   }
 
   @override

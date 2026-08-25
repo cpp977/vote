@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import '../controllers/configuration_controller.dart';
 import '../models/auth_models.dart';
 import '../l10n/auth_error_localization.dart';
 import '../services/auth_service.dart';
@@ -85,21 +86,37 @@ class AuthController extends ChangeNotifier {
       // Categories are public — fetch them regardless of auth state so
       // the category filter is available on the home page even without
       // a login.
-      try {
-        final languageCode =
-            WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-        final cats = await _authService.getCategories(languageCode);
-        final map = <int, String>{for (final c in cats) c.id: c.name};
-        _categories = map;
-        await _tokenStorage.setCategories(map);
-      } catch (_) {
-        // Category fetch failed — the mapping stays empty; the user can
-        // still browse questions without a category filter.
-      }
+      await reloadCategories(ConfigurationController.currentLanguageCode);
     } catch (_) {
       _isAuthenticated = false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// Re-fetches the category id -> name mapping for [languageCode], updates
+  /// [categories] and persists the new mapping.
+  ///
+  /// Pass [accessToken] when the request must be authenticated with a fresh
+  /// token (e.g. right after a successful login). Failures are swallowed:
+  /// the previous mapping stays in place, since browsing also works without
+  /// a category filter.
+  Future<void> reloadCategories(
+    String languageCode, {
+    String? accessToken,
+  }) async {
+    try {
+      final cats = await _authService.getCategories(
+        languageCode,
+        accessToken: accessToken,
+      );
+      final map = <int, String>{for (final c in cats) c.id: c.name};
+      _categories = map;
+      await _tokenStorage.setCategories(map);
+      notifyListeners();
+    } catch (_) {
+      // Category fetch failed — keep the previous mapping; the user can
+      // still browse questions without a category filter.
     }
   }
 
@@ -194,20 +211,10 @@ class AuthController extends ChangeNotifier {
       // Fetch the available categories (category id -> name mapping) in the
       // user's current locale so the category filter matches the language of
       // the questions loaded by the home screen.
-      try {
-        final languageCode =
-            WidgetsBinding.instance.platformDispatcher.locale.languageCode;
-        final cats = await _authService.getCategories(
-          languageCode,
-          accessToken: response.accessToken,
-        );
-        final map = <int, String>{for (final c in cats) c.id: c.name};
-        _categories = map;
-        await _tokenStorage.setCategories(map);
-      } catch (_) {
-        // Category fetch failed — the mapping stays empty; the user can still
-        // browse questions without a category filter.
-      }
+      await reloadCategories(
+        ConfigurationController.currentLanguageCode,
+        accessToken: response.accessToken,
+      );
 
       _isAuthenticated = true;
       _setLoading(false);

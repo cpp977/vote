@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/auth_error_localization.dart';
+import '../utils/countries.dart';
 import '../widgets/configuration_menu.dart';
 
 /// Page for user registration.
@@ -19,45 +20,23 @@ class _RegisterPageState extends State<RegisterPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
-  final _otherNationalityController = TextEditingController();
   int? _birthYear;
   String? _gender;
   String? _nationality;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  static const List<String> _nationalities = [
-    'Austrian',
-    'Belgian',
-    'British',
-    'Bulgarian',
-    'Croatian',
-    'Cypriot',
-    'Czech',
-    'Danish',
-    'Dutch',
-    'Estonian',
-    'Finnish',
-    'French',
-    'German',
-    'Greek',
-    'Hungarian',
-    'Irish',
-    'Italian',
-    'Latvian',
-    'Lithuanian',
-    'Luxembourgish',
-    'Maltese',
-    'Polish',
-    'Portuguese',
-    'Romanian',
-    'Slovak',
-    'Slovenian',
-    'Spanish',
-    'Swedish',
-    'Swiss',
-    'Other',
-  ];
+  /// Countries sorted by localized display name for the dropdown.
+  List<Country> _sortedCountries(AppLocalizations l10n) {
+    final sorted = [...countries];
+    sorted.sort(
+      (a, b) => countryDisplayName(
+        l10n,
+        a.code,
+      ).toLowerCase().compareTo(countryDisplayName(l10n, b.code).toLowerCase()),
+    );
+    return sorted;
+  }
 
   static List<int> get _birthYears {
     final currentYear = DateTime.now().year;
@@ -70,16 +49,11 @@ class _RegisterPageState extends State<RegisterPage> {
     _emailController.dispose();
     _passwordController.dispose();
     _confirmPasswordController.dispose();
-    _otherNationalityController.dispose();
     super.dispose();
   }
 
   Future<void> _handleRegister() async {
     if (!_formKey.currentState!.validate()) return;
-
-    final nationality = _nationality == 'Other'
-        ? _otherNationalityController.text.trim()
-        : _nationality;
 
     final authController = context.read<AuthController>();
     final l10n = AppLocalizations.of(context);
@@ -89,7 +63,7 @@ class _RegisterPageState extends State<RegisterPage> {
       password: _passwordController.text,
       birthYear: _birthYear,
       gender: _gender,
-      nationality: nationality?.isEmpty ?? true ? null : nationality,
+      nationality: _nationality,
     );
 
     if (success && mounted) {
@@ -262,7 +236,9 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Nationality field
+                        // Nationality field: an ISO 3166-1 alpha-2 country
+                        // code is sent to the backend; only the label is
+                        // localized.
                         DropdownButtonFormField<String>(
                           initialValue: _nationality,
                           decoration: InputDecoration(
@@ -272,35 +248,17 @@ class _RegisterPageState extends State<RegisterPage> {
                               borderRadius: BorderRadius.circular(12),
                             ),
                           ),
-                          items: _nationalities
+                          items: _sortedCountries(l10n)
                               .map(
-                                (n) =>
-                                    DropdownMenuItem(value: n, child: Text(n)),
+                                (c) => DropdownMenuItem(
+                                  value: c.code,
+                                  child: Text(countryDisplayName(l10n, c.code)),
+                                ),
                               )
                               .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _nationality = value;
-                              if (value != 'Other') {
-                                _otherNationalityController.clear();
-                              }
-                            });
-                          },
+                          onChanged: (value) =>
+                              setState(() => _nationality = value),
                         ),
-                        if (_nationality == 'Other') ...[
-                          const SizedBox(height: 16),
-                          TextFormField(
-                            controller: _otherNationalityController,
-                            decoration: InputDecoration(
-                              labelText: l10n.nationalityOtherLabel,
-                              prefixIcon: const Icon(Icons.edit_outlined),
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                            ),
-                            textInputAction: TextInputAction.next,
-                          ),
-                        ],
                         const SizedBox(height: 16),
 
                         // Password field

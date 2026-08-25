@@ -2,31 +2,29 @@ import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
 import '../models/answer_stats.dart';
+import '../models/stats_dimensions.dart';
+import '../services/question_stats_service.dart';
 import '../utils/constants.dart';
+
+/// Which chart type is currently rendered.
+enum _ChartType { bars, donut }
 
 /// A widget that displays voting statistics for a question.
 ///
-/// Uses a tabbed layout to support multiple views of the statistics.
-/// Supports bar chart, donut chart, and gender comparison views.
+/// Visualization and segmentation are orthogonal:
+///  - The toggle in the header selects the chart type (bars or donut).
+///  - The "Breakdown" row selects *whose* votes are shown: everyone by
+///    default, or any combination of dimension filters (gender, age,
+///    nationality, … — anything listed in [statsDimensions]). Filters are
+///    picked via a bottom sheet and shown as removable chips; combinations
+///    across dimensions are resolved by the backend into a single segment.
+///
+/// Segment data is provided by [QuestionStatsController], which loads segments
+/// lazily and caches them.
 class QuestionStatsWidget extends StatefulWidget {
-  final List<AnswerStats> stats;
-  final bool isLoading;
-  final String? errorMessage;
+  final QuestionStatsController controller;
 
-  /// Neutral notice for the bar and donut views, shown when the backend
-  /// withheld statistics because too few matching answers exist
-  /// (`insufficient_data`). Rendered like the empty state, not as an error.
-  final String? insufficientDataMessage;
-  final List<GenderStats> genderStats;
-
-  const QuestionStatsWidget({
-    super.key,
-    required this.stats,
-    required this.isLoading,
-    this.errorMessage,
-    this.insufficientDataMessage,
-    required this.genderStats,
-  });
+  const QuestionStatsWidget({super.key, required this.controller});
 
   @override
   State<QuestionStatsWidget> createState() => _QuestionStatsWidgetState();
@@ -34,10 +32,13 @@ class QuestionStatsWidget extends StatefulWidget {
 
 class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
     with TickerProviderStateMixin {
-  int _selectedView = 0; // 0 = bars, 1 = donut, 2 = gender
-  int _selectedGenderIndex = 0;
+  _ChartType _chartType = _ChartType.bars;
   late AnimationController _animController;
   late Animation<double> _fadeAnimation;
+
+  /// Query whose content was animated last, so switching charts or segments
+  /// replays the fade-in.
+  String? _lastAnimatedKey;
 
   @override
   void initState() {
@@ -50,7 +51,6 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
       parent: _animController,
       curve: Curves.easeOut,
     );
-    _animController.forward();
   }
 
   @override
@@ -59,88 +59,226 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
     super.dispose();
   }
 
+  /// Replays the fade animation when the displayed content changed.
+  void _animateFor(String key) {
+    if (_lastAnimatedKey == key) return;
+    _lastAnimatedKey = key;
+    _animController.reset();
+    _animController.forward();
+  }
+
   @override
   Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: widget.controller,
+      builder: (context, _) {
+        final l10n = AppLocalizations.of(context);
+        final query = widget.controller.activeQuery;
+        _animateFor('${query.cacheKey}|${_chartType.name}');
+
+        final activeState = widget.controller.activeState;
+        final totalVotes = _totalVotesOf(
+          widget.controller.stateFor(StatsQuery.overall()),
+        );
+
+        return Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            // Header with total votes and chart-type toggle
+            Row(
+              children: [
+                Expanded(
+                  child: _TotalVotesBadge(
+                    state: activeState,
+                    fallbackTotalVotes: totalVotes,
+                  ),
+                ),
+                const SizedBox(width: 12),
+                _ViewToggle(
+                  selected: _chartType,
+                  onSelected: (type) => setState(() => _chartType = type),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+            // Breakdown / segment filter row
+            _buildBreakdownRow(l10n),
+            const SizedBox(height: 16),
+            // Content area
+            FadeTransition(
+              opacity: _fadeAnimation,
+              child: _buildContent(l10n, query, activeState),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  int _totalVotesOf(SegmentLoadState state) {
+    final result = state.result;
+    if (result == null || result.insufficientData || result.hasError) return 0;
+    return result.answers.fold<int>(0, (sum, s) => sum + s.count);
+  }
+
+  // ─── Breakdown Row ───────────────────────────────────────
+
+  Widget _buildBreakdownRow(AppLocalizations l10n) {
     final colorScheme = Theme.of(context).colorScheme;
-    final totalVotes = widget.stats.fold<int>(0, (sum, s) => sum + s.count);
+    final query = widget.controller.activeQuery;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Header with total votes and view toggle
-        Row(
+        Text(
+          l10n.breakdownLabel,
+          style: Theme.of(
+            context,
+          ).textTheme.labelLarge?.copyWith(color: colorScheme.onSurfaceVariant),
+        ),
+        const SizedBox(height: 8),
+        Wrap(
+          spacing: 8,
+          runSpacing: 8,
           children: [
-            Expanded(child: _TotalVotesBadge(totalVotes: totalVotes)),
-            const SizedBox(width: 12),
-            _ViewToggle(
-              selectedIndex: _selectedView,
-              onSelected: (index) {
-                setState(() => _selectedView = index);
-                _animController.reset();
-                _animController.forward();
-              },
+            FilterChip(
+              label: Text(l10n.filterEveryone),
+              selected: query.isOverall,
+              onSelected: query.isOverall
+                  ? null
+                  : (_) => widget.controller.select(StatsQuery.overall()),
+              avatar: Icon(
+                Icons.groups,
+                size: 18,
+                color: query.isOverall ? colorScheme.onPrimaryContainer : null,
+              ),
+            ),
+            // One removable chip per active dimension filter.
+            for (final entry in query.filters.entries)
+              _buildActiveFilterChip(l10n, entry.key, entry.value),
+            ActionChip(
+              avatar: const Icon(Icons.tune, size: 18),
+              label: Text(l10n.addFilter),
+              onPressed: _openFilterSheet,
             ),
           ],
-        ),
-        const SizedBox(height: 16),
-        // Content area
-        FadeTransition(
-          opacity: _fadeAnimation,
-          child: _buildContent(colorScheme),
         ),
       ],
     );
   }
 
-  Widget _buildContent(ColorScheme colorScheme) {
-    switch (_selectedView) {
-      case 0:
-        return _buildBarChart(colorScheme);
-      case 1:
-        return _buildDonutChart(colorScheme);
-      case 2:
-        return _buildGenderComparison(colorScheme);
-      default:
-        return const SizedBox.shrink();
-    }
+  Widget _buildActiveFilterChip(
+    AppLocalizations l10n,
+    String dimensionKey,
+    String value,
+  ) {
+    final colorScheme = Theme.of(context).colorScheme;
+    final dimension = widget.controller.dimensions
+        .where((d) => d.key == dimensionKey)
+        .firstOrNull;
+    if (dimension == null) return const SizedBox.shrink();
+    final dimensionValue = dimension.values
+        .where((v) => v.value == value)
+        .firstOrNull;
+    final label =
+        '${dimension.label(l10n)} · '
+        '${dimensionValue?.label(l10n) ?? value}';
+
+    return InputChip(
+      avatar: Icon(dimension.icon, size: 16, color: colorScheme.primary),
+      label: Text(label),
+      deleteButtonTooltipMessage: l10n.removeFilterTooltip,
+      onDeleted: () => widget.controller.select(
+        widget.controller.activeQuery.withoutFilter(dimensionKey),
+      ),
+      onPressed: () => _openFilterSheet(),
+    );
   }
 
-  // ─── Bar Chart View ──────────────────────────────────────
+  Future<void> _openFilterSheet() {
+    return showModalBottomSheet<void>(
+      context: context,
+      showDragHandle: true,
+      isScrollControlled: true,
+      builder: (sheetContext) =>
+          _SegmentFilterSheet(controller: widget.controller),
+    );
+  }
 
-  Widget _buildBarChart(ColorScheme colorScheme) {
-    if (widget.isLoading) {
+  // ─── Content Area ────────────────────────────────────────
+
+  Widget _buildContent(
+    AppLocalizations l10n,
+    StatsQuery query,
+    SegmentLoadState state,
+  ) {
+    if (state.isLoading) {
       return const SizedBox(
         height: 200,
         child: Center(child: CircularProgressIndicator()),
       );
     }
-    if (widget.insufficientDataMessage != null) {
-      return _buildEmpty(colorScheme, widget.insufficientDataMessage);
+
+    final result = state.result!;
+    if (result.insufficientData) {
+      return _buildEmpty(context, l10n.statsInsufficientData);
     }
-    if (widget.errorMessage != null) {
-      return _buildError(widget.errorMessage!, colorScheme);
-    }
-    if (widget.stats.isEmpty) {
-      return _buildEmpty(colorScheme);
+    if (result.hasError) {
+      return switch (result.errorKind!) {
+        SegmentErrorKind.notAvailable => _buildEmpty(
+          context,
+          l10n.statsNotAvailable,
+        ),
+        SegmentErrorKind.loadFailed => _buildError(
+          result.errorDetail != null
+              ? l10n.connectionError(result.errorDetail!)
+              : l10n.statsLoadFailed,
+        ),
+      };
     }
 
-    final sorted = List<AnswerStats>.from(widget.stats)
+    final stats = result.answers;
+    if (stats.isEmpty) return _buildEmpty(context, l10n.noVotesYet);
+
+    final sorted = List<AnswerStats>.from(stats)
       ..sort((a, b) => b.count.compareTo(a.count));
+
+    return switch (_chartType) {
+      _ChartType.bars => _buildBarChart(l10n, query, sorted),
+      _ChartType.donut => _buildDonutChart(sorted),
+    };
+  }
+
+  Widget _buildBarChart(
+    AppLocalizations l10n,
+    StatsQuery query,
+    List<AnswerStats> sorted,
+  ) {
     final maxCount = sorted.first.count;
+    final totalVotes = sorted.fold<int>(0, (sum, s) => sum + s.count);
 
     return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Legend
-        _buildLegend(colorScheme, sorted),
+        if (!query.isOverall)
+          Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: Text(
+              l10n.votesCount(totalVotes),
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+        _buildLegend(context, sorted),
         const SizedBox(height: 16),
-        // Bars
         ...List.generate(sorted.length, (index) {
           final stat = sorted[index];
           return _AnimatedBar(
             stat: stat,
             color: answerColors[index % answerColors.length],
             maxCount: maxCount,
-            isWinner: index == 0 && stat.count > 0,
+            isWinner: index == 0 && stat.count > 0 && query.isOverall,
             delay: Duration(milliseconds: index * 80),
           );
         }),
@@ -148,28 +286,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
     );
   }
 
-  // ─── Donut Chart View ────────────────────────────────────
-
-  Widget _buildDonutChart(ColorScheme colorScheme) {
-    if (widget.isLoading) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (widget.insufficientDataMessage != null) {
-      return _buildEmpty(colorScheme, widget.insufficientDataMessage);
-    }
-    if (widget.errorMessage != null) {
-      return _buildError(widget.errorMessage!, colorScheme);
-    }
-    if (widget.stats.isEmpty) {
-      return _buildEmpty(colorScheme);
-    }
-
-    final sorted = List<AnswerStats>.from(widget.stats)
-      ..sort((a, b) => b.count.compareTo(a.count));
-
+  Widget _buildDonutChart(List<AnswerStats> sorted) {
     return Column(
       children: [
         Center(
@@ -180,112 +297,15 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
           ),
         ),
         const SizedBox(height: 16),
-        _buildLegend(colorScheme, sorted),
-      ],
-    );
-  }
-
-  // ─── Gender Comparison View ──────────────────────────────
-
-  Widget _buildGenderComparison(ColorScheme colorScheme) {
-    final allLoading = widget.genderStats.every((g) => g.isLoading);
-    if (allLoading) {
-      return const SizedBox(
-        height: 200,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-
-    return Column(
-      children: [
-        // Gender selector chips
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            children: List.generate(widget.genderStats.length, (index) {
-              final g = widget.genderStats[index];
-              final isSelected = _selectedGenderIndex == index;
-              return Padding(
-                padding: const EdgeInsets.only(right: 8),
-                child: ChoiceChip(
-                  label: Text(g.label),
-                  selected: isSelected,
-                  onSelected: (_) {
-                    setState(() => _selectedGenderIndex = index);
-                  },
-                  selectedColor: colorScheme.primaryContainer,
-                  labelStyle: TextStyle(
-                    color: isSelected
-                        ? colorScheme.onPrimaryContainer
-                        : colorScheme.onSurfaceVariant,
-                    fontWeight: isSelected
-                        ? FontWeight.w600
-                        : FontWeight.normal,
-                  ),
-                ),
-              );
-            }),
-          ),
-        ),
-        const SizedBox(height: 16),
-        // Selected gender stats
-        if (_selectedGenderIndex < widget.genderStats.length)
-          _buildGenderStatsForIndex(colorScheme, _selectedGenderIndex),
-      ],
-    );
-  }
-
-  Widget _buildGenderStatsForIndex(ColorScheme colorScheme, int index) {
-    final l10n = AppLocalizations.of(context);
-    final g = widget.genderStats[index];
-    if (g.isLoading) {
-      return const SizedBox(
-        height: 120,
-        child: Center(child: CircularProgressIndicator()),
-      );
-    }
-    if (g.insufficientMessage != null) {
-      return _buildEmpty(colorScheme, g.insufficientMessage);
-    }
-    if (g.errorMessage != null) {
-      return _buildError(g.errorMessage!, colorScheme);
-    }
-    if (g.stats.isEmpty) {
-      return _buildEmpty(colorScheme);
-    }
-
-    final sorted = List<AnswerStats>.from(g.stats)
-      ..sort((a, b) => b.count.compareTo(a.count));
-    final totalVotes = g.stats.fold<int>(0, (sum, s) => sum + s.count);
-    final maxCount = sorted.first.count;
-
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        Text(
-          l10n.votesCount(totalVotes),
-          style: Theme.of(
-            context,
-          ).textTheme.bodySmall?.copyWith(color: colorScheme.onSurfaceVariant),
-        ),
-        const SizedBox(height: 8),
-        ...List.generate(sorted.length, (i) {
-          final stat = sorted[i];
-          return _AnimatedBar(
-            stat: stat,
-            color: answerColors[i % answerColors.length],
-            maxCount: maxCount,
-            isWinner: false,
-            delay: Duration(milliseconds: i * 60),
-          );
-        }),
+        _buildLegend(context, sorted),
       ],
     );
   }
 
   // ─── Shared helpers ──────────────────────────────────────
 
-  Widget _buildLegend(ColorScheme colorScheme, List<AnswerStats> sorted) {
+  Widget _buildLegend(BuildContext context, List<AnswerStats> sorted) {
+    final colorScheme = Theme.of(context).colorScheme;
     return Wrap(
       spacing: 12,
       runSpacing: 6,
@@ -315,7 +335,8 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
     );
   }
 
-  Widget _buildError(String message, ColorScheme colorScheme) {
+  Widget _buildError(String message) {
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox(
       height: 120,
       child: Center(
@@ -335,8 +356,9 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
     );
   }
 
-  Widget _buildEmpty(ColorScheme colorScheme, [String? message]) {
+  Widget _buildEmpty(BuildContext context, [String? message]) {
     final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
     return SizedBox(
       height: 120,
       child: Center(
@@ -362,17 +384,191 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
   }
 }
 
-// ─── Total Votes Badge ─────────────────────────────────────
+// ─── Segment Filter Bottom Sheet ───────────────────────────
 
-class _TotalVotesBadge extends StatelessWidget {
-  final int totalVotes;
+/// Sheet listing every known [StatsDimension] with its values as toggleable
+/// chips. Selecting a value applies it immediately so several dimensions can
+/// be combined before dismissing the sheet; tapping a selected value removes
+/// that dimension again.
+class _SegmentFilterSheet extends StatelessWidget {
+  final QuestionStatsController controller;
 
-  const _TotalVotesBadge({required this.totalVotes});
+  const _SegmentFilterSheet({required this.controller});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
+
+    return SafeArea(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 12, 0),
+            child: Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    l10n.statsFilterSheetTitle,
+                    style: Theme.of(context).textTheme.titleMedium?.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.close),
+                  onPressed: () => Navigator.of(context).pop(),
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 0, 24, 8),
+            child: Text(
+              l10n.statsFilterSheetHint,
+              style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                color: colorScheme.onSurfaceVariant,
+              ),
+            ),
+          ),
+          Flexible(
+            child: ListenableBuilder(
+              listenable: controller,
+              builder: (context, _) {
+                final query = controller.activeQuery;
+                return ListView(
+                  shrinkWrap: true,
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  children: [
+                    for (final dimension in controller.dimensions) ...[
+                      _DimensionSection(
+                        dimension: dimension,
+                        selectedValue: query.valueOf(dimension.key),
+                        onToggle: (value) => _toggle(dimension, value),
+                      ),
+                      if (dimension != controller.dimensions.last)
+                        const Divider(height: 24),
+                    ],
+                  ],
+                );
+              },
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(24, 12, 24, 16),
+            child: SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                icon: const Icon(Icons.groups),
+                label: Text(l10n.filterEveryone),
+                onPressed: () {
+                  controller.select(StatsQuery.overall());
+                  Navigator.of(context).pop();
+                },
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _toggle(StatsDimension dimension, StatsDimensionValue value) {
+    final current = controller.activeQuery.valueOf(dimension.key);
+    controller.select(
+      current == value.value
+          ? controller.activeQuery.withoutFilter(dimension.key)
+          : controller.activeQuery.withFilter(dimension.key, value.value),
+    );
+  }
+}
+
+/// One dimension block inside the filter sheet: header row plus value chips.
+class _DimensionSection extends StatelessWidget {
+  final StatsDimension dimension;
+  final String? selectedValue;
+  final ValueChanged<StatsDimensionValue> onToggle;
+
+  const _DimensionSection({
+    required this.dimension,
+    required this.selectedValue,
+    required this.onToggle,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.only(top: 4, bottom: 8),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Icon(dimension.icon, size: 18, color: colorScheme.primary),
+              const SizedBox(width: 8),
+              Text(
+                dimension.label(l10n),
+                style: Theme.of(
+                  context,
+                ).textTheme.labelLarge?.copyWith(fontWeight: FontWeight.w600),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: [
+              for (final value in dimension.values)
+                ChoiceChip(
+                  label: Text(value.label(l10n)),
+                  selected: selectedValue == value.value,
+                  onSelected: (_) => onToggle(value),
+                  selectedColor: colorScheme.primaryContainer,
+                  labelStyle: TextStyle(
+                    color: selectedValue == value.value
+                        ? colorScheme.onPrimaryContainer
+                        : colorScheme.onSurfaceVariant,
+                    fontWeight: selectedValue == value.value
+                        ? FontWeight.w600
+                        : FontWeight.normal,
+                  ),
+                ),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+// ─── Total Votes Badge ─────────────────────────────────────
+
+class _TotalVotesBadge extends StatelessWidget {
+  final SegmentLoadState state;
+  final int fallbackTotalVotes;
+
+  const _TotalVotesBadge({
+    required this.state,
+    required this.fallbackTotalVotes,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+    final colorScheme = Theme.of(context).colorScheme;
+    final result = state.result;
+    final showTotal =
+        !state.isLoading &&
+        result != null &&
+        !result.insufficientData &&
+        !result.hasError;
+
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
       decoration: BoxDecoration(
@@ -384,13 +580,20 @@ class _TotalVotesBadge extends StatelessWidget {
         children: [
           Icon(Icons.how_to_vote, size: 16, color: colorScheme.primary),
           const SizedBox(width: 6),
-          Text(
-            l10n.totalVotes(totalVotes),
-            style: Theme.of(context).textTheme.labelMedium?.copyWith(
-              color: colorScheme.primary,
-              fontWeight: FontWeight.w600,
+          if (showTotal)
+            Text(
+              l10n.totalVotes(fallbackTotalVotes),
+              style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                color: colorScheme.primary,
+                fontWeight: FontWeight.w600,
+              ),
+            )
+          else
+            const SizedBox(
+              width: 14,
+              height: 14,
+              child: CircularProgressIndicator(strokeWidth: 2),
             ),
-          ),
         ],
       ),
     );
@@ -400,17 +603,18 @@ class _TotalVotesBadge extends StatelessWidget {
 // ─── View Toggle (Segmented Button style) ─────────────────
 
 class _ViewToggle extends StatelessWidget {
-  final int selectedIndex;
-  final ValueChanged<int> onSelected;
+  final _ChartType selected;
+  final ValueChanged<_ChartType> onSelected;
 
-  const _ViewToggle({required this.selectedIndex, required this.onSelected});
+  const _ViewToggle({required this.selected, required this.onSelected});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final icons = [Icons.bar_chart, Icons.donut_large, Icons.people_outline];
-    final tooltips = [l10n.viewBars, l10n.viewDonut, l10n.viewGender];
+    final types = [_ChartType.bars, _ChartType.donut];
+    final icons = [Icons.bar_chart, Icons.donut_large];
+    final tooltips = [l10n.viewBars, l10n.viewDonut];
 
     return Container(
       decoration: BoxDecoration(
@@ -420,12 +624,12 @@ class _ViewToggle extends StatelessWidget {
       padding: const EdgeInsets.all(2),
       child: Row(
         mainAxisSize: MainAxisSize.min,
-        children: List.generate(icons.length, (index) {
-          final isSelected = selectedIndex == index;
+        children: List.generate(types.length, (index) {
+          final isSelected = selected == types[index];
           return Tooltip(
             message: tooltips[index],
             child: GestureDetector(
-              onTap: () => onSelected(index),
+              onTap: () => onSelected(types[index]),
               child: AnimatedContainer(
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.easeInOut,

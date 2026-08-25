@@ -95,6 +95,98 @@ void main() {
       });
     });
 
+    group('setLocale', () {
+      test('defaults to null so the system locale is used', () {
+        final ConfigurationController controller = ConfigurationController();
+
+        expect(controller.locale, isNull);
+      });
+
+      test('updates the locale and notifies listeners', () async {
+        final ConfigurationController controller = ConfigurationController();
+        int notifications = 0;
+        controller.addListener(() => notifications++);
+
+        await controller.setLocale(const Locale('de'));
+
+        expect(controller.locale, const Locale('de'));
+        expect(notifications, 1);
+      });
+
+      test('persists the language code', () async {
+        final ConfigurationController controller = ConfigurationController();
+
+        await controller.setLocale(const Locale('de'));
+
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        expect(prefs.getString('locale'), 'de');
+      });
+
+      test(
+        'removes the stored value when resetting to the system locale',
+        () async {
+          SharedPreferences.setMockInitialValues(<String, Object>{
+            'locale': 'de',
+          });
+          final ConfigurationController controller = ConfigurationController(
+            initialLocale: const Locale('de'),
+          );
+          int notifications = 0;
+          controller.addListener(() => notifications++);
+
+          await controller.setLocale(null);
+
+          expect(controller.locale, isNull);
+          expect(notifications, 1);
+          final SharedPreferences prefs = await SharedPreferences.getInstance();
+          expect(prefs.getString('locale'), isNull);
+        },
+      );
+
+      test('does not notify when the locale is unchanged', () async {
+        final ConfigurationController controller = ConfigurationController(
+          initialLocale: const Locale('de'),
+        );
+        int notifications = 0;
+        controller.addListener(() => notifications++);
+
+        await controller.setLocale(const Locale('de'));
+
+        expect(notifications, 0);
+      });
+    });
+
+    group('currentLanguageCode', () {
+      setUp(() {
+        ConfigurationController.resetAppConfiguration();
+      });
+      tearDown(() {
+        ConfigurationController.resetAppConfiguration();
+      });
+
+      test('falls back to the platform locale when nothing is registered', () {
+        expect(ConfigurationController.currentLanguageCode, 'en');
+      });
+
+      test('uses the language of a registered instance with a selection', () {
+        final ConfigurationController controller = ConfigurationController(
+          initialLocale: const Locale('de'),
+        )..registerAsAppConfiguration();
+
+        expect(ConfigurationController.currentLanguageCode, 'de');
+        // The instance itself is not leaked into the assertion; only its
+        // registered state matters.
+        expect(controller.locale, const Locale('de'));
+      });
+
+      test('falls back to the platform locale for a registered instance '
+          'without a selection', () {
+        ConfigurationController().registerAsAppConfiguration();
+
+        expect(ConfigurationController.currentLanguageCode, 'en');
+      });
+    });
+
     group('loadSavedConfiguration', () {
       test('restores a persisted seed color and theme mode', () async {
         SharedPreferences.setMockInitialValues(<String, Object>{
@@ -149,6 +241,31 @@ void main() {
 
         expect(controller.seedColor, Colors.deepPurple);
         expect(controller.themeMode, ThemeMode.system);
+        expect(notifications, 0);
+      });
+
+      test('restores a persisted supported locale', () async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'locale': 'de',
+        });
+        final ConfigurationController controller = ConfigurationController();
+
+        await controller.loadSavedConfiguration();
+
+        expect(controller.locale, const Locale('de'));
+      });
+
+      test('ignores a persisted unsupported locale', () async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'locale': 'fr',
+        });
+        final ConfigurationController controller = ConfigurationController();
+        int notifications = 0;
+        controller.addListener(() => notifications++);
+
+        await controller.loadSavedConfiguration();
+
+        expect(controller.locale, isNull);
         expect(notifications, 0);
       });
     });
