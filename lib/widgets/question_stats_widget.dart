@@ -77,9 +77,10 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
         _animateFor('${query.cacheKey}|${_chartType.name}');
 
         final activeState = widget.controller.activeState;
-        final totalVotes = _totalVotesOf(
-          widget.controller.stateFor(StatsQuery.overall()),
-        );
+        // The badge always reports the overall vote count, independent of the
+        // segment currently displayed.
+        final overallState = widget.controller.stateFor(StatsQuery.overall());
+        final totalVotes = _totalVotesOf(overallState);
 
         return Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -89,7 +90,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
               children: [
                 Expanded(
                   child: _TotalVotesBadge(
-                    state: activeState,
+                    state: overallState,
                     fallbackTotalVotes: totalVotes,
                   ),
                 ),
@@ -562,12 +563,6 @@ class _TotalVotesBadge extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final result = state.result;
-    final showTotal =
-        !state.isLoading &&
-        result != null &&
-        !result.insufficientData &&
-        !result.hasError;
 
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
@@ -580,7 +575,11 @@ class _TotalVotesBadge extends StatelessWidget {
         children: [
           Icon(Icons.how_to_vote, size: 16, color: colorScheme.primary),
           const SizedBox(width: 6),
-          if (showTotal)
+          // Once loading finished the count is always rendered as text —
+          // including zero totals, withheld segments (insufficient_data) and
+          // failed requests, which all report 0 — so the badge never keeps
+          // spinning.
+          if (!state.isLoading)
             Text(
               l10n.totalVotes(fallbackTotalVotes),
               style: Theme.of(context).textTheme.labelMedium?.copyWith(
