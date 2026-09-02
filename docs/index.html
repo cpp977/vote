@@ -407,8 +407,8 @@
 </div>
 <!-- ====================== END GERMAN ====================== -->
 
-<script>
-  function setLang(lang) {
+  <script>
+  function setLang(lang, sectionId) {
     document.querySelectorAll('[data-lang]').forEach(function (el) {
       el.classList.toggle('active', el.getAttribute('data-lang') === lang);
     });
@@ -418,17 +418,32 @@
     document.title = lang === 'de'
       ? 'Datenschutzerklärung (Entwurf)'
       : 'Privacy Statement (Draft)';
-    try { localStorage === undefined; } catch (e) {}
+
+    var hash = 'lang=' + lang;
+    if (sectionId) hash += '&section=' + sectionId;
     if (history.replaceState) {
-      history.replaceState(null, '', '#lang=' + lang);
+      history.replaceState(null, '', '#' + hash);
+    }
+
+    if (sectionId) {
+      var target = document.getElementById(sectionId);
+      if (target) {
+        // wait a tick so display:none -> block has actually applied
+        // before asking the browser to scroll to it
+        requestAnimationFrame(function () {
+          target.scrollIntoView({ behavior: 'auto' });
+        });
+      }
     }
   }
 
-  // Respect an incoming #lang=de / #lang=en hash on load (e.g. from the hreflang links above).
+  // Respect an incoming #lang=de&section=some-id hash on load
+  // (e.g. from a direct link to a specific paragraph).
   (function initLang() {
     var hash = window.location.hash || '';
-    var match = hash.match(/lang=(en|de)/);
-    setLang(match ? match[1] : 'en');
+    var langMatch = hash.match(/lang=(en|de)/);
+    var sectionMatch = hash.match(/section=([\w-]+)/);
+    setLang(langMatch ? langMatch[1] : 'en', sectionMatch ? sectionMatch[1] : null);
   })();
 </script>
 
