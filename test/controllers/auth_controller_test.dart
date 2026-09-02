@@ -563,6 +563,8 @@ class FakeAuthService extends AuthService {
 
   List<Category> categoriesResult = [];
   bool categoriesThrows = false;
+  List<Country> countriesResult = [];
+  List<Region> regionsResult = [];
 
   @override
   Future<User> register(RegisterRequest request) async {
@@ -628,6 +630,16 @@ class FakeAuthService extends AuthService {
     if (categoriesThrows) throw Exception('Categories failed');
     return categoriesResult;
   }
+
+  @override
+  Future<List<Country>> getCountries() async {
+    return countriesResult;
+  }
+
+  @override
+  Future<List<Region>> getRegions() async {
+    return regionsResult;
+  }
 }
 
 class FakeTokenStorage extends TokenStorage {
@@ -638,6 +650,7 @@ class FakeTokenStorage extends TokenStorage {
   int? birthYearResult;
   String? genderResult;
   String? nationalityResult;
+  String? regionResult;
   bool isAdminResult = false;
   Map<int, String> categoriesResult = {};
   bool hasTokensResult = false;
@@ -650,6 +663,7 @@ class FakeTokenStorage extends TokenStorage {
   int? birthYearStored;
   String? genderStored;
   String? nationalityStored;
+  String? regionStored;
   bool? isAdminStored;
   Map<int, String>? categoriesStored;
   bool clearedAll = false;
@@ -674,6 +688,9 @@ class FakeTokenStorage extends TokenStorage {
 
   @override
   Future<String?> getNationality() async => nationalityResult;
+
+  @override
+  Future<String?> getRegion() async => regionResult;
 
   @override
   Future<bool> getIsAdmin() async => isAdminResult;
@@ -720,6 +737,11 @@ class FakeTokenStorage extends TokenStorage {
   @override
   Future<void> setNationality(String nationality) async {
     nationalityStored = nationality;
+  }
+
+  @override
+  Future<void> setRegion(String region) async {
+    regionStored = region;
   }
 
   @override
