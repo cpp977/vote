@@ -344,6 +344,21 @@ class _AdminUserDetailPageState extends State<AdminUserDetailPage> {
                                 ? countryDisplayName(l10n, _user.nationality!)
                                 : l10n.notAvailable,
                           ),
+                          const Divider(height: 24),
+                          _buildDetailRow(
+                            context,
+                            Icons.map_outlined,
+                            l10n.regionLabel,
+                            _user.region != null
+                                ? (() {
+                                    final auth = context.read<AuthController>();
+                                    for (final r in auth.regions) {
+                                      if (r.code == _user.region) return r.name;
+                                    }
+                                    return _user.region!;
+                                  })()
+                                : l10n.notAvailable,
+                          ),
                         ],
                       ),
                     ),

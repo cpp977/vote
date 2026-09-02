@@ -7,7 +7,7 @@ import '../l10n/auth_error_localization.dart';
 import '../models/auth_models.dart';
 
 /// Dialog that shows the currently logged-in user's profile and lets them edit
-/// their email, gender and password via `PATCH /me`.
+/// their email, gender, password, nationality and region via `PATCH /me`.
 class UserDetailsDialog extends StatefulWidget {
   const UserDetailsDialog({super.key, required this.authController});
 
@@ -28,13 +28,22 @@ class _UserDetailsDialogState extends State<UserDetailsDialog> {
   final _passwordController = TextEditingController();
   final _confirmPasswordController = TextEditingController();
   String? _gender;
+  String? _nationality;
+  String? _region;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
+
+  // Local copies of countries/regions to avoid rebuilds on every AuthController notification
+  List<Country> _countries = [];
+  List<Region> _regions = [];
 
   @override
   void initState() {
     super.initState();
     _detailsFuture = widget.authController.loadUserDetails();
+    // Pre-load countries/regions from auth controller
+    _countries = widget.authController.countries;
+    _regions = widget.authController.regions;
   }
 
   @override
@@ -51,6 +60,8 @@ class _UserDetailsDialogState extends State<UserDetailsDialog> {
     final auth = widget.authController;
     _emailController.text = auth.email ?? '';
     _gender = const ['m', 'w', 'd'].contains(auth.gender) ? auth.gender : null;
+    _nationality = auth.nationality;
+    _region = auth.region;
     _passwordController.clear();
     _confirmPasswordController.clear();
     widget.authController.clearError();
@@ -67,6 +78,8 @@ class _UserDetailsDialogState extends State<UserDetailsDialog> {
       email: _emailController.text.trim(),
       gender: _gender,
       password: password.isEmpty ? null : password,
+      nationality: _nationality,
+      region: _region,
     );
 
     final success = await widget.authController.updateUser(request);
@@ -113,6 +126,24 @@ class _UserDetailsDialogState extends State<UserDetailsDialog> {
                 _ => auth.gender!,
               };
 
+        final nationalityText = auth.nationality != null
+            ? (() {
+                for (final c in auth.countries) {
+                  if (c.code == auth.nationality) return c.name;
+                }
+                return auth.nationality!;
+              })()
+            : notAvailable;
+
+        final regionText = auth.region != null
+            ? (() {
+                for (final r in auth.regions) {
+                  if (r.code == auth.region) return r.name;
+                }
+                return auth.region!;
+              })()
+            : notAvailable;
+
         Widget detailRow(IconData icon, String label, String value) {
           final theme = Theme.of(context);
           return Padding(
@@ -142,6 +173,11 @@ class _UserDetailsDialogState extends State<UserDetailsDialog> {
         }
 
         if (_isEditing) {
+          // Filter regions based on selected nationality
+          final filteredRegions = _nationality != null
+              ? _regions.where((r) => r.countryCode == _nationality).toList()
+              : <Region>[];
+
           return AlertDialog(
             title: Text(l10n.editUserDetailsTitle),
             content: SingleChildScrollView(
@@ -213,6 +249,85 @@ class _UserDetailsDialogState extends State<UserDetailsDialog> {
                         setState(() => _gender = value);
                       },
                     ),
+                    const SizedBox(height: 16),
+                    // Nationality field
+                    _countries.isEmpty
+                        ? DropdownButtonFormField<String>(
+                            initialValue: _nationality,
+                            decoration: InputDecoration(
+                              labelText: l10n.nationalityLabel,
+                              prefixIcon: const Icon(Icons.flag_outlined),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            items: const [],
+                            onChanged: null,
+                            hint: Text(l10n.loadingLabel),
+                          )
+                        : DropdownButtonFormField<String>(
+                            initialValue: _nationality,
+                            decoration: InputDecoration(
+                              labelText: l10n.nationalityLabel,
+                              prefixIcon: const Icon(Icons.flag_outlined),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            items: _countries
+                                .map(
+                                  (c) => DropdownMenuItem(
+                                    value: c.code,
+                                    child: Text(c.name),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _nationality = value;
+                                _region =
+                                    null; // Reset region when nationality changes
+                              });
+                            },
+                          ),
+                    const SizedBox(height: 16),
+                    // Region field
+                    filteredRegions.isEmpty
+                        ? DropdownButtonFormField<String>(
+                            initialValue: _region,
+                            decoration: InputDecoration(
+                              labelText: l10n.regionLabel,
+                              prefixIcon: const Icon(Icons.map_outlined),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            items: const [],
+                            onChanged: null,
+                            hint: _nationality == null
+                                ? Text(l10n.selectNationalityFirst)
+                                : Text(l10n.noRegionsAvailable),
+                          )
+                        : DropdownButtonFormField<String>(
+                            initialValue: _region,
+                            decoration: InputDecoration(
+                              labelText: l10n.regionLabel,
+                              prefixIcon: const Icon(Icons.map_outlined),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            items: filteredRegions
+                                .map(
+                                  (r) => DropdownMenuItem(
+                                    value: r.code,
+                                    child: Text(r.name),
+                                  ),
+                                )
+                                .toList(),
+                            onChanged: (value) =>
+                                setState(() => _region = value),
+                          ),
                     const SizedBox(height: 16),
                     TextFormField(
                       controller: _passwordController,
@@ -371,8 +486,9 @@ class _UserDetailsDialogState extends State<UserDetailsDialog> {
                 detailRow(
                   Icons.flag_outlined,
                   l10n.nationalityLabel,
-                  auth.nationality ?? notAvailable,
+                  nationalityText,
                 ),
+                detailRow(Icons.map_outlined, l10n.regionLabel, regionText),
                 if (auth.isAdmin)
                   detailRow(
                     Icons.admin_panel_settings,

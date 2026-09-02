@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 import '../controllers/auth_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../l10n/auth_error_localization.dart';
-import '../utils/countries.dart';
+import '../models/auth_models.dart';
 import '../widgets/configuration_menu.dart';
 
 /// Page for user registration.
@@ -23,24 +23,47 @@ class _RegisterPageState extends State<RegisterPage> {
   int? _birthYear;
   String? _gender;
   String? _nationality;
+  String? _region;
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
 
-  /// Countries sorted by localized display name for the dropdown.
-  List<Country> _sortedCountries(AppLocalizations l10n) {
-    final sorted = [...countries];
-    sorted.sort(
-      (a, b) => countryDisplayName(
-        l10n,
-        a.code,
-      ).toLowerCase().compareTo(countryDisplayName(l10n, b.code).toLowerCase()),
-    );
-    return sorted;
-  }
+  // Local copies of countries/regions to avoid rebuilds on every AuthController notification
+  List<Country> _countries = [];
+  List<Region> _regions = [];
+  bool _isLoadingCountries = true;
 
   static List<int> get _birthYears {
     final currentYear = DateTime.now().year;
     return List.generate(100, (i) => currentYear - i);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCountriesAndRegions();
+  }
+
+  Future<void> _loadCountriesAndRegions() async {
+    final authController = context.read<AuthController>();
+    // If already loaded, use them directly
+    if (authController.countries.isNotEmpty) {
+      setState(() {
+        _countries = authController.countries;
+        _regions = authController.regions;
+        _isLoadingCountries = false;
+      });
+    } else {
+      // Wait for them to load (they're loaded in checkAuthStatus)
+      // We'll listen for the first notification
+      await Future.delayed(const Duration(milliseconds: 100));
+      if (mounted) {
+        setState(() {
+          _countries = authController.countries;
+          _regions = authController.regions;
+          _isLoadingCountries = false;
+        });
+      }
+    }
   }
 
   @override
@@ -64,6 +87,7 @@ class _RegisterPageState extends State<RegisterPage> {
       birthYear: _birthYear,
       gender: _gender,
       nationality: _nationality,
+      region: _region,
     );
 
     if (success && mounted) {
@@ -82,6 +106,11 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
+
+    // Filter regions based on selected nationality
+    final filteredRegions = _nationality != null
+        ? _regions.where((r) => r.countryCode == _nationality).toList()
+        : <Region>[];
 
     return Scaffold(
       appBar: AppBar(
@@ -236,29 +265,85 @@ class _RegisterPageState extends State<RegisterPage> {
                         ),
                         const SizedBox(height: 16),
 
-                        // Nationality field: an ISO 3166-1 alpha-2 country
-                        // code is sent to the backend; only the label is
-                        // localized.
-                        DropdownButtonFormField<String>(
-                          initialValue: _nationality,
-                          decoration: InputDecoration(
-                            labelText: l10n.nationalityLabel,
-                            prefixIcon: const Icon(Icons.flag_outlined),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          items: _sortedCountries(l10n)
-                              .map(
-                                (c) => DropdownMenuItem(
-                                  value: c.code,
-                                  child: Text(countryDisplayName(l10n, c.code)),
+                        // Nationality field
+                        _isLoadingCountries
+                            ? DropdownButtonFormField<String>(
+                                initialValue: _nationality,
+                                decoration: InputDecoration(
+                                  labelText: l10n.nationalityLabel,
+                                  prefixIcon: const Icon(Icons.flag_outlined),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
                                 ),
+                                items: const [],
+                                onChanged: null,
+                                hint: Text(l10n.loadingLabel),
                               )
-                              .toList(),
-                          onChanged: (value) =>
-                              setState(() => _nationality = value),
-                        ),
+                            : DropdownButtonFormField<String>(
+                                initialValue: _nationality,
+                                decoration: InputDecoration(
+                                  labelText: l10n.nationalityLabel,
+                                  prefixIcon: const Icon(Icons.flag_outlined),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                items: _countries
+                                    .map(
+                                      (c) => DropdownMenuItem(
+                                        value: c.code,
+                                        child: Text(c.name),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) {
+                                  setState(() {
+                                    _nationality = value;
+                                    _region =
+                                        null; // Reset region when nationality changes
+                                  });
+                                },
+                              ),
+                        const SizedBox(height: 16),
+
+                        // Region field
+                        filteredRegions.isEmpty
+                            ? DropdownButtonFormField<String>(
+                                initialValue: _region,
+                                decoration: InputDecoration(
+                                  labelText: l10n.regionLabel,
+                                  prefixIcon: const Icon(Icons.map_outlined),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                items: const [],
+                                onChanged: null,
+                                hint: _nationality == null
+                                    ? Text(l10n.selectNationalityFirst)
+                                    : Text(l10n.noRegionsAvailable),
+                              )
+                            : DropdownButtonFormField<String>(
+                                initialValue: _region,
+                                decoration: InputDecoration(
+                                  labelText: l10n.regionLabel,
+                                  prefixIcon: const Icon(Icons.map_outlined),
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(12),
+                                  ),
+                                ),
+                                items: filteredRegions
+                                    .map(
+                                      (r) => DropdownMenuItem(
+                                        value: r.code,
+                                        child: Text(r.name),
+                                      ),
+                                    )
+                                    .toList(),
+                                onChanged: (value) =>
+                                    setState(() => _region = value),
+                              ),
                         const SizedBox(height: 16),
 
                         // Password field
@@ -303,7 +388,7 @@ class _RegisterPageState extends State<RegisterPage> {
                           obscureText: _obscureConfirmPassword,
                           decoration: InputDecoration(
                             labelText: l10n.confirmPasswordLabel,
-                            prefixIcon: const Icon(Icons.lock_outline),
+                            prefixIcon: const Icon(Icons.lock_outlined),
                             suffixIcon: IconButton(
                               icon: Icon(
                                 _obscureConfirmPassword
