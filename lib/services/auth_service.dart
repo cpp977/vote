@@ -9,6 +9,50 @@ import '../models/category_models.dart';
 class AuthService {
   static final String _baseUrl = ApiConfig.baseUrl;
 
+  /// Fetches the list of available countries from the `GET /countries` endpoint.
+  ///
+  /// This is an unrestricted endpoint; no authentication required.
+  /// Returns a [List<Country>] on success.
+  /// Throws [ApiException] on failure.
+  Future<List<Country>> getCountries() async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/countries'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data =
+          (jsonDecode(response.body) as List?) ?? <dynamic>[];
+      return data
+          .map((e) => Country.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw _parseError(response);
+    }
+  }
+
+  /// Fetches the list of available regions from the `GET /regions` endpoint.
+  ///
+  /// This is an unrestricted endpoint; no authentication required.
+  /// Returns a [List<Region>] on success.
+  /// Throws [ApiException] on failure.
+  Future<List<Region>> getRegions() async {
+    final response = await http.get(
+      Uri.parse('$_baseUrl/regions'),
+      headers: {'Content-Type': 'application/json'},
+    );
+
+    if (response.statusCode == 200) {
+      final List<dynamic> data =
+          (jsonDecode(response.body) as List?) ?? <dynamic>[];
+      return data
+          .map((e) => Region.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else {
+      throw _parseError(response);
+    }
+  }
+
   /// Registers a new user.
   /// Returns the created [User] on success.
   /// Throws [ApiException] on failure.

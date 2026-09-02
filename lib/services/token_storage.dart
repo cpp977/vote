@@ -11,6 +11,7 @@ class TokenStorage {
   static const String _birthYearKey = 'birth_year';
   static const String _genderKey = 'gender';
   static const String _nationalityKey = 'nationality';
+  static const String _regionKey = 'region';
   static const String _isAdminKey = 'is_admin';
   static const String _categoriesKey = 'categories';
 
@@ -98,6 +99,18 @@ class TokenStorage {
     return prefs.getString(_nationalityKey);
   }
 
+  /// Stores the user's region.
+  Future<void> setRegion(String region) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_regionKey, region);
+  }
+
+  /// Retrieves the stored region, or null if not set.
+  Future<String?> getRegion() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_regionKey);
+  }
+
   /// Stores whether the logged-in user has administrator privileges.
   Future<void> setIsAdmin(bool isAdmin) async {
     final prefs = await SharedPreferences.getInstance();
@@ -145,6 +158,7 @@ class TokenStorage {
     await prefs.remove(_birthYearKey);
     await prefs.remove(_genderKey);
     await prefs.remove(_nationalityKey);
+    await prefs.remove(_regionKey);
     await prefs.remove(_isAdminKey);
     await prefs.remove(_categoriesKey);
   }
