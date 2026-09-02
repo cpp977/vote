@@ -21,8 +21,11 @@ class AuthController extends ChangeNotifier {
   int? _birthYear;
   String? _gender;
   String? _nationality;
+  String? _region;
   bool _isAdmin = false;
   Map<int, String> _categories = {};
+  List<Country> _countries = [];
+  List<Region> _regions = [];
 
   AuthController({AuthService? authService, TokenStorage? tokenStorage})
     : _authService = authService ?? AuthService(),
@@ -57,11 +60,20 @@ class AuthController extends ChangeNotifier {
   /// The nationality of the currently logged-in user.
   String? get nationality => _nationality;
 
+  /// The region of the currently logged-in user.
+  String? get region => _region;
+
   /// Whether the currently logged-in user has administrator privileges.
   bool get isAdmin => _isAdmin;
 
   /// The available question categories as a mapping of category id to name.
   Map<int, String> get categories => _categories;
+
+  /// The list of available countries for nationality selection.
+  List<Country> get countries => _countries;
+
+  /// The list of available regions for region selection.
+  List<Region> get regions => _regions;
 
   /// Checks if the user has valid stored tokens.
   /// Should be called on app startup.
@@ -76,12 +88,16 @@ class AuthController extends ChangeNotifier {
         _birthYear = await _tokenStorage.getBirthYear();
         _gender = await _tokenStorage.getGender();
         _nationality = await _tokenStorage.getNationality();
+        _region = await _tokenStorage.getRegion();
         _isAdmin = await _tokenStorage.getIsAdmin();
         _categories = await _tokenStorage.getCategories();
         _isAuthenticated = true;
       } else {
         _isAuthenticated = false;
       }
+
+      // Load countries and regions (public endpoints)
+      await _loadCountriesAndRegions();
 
       // Categories are public — fetch them regardless of auth state so
       // the category filter is available on the home page even without
@@ -91,6 +107,19 @@ class AuthController extends ChangeNotifier {
       _isAuthenticated = false;
     } finally {
       _setLoading(false);
+    }
+  }
+
+  /// Loads countries and regions from the public endpoints.
+  Future<void> _loadCountriesAndRegions() async {
+    try {
+      final countries = await _authService.getCountries();
+      final regions = await _authService.getRegions();
+      _countries = countries;
+      _regions = regions;
+      notifyListeners();
+    } catch (_) {
+      // Silently fail - countries/regions are optional for basic functionality
     }
   }
 
@@ -129,6 +158,7 @@ class AuthController extends ChangeNotifier {
     int? birthYear,
     String? gender,
     String? nationality,
+    String? region,
   }) async {
     _setLoading(true);
     _clearError();
@@ -141,6 +171,7 @@ class AuthController extends ChangeNotifier {
         birthYear: birthYear,
         gender: gender,
         nationality: nationality,
+        region: region,
       );
 
       await _authService.register(request);
@@ -186,6 +217,7 @@ class AuthController extends ChangeNotifier {
         _birthYear = user.birthYear;
         _gender = user.gender;
         _nationality = user.nationality;
+        _region = user.region;
         _isAdmin = user.isAdmin;
         if (_username != null) {
           await _tokenStorage.setUsername(_username!);
@@ -202,11 +234,17 @@ class AuthController extends ChangeNotifier {
         if (_nationality != null) {
           await _tokenStorage.setNationality(_nationality!);
         }
+        if (_region != null) {
+          await _tokenStorage.setRegion(_region!);
+        }
         _isAdmin = user.isAdmin;
         await _tokenStorage.setIsAdmin(_isAdmin);
       } catch (_) {
         // Profile fetch failed — demographics will be null
       }
+
+      // Load countries and regions
+      await _loadCountriesAndRegions();
 
       // Fetch the available categories (category id -> name mapping) in the
       // user's current locale so the category filter matches the language of
@@ -259,6 +297,7 @@ class AuthController extends ChangeNotifier {
       _birthYear = null;
       _gender = null;
       _nationality = null;
+      _region = null;
       _isAdmin = false;
       _categories = {};
       _showLoginPage = showLoginPage;
@@ -383,6 +422,7 @@ class AuthController extends ChangeNotifier {
       _birthYear = null;
       _gender = null;
       _nationality = null;
+      _region = null;
       _isAdmin = false;
       _categories = {};
       _setLoading(false);
@@ -409,8 +449,8 @@ class AuthController extends ChangeNotifier {
   }
 
   /// Fetches the current user's profile from the backend (`/me`) and refreshes
-  /// the locally cached details (username, email, birth year, gender and
-  /// nationality).
+  /// the locally cached details (username, email, birth year, gender, nationality
+  /// and region).
   ///
   /// This is used by the account-details screen to populate fields that were
   /// not available when an older session was restored from storage (e.g. the
@@ -430,6 +470,7 @@ class AuthController extends ChangeNotifier {
       _birthYear = user.birthYear;
       _gender = user.gender;
       _nationality = user.nationality;
+      _region = user.region;
       _isAdmin = user.isAdmin;
       if (_username != null) {
         await _tokenStorage.setUsername(_username!);
@@ -446,6 +487,9 @@ class AuthController extends ChangeNotifier {
       if (_nationality != null) {
         await _tokenStorage.setNationality(_nationality!);
       }
+      if (_region != null) {
+        await _tokenStorage.setRegion(_region!);
+      }
       _isAdmin = user.isAdmin;
       await _tokenStorage.setIsAdmin(_isAdmin);
       notifyListeners();
@@ -455,8 +499,8 @@ class AuthController extends ChangeNotifier {
     }
   }
 
-  /// Updates the authenticated user's own profile (email, gender and/or
-  /// password) via the `PATCH /me` endpoint.
+  /// Updates the authenticated user's own profile (email, gender, password,
+  /// nationality and/or region) via the `PATCH /me` endpoint.
   ///
   /// Returns `true` on success (the locally cached profile is refreshed from
   /// the server response) and `false` on failure. On failure an [error] is set
@@ -476,12 +520,20 @@ class AuthController extends ChangeNotifier {
       final user = await _authService.updateCurrentUser(accessToken, request);
       _email = user.email;
       _gender = user.gender;
+      _nationality = user.nationality;
+      _region = user.region;
       _isAdmin = user.isAdmin;
       if (_email != null) {
         await _tokenStorage.setEmail(_email!);
       }
       if (_gender != null) {
         await _tokenStorage.setGender(_gender!);
+      }
+      if (_nationality != null) {
+        await _tokenStorage.setNationality(_nationality!);
+      }
+      if (_region != null) {
+        await _tokenStorage.setRegion(_region!);
       }
       await _tokenStorage.setIsAdmin(_isAdmin);
       _setLoading(false);
