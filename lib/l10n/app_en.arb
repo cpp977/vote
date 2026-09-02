@@ -1042,9 +1042,9 @@
   "@themeColor": {
     "description": "Label for the theme color setting under the Appearance submenu."
   },
-  "darkView": "Dark View",
-  "@darkView": {
-    "description": "Label for the dark view setting under the Appearance submenu."
+  "view": "View",
+  "@view": {
+    "description": "Label for the view setting under the Appearance submenu."
   },
   "themeModeSystem": "System",
   "@themeModeSystem": {

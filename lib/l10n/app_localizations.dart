@@ -1484,11 +1484,11 @@ abstract class AppLocalizations {
   /// **'Theme Color'**
   String get themeColor;
 
-  /// Label for the dark view setting under the Appearance submenu.
+  /// Label for the view setting under the Appearance submenu.
   ///
   /// In en, this message translates to:
-  /// **'Dark View'**
-  String get darkView;
+  /// **'View'**
+  String get view;
 
   /// Option to follow the system-wide light or dark appearance.
   ///

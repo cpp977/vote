@@ -794,7 +794,7 @@ class AppLocalizationsDe extends AppLocalizations {
   String get themeColor => 'Themenfarbe';
 
   @override
-  String get darkView => 'Dunkle Ansicht';
+  String get view => 'Ansicht';
 
   @override
   String get themeModeSystem => 'System';

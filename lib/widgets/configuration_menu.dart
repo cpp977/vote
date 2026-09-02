@@ -53,7 +53,7 @@ class ConfigurationMenu extends StatelessWidget {
             children: [
               const Icon(Icons.contrast, size: 20),
               const SizedBox(width: 12),
-              Text(l10n.darkView),
+              Text(l10n.view),
               const Spacer(),
               const Icon(Icons.chevron_right, size: 20),
             ],
