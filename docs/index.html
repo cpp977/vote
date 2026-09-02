@@ -175,10 +175,11 @@
   <li>Birth year (stored as the actual year you provide; only converted into a 10-year range/band when attached to an answer as a statistical tag, see §5)</li>
   <li>Gender</li>
   <li>Country</li>
+  <li>Region (optional)</li>
 </ul>
 
 <h3>2.2 Answer data</h3>
-<p>When you answer a question, we store your answer together with your birth-year band, gender, and country <strong>as anonymized tags</strong>. We do <strong>not</strong> store your user ID, e-mail, or user name alongside your answers. Answers cannot be traced back to your account through normal use of the service.</p>
+<p>When you answer a question, we store your answer together with your birth-year band, gender, country, and region <strong>as anonymized tags</strong>. We do <strong>not</strong> store your user ID, e-mail, or user name alongside your answers. Answers cannot be traced back to your account through normal use of the service.</p>
 
 <h3>2.3 Vote-integrity data</h3>
 <p>To ensure each user can only answer a given question once, we store a cryptographic token derived from your account and the specific question, using a keyed one-way function (HMAC) with a secret key known only to our systems. This token:</p>
@@ -207,7 +208,7 @@
   </thead>
   <tbody>
     <tr><td>E-mail</td><td>Password reset</td><td>Art. 6(1)(b) – necessary for the contract</td></tr>
-    <tr><td>Username, birth year, gender, country (profile)</td><td>Account management, service provision</td><td>Art. 6(1)(b)</td></tr>
+    <tr><td>Username, birth year, gender, country, region (profile)</td><td>Account management, service provision</td><td>Art. 6(1)(b)</td></tr>
     <tr><td>Answers + demographic tags</td><td>Computing and displaying aggregate statistics</td><td>Art. 6(1)(f) legitimate interest</td></tr>
     <tr><td>Vote-integrity tokens</td><td>Preventing duplicate voting, ensuring data integrity</td><td>Art. 6(1)(f) legitimate interest</td></tr>
     <tr><td>Submitted-question attribution</td><td>Letting you view your submission history and approval status</td><td>Art. 6(1)(b) – necessary for that feature of the contract</td></tr>
@@ -305,10 +306,11 @@
   <li>Geburtsjahr (wird als exaktes Jahr gespeichert, wie von Ihnen angegeben; wird erst bei der Zuordnung zu einer Antwort in eine statistische Kennzeichnung mit 10-Jahres-Bandbreite umgewandelt, siehe §5)</li>
   <li>Geschlecht</li>
   <li>Land</li>
+  <li>Region</li>
 </ul>
 
 <h3>2.2 Antwortdaten</h3>
-<p>Wenn Sie eine Frage beantworten, speichern wir Ihre Antwort zusammen mit Ihrer Geburtsjahr-Bandbreite, Ihrem Geschlecht und Ihrem Land <strong>als anonymisierte Kennzeichnungen (Tags)</strong>. Wir speichern <strong>keine</strong> Nutzer-ID, E-Mail-Adresse oder Ihren Benutzernamen zusammen mit Ihren Antworten. Antworten können im normalen Betrieb des Dienstes nicht zu Ihrem Konto zurückverfolgt werden.</p>
+<p>Wenn Sie eine Frage beantworten, speichern wir Ihre Antwort zusammen mit Ihrer Geburtsjahr-Bandbreite, Ihrem Geschlecht, Ihrem Land und Ihrer Region <strong>als anonymisierte Kennzeichnungen (Tags)</strong>. Wir speichern <strong>keine</strong> Nutzer-ID, E-Mail-Adresse oder Ihren Benutzernamen zusammen mit Ihren Antworten. Antworten können im normalen Betrieb des Dienstes nicht zu Ihrem Konto zurückverfolgt werden.</p>
 
 <h3>2.3 Daten zur Abstimmungsintegrität</h3>
 <p>Um sicherzustellen, dass jeder Nutzer eine bestimmte Frage nur einmal beantworten kann, speichern wir ein kryptografisches Token, das aus Ihrem Konto und der jeweiligen Frage mittels einer schlüsselbasierten Einwegfunktion (HMAC) mit einem nur unseren Systemen bekannten geheimen Schlüssel abgeleitet wird. Dieses Token:</p>
@@ -337,7 +339,7 @@
   </thead>
   <tbody>
     <tr><td>E-Mail</td><td>Zurücksetzen des Passworts</td><td>Art. 6 Abs. 1 lit. b – zur Vertragserfüllung erforderlich</td></tr>
-    <tr><td>Benutzername, Geburtsjahr, Geschlecht, Land (Profil)</td><td>Kontoverwaltung, Bereitstellung des Dienstes</td><td>Art. 6 Abs. 1 lit. b</td></tr>
+    <tr><td>Benutzername, Geburtsjahr, Geschlecht, Land, Region (Profil)</td><td>Kontoverwaltung, Bereitstellung des Dienstes</td><td>Art. 6 Abs. 1 lit. b</td></tr>
     <tr><td>Antworten + demografische Kennzeichnungen</td><td>Berechnung und Anzeige aggregierter Statistiken</td><td>Art. 6 Abs. 1 lit. f, berechtigtes Interesse</td></tr>
     <tr><td>Token zur Abstimmungsintegrität</td><td>Verhinderung von Mehrfachabstimmungen, Sicherstellung der Datenintegrität</td><td>Art. 6 Abs. 1 lit. f (berechtigtes Interesse)</td></tr>
     <tr><td>Zuordnung eingereichter Fragen</td><td>Einsicht in Ihren Einreichungsverlauf und Freigabestatus</td><td>Art. 6 Abs. 1 lit. b – für diese Vertragsfunktion erforderlich</td></tr>
