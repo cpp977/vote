@@ -1,169 +1,436 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Privacy Policy — Vote4It</title>
-  <link rel="stylesheet" href="styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Privacy Statement / Datenschutzerklärung</title>
+
+<!--
+  i18n notes for deployment:
+  - This single file contains both language versions, toggled client-side.
+    For proper hreflang/SEO practice, the recommended production setup is
+    two separate URLs (e.g. /privacy/en and /privacy/de), each with:
+      <link rel="alternate" hreflang="en" href="https://example.com/privacy/en">
+      <link rel="alternate" hreflang="de" href="https://example.com/privacy/de">
+      <link rel="alternate" hreflang="x-default" href="https://example.com/privacy/en">
+    The toggle below is a convenient single-file preview/draft; the
+    <html lang="..."> attribute is kept in sync with the active language
+    so screen readers and browser translation tools behave correctly
+    even in this single-page form.
+-->
+<link rel="alternate" hreflang="en" href="#lang=en">
+<link rel="alternate" hreflang="de" href="#lang=de">
+<link rel="alternate" hreflang="x-default" href="#lang=en">
+
+<style>
+  :root {
+    --text: #1f2328;
+    --muted: #57606a;
+    --border: #d8dee4;
+    --accent: #0969da;
+    --bg-note: #fff8c5;
+    --bg-table-head: #f6f8fa;
+  }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    max-width: 780px;
+    margin: 0 auto;
+    padding: 24px 24px 96px;
+    color: var(--text);
+    line-height: 1.6;
+    font-size: 16px;
+  }
+  h1 {
+    font-size: 1.9em;
+    margin-bottom: 0.2em;
+    border-bottom: 2px solid var(--border);
+    padding-bottom: 0.3em;
+  }
+  h2 {
+    font-size: 1.3em;
+    margin-top: 2em;
+    border-bottom: 1px solid var(--border);
+    padding-bottom: 0.3em;
+  }
+  h3 {
+    font-size: 1.05em;
+    margin-top: 1.4em;
+  }
+  .meta {
+    color: var(--muted);
+    font-size: 0.95em;
+  }
+  .draft-note {
+    background: var(--bg-note);
+    border: 1px solid #d4c72c;
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin: 1.2em 0;
+    font-size: 0.95em;
+  }
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 1em 0;
+    font-size: 0.95em;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+    vertical-align: top;
+  }
+  th {
+    background: var(--bg-table-head);
+  }
+  ul {
+    padding-left: 1.3em;
+  }
+  li {
+    margin-bottom: 0.3em;
+  }
+  strong {
+    font-weight: 600;
+  }
+  a {
+    color: var(--accent);
+  }
+  footer {
+    margin-top: 3em;
+    padding-top: 1em;
+    border-top: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 0.85em;
+  }
+
+  /* --- language switcher --- */
+  .lang-switch {
+    position: sticky;
+    top: 0;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+    padding: 10px 0;
+    background: #fff;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1em;
+    z-index: 10;
+  }
+  .lang-switch button {
+    font: inherit;
+    font-size: 0.9em;
+    padding: 6px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    color: var(--text);
+  }
+  .lang-switch button[aria-pressed="true"] {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  /* --- language content blocks --- */
+  [data-lang] {
+    display: none;
+  }
+  [data-lang].active {
+    display: block;
+  }
+
+  [id] {
+  scroll-margin-top: 70px; /* roughly the height of .lang-switch, adjust to match */
+  }
+</style>
 </head>
 <body>
-  <main class="container">
-    <header>
-      <h1>Privacy Policy for Vote4It</h1>
-      <p class="muted">Last updated: August, 15th 2026</p>
-    </header>
 
-    <section>
-      <h2>Introduction</h2>
-      <p>
-        Vote4It ("we", "our", "us") respects your privacy and is committed to protecting your personal data.
-        This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you use our
-        mobile application available on the Google Play Store (the "App").
-      </p>
-    </section>
+<div class="lang-switch" role="group" aria-label="Language / Sprache">
+  <button type="button" id="btn-en" aria-pressed="true" onclick="setLang('en')" lang="en">English</button>
+  <button type="button" id="btn-de" aria-pressed="false" onclick="setLang('de')" lang="de">Deutsch</button>
+</div>
 
-    <section>
-      <h2>Controller and Contact</h2>
-      <p>
-        Controller: Matthias Peschke <br>
-        Contact email: <a href="mailto:play_address@use.startmail.com">play_address@use.startmail.com</a> <br>
-      </p>
-    </section>
+<!-- ======================= ENGLISH ======================= -->
+<div id="content-en" data-lang="en" class="active" lang="en">
 
-    <section>
-      <h2>Information We Collect</h2>
-      <h3>1. Information you provide directly</h3>
-      <p>E-Mail address.</p>
+<h1>Privacy Statement</h1>
 
-      <h3>2. Information collected automatically</h3>
-      <p>
-        We may collect certain information automatically when you access or use the App, including device information
-        (model, OS version), and IP addresses.
-      </p>
-      <h3>3. Voting decisions</h3>
-      <p>
-        We do not safe at all which user voted for which answer. For each answer, we only store anonymous tags (birth year, gender, country, ...) and not your ID.
-        Even with full access to the underlying database it is theoretically impossible to find which answers are given by a specific user.
-        The only thing we save is that you voted for a given question. We do this securely by storing a hash value of user ids together with questions a user voted.
-      </p>
-      <h3>3. Submitted questions</h3>
-      <p>
-        If you submit new questions for voting, we store that you submitted the question.
-      </p>
-    </section>
+<p class="meta"><strong>Last updated:</strong> 02 Sep. 2026</p>
 
-    <section>
-      <h2>How We Use Your Information</h2>
-      <ul>
-        <li>Your e-mail address is only used when you reset your password to send a link for setting a new password.;</li>
-        <li>Device information (model, OS version, IP address) are stored in access logs for 30 days to ensure no misuse (apply rate-limits, diagnose misuse);</li>
-        <li>We store the information of which questions are voted by a user to ensure that users can only vote once per question;</li>
-        <li>
-          We store which questions are submitted by your user account to be able to show the submission status of the question only to you and to prevent misuse.
-        </li>
-      </ul>
-    </section>
+<h2>1. Who we are</h2>
+<p>Vote4It, is the controller responsible for the processing of personal data described in this statement ("we", "us").</p>
+<p>
+  Contact: Matthias Peschke <a href="mailto:play_address@use.startmail.com">play_address@use.startmail.com</a><br>
+</p>
 
-    <section>
-      <h2 id="account-delete">How Can You Delete Your Data</h2>
-      <p>
-        You can delete your account by clicking <em>Delete Account</em> in the user model.
-        In this case, we will delete your e-mail address immediately with no way to recover the data.
-        It will also delete the information of which questions where answered by your account and which questions are submitted with your account.
-      </p>
-    </section>
+<h2>2. What data we collect</h2>
 
-    <section>
-      <h2>Legal Basis for Processing (if applicable)</h2>
-      <p>
-        Where required (for EU users), we will only process personal data where we have a lawful basis, such as your
-        consent, performance of a contract, compliance with a legal obligation, or our legitimate interests.
-      </p>
-    </section>
+<h3>2.1 Account data</h3>
+<p>When you create an account, we collect:</p>
+<ul>
+  <li>E-mail address — used <strong>only</strong> for password reset purposes</li>
+  <li>User name</li>
+  <li>Birth year (stored as the actual year you provide; only converted into a 10-year range/band when attached to an answer as a statistical tag, see §5)</li>
+  <li>Gender</li>
+  <li>Country</li>
+</ul>
 
-    <section>
-      <h2>Sharing and Disclosure</h2>
-      <p>
-        We will not share your information with anyone else.
-      </p>
-    </section>
+<h3>2.2 Answer data</h3>
+<p>When you answer a question, we store your answer together with your birth-year band, gender, and country <strong>as anonymized tags</strong>. We do <strong>not</strong> store your user ID, e-mail, or user name alongside your answers. Answers cannot be traced back to your account through normal use of the service.</p>
 
-    <section>
-      <h2>Third-party Services</h2>
-      <p>
-        We use the resend e-mail API to send out e-mails if a user requests resetting its password.
-        Take a look at resend's privacy policy <a href="https://resend.com/legal/privacy-policy">here</a>.
-      </p>
-    </section>
+<h3>2.3 Vote-integrity data</h3>
+<p>To ensure each user can only answer a given question once, we store a cryptographic token derived from your account and the specific question, using a keyed one-way function (HMAC) with a secret key known only to our systems. This token:</p>
+<ul>
+  <li>Cannot practically be reversed to reveal your user ID</li>
+  <li>Is unique per question, so it cannot be used to link your answers to different questions together</li>
+  <li>Becomes practically unlinkable to you once your account is deleted: since account identifiers are never reused, the token can no longer be matched to any user, and it is not possible to derive your identity from it going forward</li>
+</ul>
 
-    <section>
-      <h2>Data Retention</h2>
-      <p>
-        We retain personal data only as long as necessary for the purposes described and to comply with legal obligations.
-        Specific retention periods:
-        <li>
-          Your e-mail address is stored until you delete your account.
-        </li>
-        <li>
-          The device information is stored for 30 days.
-        </li>
-        <li>
-          The data for which questions are answered with your user account is stored until you delete your account.
-        </li>
-        <li>
-          The data of questions submitted by your account are stored until you delete your account.
-        </li>
+<h3>2.4 Submitted questions</h3>
+<p>If you submit a question for consideration, we link it to your account so that you can view your submission history and its approval status within the app.</p>
+<ul>
+  <li><strong>Pending questions</strong> remain visible to our administrators for review regardless of your account status, since they may still be approved and published.</li>
+  <li><strong>Published questions</strong> remain on the platform if you delete your account; the link to you is removed, and other users' answers to the question are unaffected.</li>
+  <li><strong>Rejected questions</strong> are automatically deleted after 30 days, regardless of whether your account still exists, since they serve no further purpose once rejected.</li>
+</ul>
+<p>In all cases, the link between you and a submitted question is automatically and permanently removed if you delete your account.</p>
 
-      </p>
-    </section>
+<h3>2.5 Technical/log data</h3>
+<p>We automatically collect web server access logs, including IP address, timestamp, requested URL/endpoint, and user agent, for the purpose of detecting, investigating, and responding to misuse, fraud, and security incidents. These logs are retained for 30 days and then deleted.</p>
 
-    <section>
-      <h2>Security</h2>
-      <p>
-        We implement reasonable administrative, technical, and physical safeguards designed to protect your personal
-        information. No method of transmission over the internet or electronic storage is completely secure; we cannot
-        guarantee absolute security.
-      </p>
-    </section>
+<h2>3. Purposes and legal basis for processing</h2>
+<table>
+  <thead>
+    <tr><th>Data</th><th>Purpose</th><th>Legal basis (GDPR)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>E-mail</td><td>Password reset</td><td>Art. 6(1)(b) – necessary for the contract</td></tr>
+    <tr><td>Username, birth year, gender, country (profile)</td><td>Account management, service provision</td><td>Art. 6(1)(b)</td></tr>
+    <tr><td>Answers + demographic tags</td><td>Computing and displaying aggregate statistics</td><td>Art. 6(1)(f) legitimate interest</td></tr>
+    <tr><td>Vote-integrity tokens</td><td>Preventing duplicate voting, ensuring data integrity</td><td>Art. 6(1)(f) legitimate interest</td></tr>
+    <tr><td>Submitted-question attribution</td><td>Letting you view your submission history and approval status</td><td>Art. 6(1)(b) – necessary for that feature of the contract</td></tr>
+    <tr><td>Technical/log data</td><td>Detecting and investigating misuse, fraud, and security incidents</td><td>Art. 6(1)(f) legitimate interest</td></tr>
+  </tbody>
+</table>
+<p>We do not use your data for automated decision-making with legal or similarly significant effects on you.</p>
 
-    <section>
-      <h2>Your Rights</h2>
-      <p>
-        Depending on your jurisdiction, you may have rights to access, correct, delete, or restrict processing of your
-        personal data. To exercise these rights, contact us at <a href="mailto:play_address@use.startmail.com">play_address@use.startmail.com</a>.
-      </p>
-    </section>
+<h2>4. Special category data</h2>
+<p>Questions on the platform are submitted by users and reviewed by our administrators before being published, together with an age restriction (§9) and a classification of whether the question touches a special category of data under Art. 9 GDPR (e.g. health, religion, political opinion, sexual orientation).</p>
+<p>If a question is classified as touching a special category, we ask for your <strong>explicit consent, specific to that question</strong>, immediately before you submit your answer — separate from any general acceptance of our terms. We record that this consent was given, alongside the corresponding vote-integrity token described in §2.3, so that we can demonstrate consent was obtained without storing any additional identifying information about you.</p>
+<p>Your answer to such a question is otherwise stored under the same de-identified structure described in §2.2: without your user ID, e-mail, or user name.</p>
 
-    <section>
-      <h2>Children's Privacy</h2>
-      <p>
-        The App is not intended for children under the age of 13 (or the minimum age in your jurisdiction). If you believe
-        a child has provided personal information, contact us to request deletion.
-      </p>
-    </section>
+<h2>5. How we minimize re-identification risk</h2>
+<ul>
+  <li>Birth year is stored and published only in 10-year bands, not as an exact year.</li>
+  <li>Vote-integrity tokens use a keyed cryptographic function; the key is never stored with the tokens and is not derivable from them.</li>
+  <li>Statistics with very small sample sizes (fewer than 5 respondents in a given category combination) are not displayed, to avoid indirectly identifying individuals.</li>
+  <li>Answer data is structurally separated from account data in our systems.</li>
+</ul>
 
-    <section>
-      <h2>International Transfers</h2>
-      <p>
-        Your information may be transferred to — and maintained on — servers located outside of your jurisdiction. We will
-        take steps to ensure that transfers are subject to appropriate safeguards.
-      </p>
-    </section>
+<h2>6. Who we share data with</h2>
+<p>Our infrastructure is self-hosted; we do not use third-party hosting or analytics providers for the platform itself.</p>
+<p>We use <strong>Resend</strong> (resend.com) as our transactional e-mail provider, solely to deliver password reset e-mails. Resend processes your e-mail address on our behalf, as our data processor, only for the purpose of sending that e-mail.</p>
+<p>We do not sell personal data to third parties.</p>
+<p>If Resend processes data outside the EU/EEA, transfers are safeguarded by the EU Standard Contractual Clauses (Module Two: Controller-to-Processor), and, for UK and Swiss transfers, the corresponding UK Addendum and Swiss-specific terms under the same Clauses. Resend is additionally self-certified under the EU-U.S. Data Privacy Framework.</p>
 
-    <section>
-      <h2>Changes to This Privacy Policy</h2>
-      <p>
-        We may update this Privacy Policy from time to time. We will post the new Privacy Policy on this page and update
-        the "Last updated" date.
-      </p>
-    </section>
+<h2>7. Retention</h2>
+<ul>
+  <li>Account data: retained while your account is active, deleted immediately upon account deletion.</li>
+  <li>Vote-integrity tokens: retained indefinitely; they become practically unlinkable to you once your account is deleted, as account identifiers are never reused and cannot be derived from the token.</li>
+  <li>Submitted-question attribution: the link between you and any question you submitted is deleted immediately upon account deletion. Pending questions remain available for admin review; published questions remain on the platform; rejected questions are deleted after 30 days regardless of account status (see §2.4).</li>
+  <li>Answer/tag statistics: retained indefinitely in de-identified aggregate form, as they are not linked to an identifiable account once the corresponding token is deleted.</li>
+  <li>Web server access logs: retained for 30 days, then deleted.</li>
+</ul>
 
-    <section>
-      <h2>How to Contact Us</h2>
-      <p>
-        If you have questions or concerns about this policy, contact us at: <a href="mailto:play_address@use.startmail.com">play_address@use.startmail.com</a>.
-      </p>
-    </section>
-  </main>
+<h2>8. Your rights</h2>
+<p>Subject to applicable law, you have the right to:</p>
+<ul>
+  <li>Access the personal data we hold about you</li>
+  <li>Rectify inaccurate data</li>
+  <li>Erase your account and associated personal data</li>
+  <li>Restrict or object to certain processing</li>
+  <li>Data portability for data you provided</li>
+  <li>Withdraw consent at any time, without affecting prior lawful processing</li>
+  <li>Lodge a complaint with your local data protection supervisory authority</li>
+</ul>
+<p id="account-delete">To exercise these rights, contact <a href="mailto:play_address@use.startmail.com">play_address@use.startmail.com</a>. You can delete your account directly and immediately at any time via <strong>Settings → Account → Delete Account</strong> within the app, without needing to contact us.</p>
+<p><em>Note: because answer statistics are not linked to your identity once your vote-integrity token is deleted, we may not be able to identify or remove your individual historical answers from aggregate statistics after that point.</em></p>
+
+<h2>9. Children</h2>
+<p>Our service has a general minimum age of 13. We do not independently verify your age or identity; the minimum age is enforced based on the birth year you provide at registration. If you are younger than the required minimum, please do not create an account without the consent of a parent or guardian.</p>
+<p>In addition, individual questions may carry a higher minimum age, set by our administrators during content review, and are only shown to users whose self-reported birth year meets that question-specific age requirement.</p>
+
+<h2>10. Security</h2>
+<p>We apply technical and organizational measures including encryption in transit (HTTPS), access controls, and separation of identifiable account data from statistical/answer data, to protect your data against unauthorized access, loss, or misuse. Data is not currently encrypted at rest. Database access is restricted through a dedicated set of accounts, each limited to what it needs: an application account, a maintenance account limited to routine cleanup tasks, and a migration account used only for schema changes; a separate administrative superuser account exists but is not used for day-to-day operations.</p>
+
+<h2>11. Changes to this statement</h2>
+<p>We may update this privacy statement from time to time. We will notify you of material changes via in-app notice.</p>
+
+<h2>12. Contact</h2>
+<p>
+  Questions about this statement or your data: <a href="mailto:play_address@use.startmail.com">play_address@use.startmail.com</a><br>
+  Supervisory authority (EU): you may also contact your local data protection authority.
+</p>
+
+<footer>
+  Draft for internal/legal review — not yet published.
+</footer>
+
+</div>
+<!-- ===================== END ENGLISH ===================== -->
+
+
+<!-- ======================== GERMAN ======================== -->
+<div id="content-de" data-lang="de" lang="de">
+
+<h1>Datenschutzerklärung</h1>
+
+<p class="meta"><strong>Stand:</strong> 02 Sep. 2026</p>
+
+<h2>1. Verantwortlicher</h2>
+<p>Vote4It, ist verantwortlich für die Verarbeitung personenbezogener Daten im Sinne dieser Erklärung ("wir").</p>
+<p>
+  Kontakt: Matthias Peschke <a href="mailto:play_address@use.startmail.com">play_address@use.startmail.com</a><br>
+</p>
+
+<h2>2. Welche Daten wir erheben</h2>
+
+<h3>2.1 Kontodaten</h3>
+<p>Bei der Erstellung eines Kontos erheben wir:</p>
+<ul>
+  <li>E-Mail-Adresse — wird <strong>ausschließlich</strong> zum Zurücksetzen des Passworts verwendet</li>
+  <li>Benutzername</li>
+  <li>Geburtsjahr (wird als exaktes Jahr gespeichert, wie von Ihnen angegeben; wird erst bei der Zuordnung zu einer Antwort in eine statistische Kennzeichnung mit 10-Jahres-Bandbreite umgewandelt, siehe §5)</li>
+  <li>Geschlecht</li>
+  <li>Land</li>
+</ul>
+
+<h3>2.2 Antwortdaten</h3>
+<p>Wenn Sie eine Frage beantworten, speichern wir Ihre Antwort zusammen mit Ihrer Geburtsjahr-Bandbreite, Ihrem Geschlecht und Ihrem Land <strong>als anonymisierte Kennzeichnungen (Tags)</strong>. Wir speichern <strong>keine</strong> Nutzer-ID, E-Mail-Adresse oder Ihren Benutzernamen zusammen mit Ihren Antworten. Antworten können im normalen Betrieb des Dienstes nicht zu Ihrem Konto zurückverfolgt werden.</p>
+
+<h3>2.3 Daten zur Abstimmungsintegrität</h3>
+<p>Um sicherzustellen, dass jeder Nutzer eine bestimmte Frage nur einmal beantworten kann, speichern wir ein kryptografisches Token, das aus Ihrem Konto und der jeweiligen Frage mittels einer schlüsselbasierten Einwegfunktion (HMAC) mit einem nur unseren Systemen bekannten geheimen Schlüssel abgeleitet wird. Dieses Token:</p>
+<ul>
+  <li>kann praktisch nicht umgekehrt werden, um Ihre Nutzer-ID offenzulegen</li>
+  <li>ist pro Frage eindeutig, sodass es nicht dazu verwendet werden kann, Ihre Antworten auf verschiedene Fragen miteinander zu verknüpfen</li>
+  <li>wird praktisch nicht mehr Ihnen zuordenbar, sobald Ihr Konto gelöscht wird: da Kontokennungen nie wiederverwendet werden, kann das Token danach keinem Nutzer mehr zugeordnet werden, und es ist nicht möglich, daraus zukünftig Ihre Identität abzuleiten</li>
+</ul>
+
+<h3>2.4 Eingereichte Fragen</h3>
+<p>Wenn Sie eine Frage zur Prüfung einreichen, verknüpfen wir diese mit Ihrem Konto, damit Sie Ihren Einreichungsverlauf und dessen Freigabestatus in der App einsehen können.</p>
+<ul>
+  <li><strong>Ausstehende Fragen</strong> bleiben unabhängig vom Status Ihres Kontos für unsere Administratoren zur Prüfung sichtbar, da sie noch freigegeben und veröffentlicht werden können.</li>
+  <li><strong>Veröffentlichte Fragen</strong> bleiben auf der Plattform bestehen, wenn Sie Ihr Konto löschen; die Verknüpfung zu Ihnen wird entfernt, und die Antworten anderer Nutzer auf diese Frage sind davon nicht betroffen.</li>
+  <li><strong>Abgelehnte Fragen</strong> werden unabhängig davon, ob Ihr Konto noch besteht, automatisch nach 30 Tagen gelöscht, da sie nach der Ablehnung keinem weiteren Zweck mehr dienen.</li>
+</ul>
+<p>In allen Fällen wird die Verknüpfung zwischen Ihnen und einer eingereichten Frage automatisch und dauerhaft entfernt, wenn Sie Ihr Konto löschen.</p>
+
+<h3>2.5 Technische Daten / Protokolldaten</h3>
+<p>Wir erheben automatisch Zugriffsprotokolle des Webservers, einschließlich IP-Adresse, Zeitstempel, angefragter URL/Endpunkt und User-Agent, zum Zweck der Erkennung, Untersuchung und Abwehr von Missbrauch, Betrug und Sicherheitsvorfällen. Diese Protokolle werden 30 Tage lang gespeichert und anschließend gelöscht.</p>
+
+<h2>3. Zwecke und Rechtsgrundlagen der Verarbeitung</h2>
+<table>
+  <thead>
+    <tr><th>Daten</th><th>Zweck</th><th>Rechtsgrundlage (DSGVO)</th></tr>
+  </thead>
+  <tbody>
+    <tr><td>E-Mail</td><td>Zurücksetzen des Passworts</td><td>Art. 6 Abs. 1 lit. b – zur Vertragserfüllung erforderlich</td></tr>
+    <tr><td>Benutzername, Geburtsjahr, Geschlecht, Land (Profil)</td><td>Kontoverwaltung, Bereitstellung des Dienstes</td><td>Art. 6 Abs. 1 lit. b</td></tr>
+    <tr><td>Antworten + demografische Kennzeichnungen</td><td>Berechnung und Anzeige aggregierter Statistiken</td><td>Art. 6 Abs. 1 lit. f, berechtigtes Interesse</td></tr>
+    <tr><td>Token zur Abstimmungsintegrität</td><td>Verhinderung von Mehrfachabstimmungen, Sicherstellung der Datenintegrität</td><td>Art. 6 Abs. 1 lit. f (berechtigtes Interesse)</td></tr>
+    <tr><td>Zuordnung eingereichter Fragen</td><td>Einsicht in Ihren Einreichungsverlauf und Freigabestatus</td><td>Art. 6 Abs. 1 lit. b – für diese Vertragsfunktion erforderlich</td></tr>
+    <tr><td>Technische Daten / Protokolldaten</td><td>Erkennung und Untersuchung von Missbrauch, Betrug und Sicherheitsvorfällen</td><td>Art. 6 Abs. 1 lit. f (berechtigtes Interesse)</td></tr>
+  </tbody>
+</table>
+<p>Wir verwenden Ihre Daten nicht für automatisierte Entscheidungen mit rechtlicher oder ähnlich erheblicher Wirkung für Sie.</p>
+
+<h2>4. Besondere Kategorien personenbezogener Daten</h2>
+<p>Fragen auf der Plattform werden von Nutzern eingereicht und von unseren Administratoren vor der Veröffentlichung geprüft, einschließlich einer Altersbeschränkung (§9) und einer Einstufung, ob die Frage eine besondere Kategorie personenbezogener Daten im Sinne von Art. 9 DSGVO berührt (z. B. Gesundheit, Religion, politische Meinung, sexuelle Orientierung).</p>
+<p>Wird eine Frage als eine besondere Kategorie berührend eingestuft, holen wir unmittelbar vor dem Absenden Ihrer Antwort eine <strong>ausdrückliche, auf diese Frage bezogene Einwilligung</strong> ein — getrennt von einer allgemeinen Zustimmung zu unseren Nutzungsbedingungen. Wir erfassen, dass diese Einwilligung erteilt wurde, zusammen mit dem entsprechenden in §2.3 beschriebenen Token zur Abstimmungsintegrität, sodass wir die Einwilligung nachweisen können, ohne zusätzliche identifizierende Informationen über Sie zu speichern.</p>
+<p>Ihre Antwort auf eine solche Frage wird im Übrigen nach derselben in §2.2 beschriebenen, de-identifizierten Struktur gespeichert: ohne Ihre Nutzer-ID, E-Mail-Adresse oder Ihren Benutzernamen.</p>
+
+<h2>5. Wie wir das Risiko einer Re-Identifizierung minimieren</h2>
+<ul>
+  <li>Das Geburtsjahr wird nur in 10-Jahres-Bandbreiten gespeichert und veröffentlicht, nicht als exaktes Jahr.</li>
+  <li>Token zur Abstimmungsintegrität verwenden eine schlüsselbasierte kryptografische Funktion; der Schlüssel wird nie zusammen mit den Token gespeichert und kann aus ihnen nicht abgeleitet werden.</li>
+  <li>Statistiken mit sehr kleinen Stichprobengrößen (weniger als 5 Antwortende in einer bestimmten Kategorie-Kombination) werden nicht angezeigt, um eine indirekte Identifizierung einzelner Personen zu vermeiden.</li>
+  <li>Antwortdaten sind in unseren Systemen strukturell von Kontodaten getrennt.</li>
+</ul>
+
+<h2>6. Mit wem wir Daten teilen</h2>
+<p>Unsere Infrastruktur wird selbst betrieben (Self-Hosting); wir nutzen für die Plattform selbst keine Hosting- oder Analyseanbieter Dritter.</p>
+<p>Wir nutzen <strong>Resend</strong> (resend.com) als Anbieter für den Versand von Transaktions-E-Mails, ausschließlich zum Versand von E-Mails zum Zurücksetzen des Passworts. Resend verarbeitet Ihre E-Mail-Adresse in unserem Auftrag als Auftragsverarbeiter, ausschließlich zum Zweck des Versands dieser E-Mail.</p>
+<p>Wir verkaufen keine personenbezogenen Daten an Dritte.</p>
+<p>Sofern Resend Daten außerhalb der EU/des EWR verarbeitet, werden Übermittlungen durch die EU-Standardvertragsklauseln (Modul Zwei: Verantwortlicher–Auftragsverarbeiter) sowie, für Übermittlungen aus dem Vereinigten Königreich und der Schweiz, die entsprechenden Zusatzregelungen (UK Addendum bzw. Schweiz-spezifische Bestimmungen zu denselben Klauseln) abgesichert. Resend ist zusätzlich im Rahmen des EU-U.S. Data Privacy Framework selbstzertifiziert.</p>
+
+<h2>7. Speicherdauer</h2>
+<ul>
+  <li>Kontodaten: werden gespeichert, solange Ihr Konto aktiv ist, und bei Kontolöschung unverzüglich gelöscht.</li>
+  <li>Token zur Abstimmungsintegrität: werden unbefristet gespeichert; sie werden Ihnen praktisch nicht mehr zuordenbar, sobald Ihr Konto gelöscht wird, da Kontokennungen nie wiederverwendet werden und nicht aus dem Token abgeleitet werden können.</li>
+  <li>Zuordnung eingereichter Fragen: Die Verknüpfung zwischen Ihnen und jeder von Ihnen eingereichten Frage wird bei Kontolöschung unverzüglich entfernt. Ausstehende Fragen bleiben für die Prüfung durch Administratoren verfügbar; veröffentlichte Fragen bleiben auf der Plattform bestehen; abgelehnte Fragen werden unabhängig vom Kontostatus nach 30 Tagen gelöscht (siehe §2.4).</li>
+  <li>Antwort-/Kennzeichnungsstatistiken: werden in de-identifizierter, aggregierter Form unbefristet gespeichert, da sie nach Löschung des zugehörigen Tokens keinem identifizierbaren Konto mehr zugeordnet sind.</li>
+  <li>Zugriffsprotokolle des Webservers: werden 30 Tage lang gespeichert und anschließend gelöscht.</li>
+</ul>
+
+<h2>8. Ihre Rechte</h2>
+<p>Vorbehaltlich geltenden Rechts haben Sie das Recht auf:</p>
+<ul>
+  <li>Auskunft über die von uns über Sie gespeicherten personenbezogenen Daten</li>
+  <li>Berichtigung unrichtiger Daten</li>
+  <li>Löschung Ihres Kontos und der zugehörigen personenbezogenen Daten</li>
+  <li>Einschränkung oder Widerspruch gegen bestimmte Verarbeitungen</li>
+  <li>Datenübertragbarkeit für die von Ihnen bereitgestellten Daten</li>
+  <li>Widerruf einer Einwilligung jederzeit, ohne Auswirkung auf die Rechtmäßigkeit der bis zum Widerruf erfolgten Verarbeitung</li>
+  <li>Beschwerde bei der für Sie zuständigen Datenschutzaufsichtsbehörde</li>
+</ul>
+<p>Zur Ausübung dieser Rechte kontaktieren Sie uns unter <a href="mailto:play_address@use.startmail.com">play_address@use.startmail.com</a>. Sie können Ihr Konto jederzeit direkt und unmittelbar über <strong>Einstellungen → Konto → Konto löschen</strong> in der App löschen, ohne uns kontaktieren zu müssen.</p>
+<p><em>Hinweis: Da Antwortstatistiken nach Löschung Ihres Tokens zur Abstimmungsintegrität nicht mehr mit Ihrer Identität verknüpft sind, können wir Ihre einzelnen historischen Antworten aus den aggregierten Statistiken danach möglicherweise nicht mehr identifizieren oder entfernen.</em></p>
+
+<h2>9. Kinder und Jugendliche</h2>
+<p>Unser Dienst hat ein allgemeines Mindestalter von 13. Wir überprüfen Ihr Alter oder Ihre Identität nicht eigenständig; das Mindestalter wird anhand des bei der Registrierung angegebenen Geburtsjahres durchgesetzt. Sind Sie jünger als das erforderliche Mindestalter, erstellen Sie bitte kein Konto ohne die Zustimmung eines Elternteils oder Erziehungsberechtigten.</p>
+<p>Darüber hinaus können einzelne Fragen ein höheres Mindestalter tragen, das von unseren Administratoren im Rahmen der Inhaltsprüfung festgelegt wird, und werden nur Nutzern angezeigt, deren selbst angegebenes Geburtsjahr diese fragenspezifische Altersanforderung erfüllt.</p>
+
+<h2>10. Sicherheit</h2>
+<p>Wir treffen technische und organisatorische Maßnahmen, darunter Verschlüsselung bei der Übertragung (HTTPS), Zugriffskontrollen und die strukturelle Trennung identifizierbarer Kontodaten von statistischen Antwortdaten, um Ihre Daten vor unbefugtem Zugriff, Verlust oder Missbrauch zu schützen. Die Daten sind derzeit nicht im Ruhezustand ("at rest") verschlüsselt. Der Zugriff auf die Datenbank ist durch dedizierte, jeweils auf das Notwendige beschränkte Konten geregelt: ein Konto für die Anwendung, ein Konto für routinemäßige Wartungsaufgaben und ein Konto, das ausschließlich für Schemaänderungen verwendet wird; zusätzlich existiert ein administratives Superuser-Konto, das nicht für den laufenden Betrieb genutzt wird.</p>
+
+<h2>11. Änderungen dieser Erklärung</h2>
+<p>Wir können diese Datenschutzerklärung von Zeit zu Zeit aktualisieren. Über wesentliche Änderungen informieren wir Sie per In-App-Hinweis.</p>
+
+<h2>12. Kontakt</h2>
+<p>
+  Fragen zu dieser Erklärung oder zu Ihren Daten: <a href="mailto:play_address@use.startmail.com">play_address@use.startmail.com</a><br>
+  Aufsichtsbehörde (EU): Sie können sich auch an die für Sie zuständige Datenschutzaufsichtsbehörde wenden.
+</p>
+
+</div>
+<!-- ====================== END GERMAN ====================== -->
+
+<script>
+  function setLang(lang) {
+    document.querySelectorAll('[data-lang]').forEach(function (el) {
+      el.classList.toggle('active', el.getAttribute('data-lang') === lang);
+    });
+    document.getElementById('btn-en').setAttribute('aria-pressed', lang === 'en');
+    document.getElementById('btn-de').setAttribute('aria-pressed', lang === 'de');
+    document.documentElement.setAttribute('lang', lang);
+    document.title = lang === 'de'
+      ? 'Datenschutzerklärung (Entwurf)'
+      : 'Privacy Statement (Draft)';
+    try { localStorage === undefined; } catch (e) {}
+    if (history.replaceState) {
+      history.replaceState(null, '', '#lang=' + lang);
+    }
+  }
+
+  // Respect an incoming #lang=de / #lang=en hash on load (e.g. from the hreflang links above).
+  (function initLang() {
+    var hash = window.location.hash || '';
+    var match = hash.match(/lang=(en|de)/);
+    setLang(match ? match[1] : 'en');
+  })();
+</script>
+
 </body>
 </html>
