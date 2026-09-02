@@ -1,6 +1,42 @@
 /// Authentication-related data models for the Vote backend.
 library;
 
+/// Country model returned by the `GET /countries` endpoint.
+class Country {
+  final String code;
+  final String name;
+
+  const Country({required this.code, required this.name});
+
+  factory Country.fromJson(Map<String, dynamic> json) {
+    return Country(
+      code: json['code'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+    );
+  }
+}
+
+/// Region model returned by the `GET /regions` endpoint.
+class Region {
+  final String code;
+  final String name;
+  final String countryCode;
+
+  const Region({
+    required this.code,
+    required this.name,
+    required this.countryCode,
+  });
+
+  factory Region.fromJson(Map<String, dynamic> json) {
+    return Region(
+      code: json['code'] as String? ?? '',
+      name: json['name'] as String? ?? '',
+      countryCode: json['country_code'] as String? ?? '',
+    );
+  }
+}
+
 /// Structured authentication error exposed to the UI so it can be localized.
 ///
 /// [code] selects the localized message template (e.g. `loginFailed`),
@@ -24,6 +60,7 @@ class RegisterRequest {
   final int? birthYear;
   final String? gender;
   final String? nationality;
+  final String? region;
 
   const RegisterRequest({
     required this.username,
@@ -32,6 +69,7 @@ class RegisterRequest {
     this.birthYear,
     this.gender,
     this.nationality,
+    this.region,
   });
 
   Map<String, dynamic> toJson() => {
@@ -41,6 +79,7 @@ class RegisterRequest {
     if (birthYear != null) 'birth_year': birthYear,
     if (gender != null) 'gender': gender,
     if (nationality != null) 'nationality': nationality,
+    if (region != null) 'region': region,
   };
 }
 
@@ -134,6 +173,7 @@ class User {
   final int? birthYear;
   final String? gender;
   final String? nationality;
+  final String? region;
   final bool isAdmin;
   final bool isActive;
 
@@ -144,6 +184,7 @@ class User {
     this.birthYear,
     this.gender,
     this.nationality,
+    this.region,
     this.isAdmin = false,
     this.isActive = true,
   });
@@ -156,6 +197,7 @@ class User {
       birthYear: json['birth_year'] as int?,
       gender: json['gender'] as String?,
       nationality: json['nationality'] as String?,
+      region: json['region'] as String?,
       isAdmin: json['is_admin'] as bool? ?? false,
       isActive: json['is_active'] as bool? ?? true,
     );
@@ -165,21 +207,32 @@ class User {
 /// Request body for updating the authenticated user's own profile via
 /// `PATCH`/`PUT` `/me`.
 ///
-/// Only `email`, `gender` and `password` are modifiable; `username` is the
-/// user's identity and is never sent. `gender` and `password` are optional and
-/// are omitted from the JSON when `null` so that only the changed fields are
-/// transmitted (the backend accepts partial updates).
+/// Only `email`, `gender`, `password`, `nationality` and `region` are
+/// modifiable; `username` is the user's identity and is never sent.
+/// Fields are omitted from the JSON when `null` so that only the changed
+/// fields are transmitted (the backend accepts partial updates). To clear a
+/// nullable field, explicitly pass `null`.
 class UpdateUserRequest {
   final String email;
   final String? gender;
   final String? password;
+  final String? nationality;
+  final String? region;
 
-  const UpdateUserRequest({required this.email, this.gender, this.password});
+  const UpdateUserRequest({
+    required this.email,
+    this.gender,
+    this.password,
+    this.nationality,
+    this.region,
+  });
 
   Map<String, dynamic> toJson() => {
     'email': email,
     if (gender != null) 'gender': gender,
     if (password != null) 'password': password,
+    if (nationality != null) 'nationality': nationality,
+    if (region != null) 'region': region,
   };
 }
 
