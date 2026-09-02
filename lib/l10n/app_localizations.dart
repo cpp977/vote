@@ -350,6 +350,30 @@ abstract class AppLocalizations {
   /// **'Please specify'**
   String get nationalityOtherLabel;
 
+  /// Label for the region selector (ISO 3166-2 subdivision code).
+  ///
+  /// In en, this message translates to:
+  /// **'Region'**
+  String get regionLabel;
+
+  /// Loading indicator text for dropdowns.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading...'**
+  String get loadingLabel;
+
+  /// Hint shown in region dropdown when no nationality is selected.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a nationality first'**
+  String get selectNationalityFirst;
+
+  /// Hint shown in region dropdown when no regions exist for the selected nationality.
+  ///
+  /// In en, this message translates to:
+  /// **'No regions available for this nationality'**
+  String get noRegionsAvailable;
+
   /// Validation error when the registration password is empty.
   ///
   /// In en, this message translates to:
@@ -769,6 +793,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Nationality'**
   String get dimensionNationality;
+
+  /// Statistics dimension: region (ISO 3166-2 subdivision) of respondents.
+  ///
+  /// In en, this message translates to:
+  /// **'Region'**
+  String get dimensionRegion;
 
   /// Age-group option below 18 years.
   ///

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 
 import '../l10n/app_localizations.dart';
-import '../utils/countries.dart';
 import 'answer_stats.dart';
 
 /// A tag along which vote statistics can be resolved (e.g. gender, age).
@@ -52,6 +51,7 @@ IconData dimensionIcon(String key) => switch (key) {
   'gender' => Icons.people_outline,
   'age_bucket' => Icons.calendar_today_outlined,
   'nationality' => Icons.public,
+  'region' => Icons.map_outlined,
   _ => Icons.label_outline,
 };
 
@@ -60,6 +60,7 @@ String dimensionLabel(AppLocalizations l10n, String key) => switch (key) {
   'gender' => l10n.genderLabel,
   'age_bucket' => l10n.dimensionAge,
   'nationality' => l10n.dimensionNationality,
+  'region' => l10n.dimensionRegion,
   _ => key,
 };
 
@@ -74,7 +75,8 @@ String dimensionValueLabel(AppLocalizations l10n, String key, String value) =>
       },
       // Ranges such as "20-29" render language-neutrally with an en dash.
       'age_bucket' => value.replaceFirst('-', '–'),
-      'nationality' => countryDisplayName(l10n, value),
+      'nationality' => value.toUpperCase(),
+      'region' => value.toUpperCase(),
       _ => value,
     };
 
@@ -100,7 +102,7 @@ List<StatsDimension> dimensionsFromMeta(StatsMeta meta) {
 // ─── Built-in fallback registry ────────────────────────────────────────────
 //
 // Used until metadata has loaded (or when the endpoint is unreachable). Must
-// mirror the backend's default contract: gender=m|w|d, age_bucket="<s>-<e>"
+// mirror the backend's default contract: gender=m|w|d, age_bucket="-<e>"
 // decades, nationality=ISO 3166-1 alpha-2 codes.
 
 /// Age range covered by the fallback bucket labels (matches the backend).
@@ -119,13 +121,33 @@ List<StatsDimensionValue> _ageBucketValues(int size) => [
     }),
 ];
 
-/// Fallback nationality codes: every country offered by the picker.
+/// Fallback nationality codes: a small set of common countries.
 final List<StatsDimensionValue> _nationalityValues = [
-  for (final country in countries)
-    StatsDimensionValue(
-      country.code,
-      (l10n) => countryDisplayName(l10n, country.code),
-    ),
+  StatsDimensionValue('DE', (l10n) => 'Germany'),
+  StatsDimensionValue('AT', (l10n) => 'Austria'),
+  StatsDimensionValue('CH', (l10n) => 'Switzerland'),
+  StatsDimensionValue('FR', (l10n) => 'France'),
+  StatsDimensionValue('IT', (l10n) => 'Italy'),
+  StatsDimensionValue('ES', (l10n) => 'Spain'),
+  StatsDimensionValue('NL', (l10n) => 'Netherlands'),
+  StatsDimensionValue('PL', (l10n) => 'Poland'),
+  StatsDimensionValue('US', (l10n) => 'United States'),
+  StatsDimensionValue('GB', (l10n) => 'United Kingdom'),
+];
+
+/// Fallback region codes: a small set of common regions.
+final List<StatsDimensionValue> _regionValues = [
+  StatsDimensionValue('DE-BE', (l10n) => 'Berlin'),
+  StatsDimensionValue('DE-BY', (l10n) => 'Bavaria'),
+  StatsDimensionValue('DE-NW', (l10n) => 'North Rhine-Westphalia'),
+  StatsDimensionValue('AT-9', (l10n) => 'Vienna'),
+  StatsDimensionValue('CH-ZH', (l10n) => 'Zurich'),
+  StatsDimensionValue('FR-IDF', (l10n) => 'Île-de-France'),
+  StatsDimensionValue('IT-62', (l10n) => 'Lazio'),
+  StatsDimensionValue('ES-MD', (l10n) => 'Madrid'),
+  StatsDimensionValue('US-CA', (l10n) => 'California'),
+  StatsDimensionValue('US-NY', (l10n) => 'New York'),
+  StatsDimensionValue('GB-ENG', (l10n) => 'England'),
 ];
 
 final List<StatsDimension> statsDimensions = [
@@ -151,6 +173,12 @@ final List<StatsDimension> statsDimensions = [
     label: _nationalityDimensionLabel,
     values: _nationalityValues,
   ),
+  StatsDimension(
+    key: 'region',
+    icon: Icons.map_outlined,
+    label: _regionDimensionLabel,
+    values: _regionValues,
+  ),
 ];
 
 String _genderDimensionLabel(AppLocalizations l10n) => l10n.genderLabel;
@@ -160,3 +188,4 @@ String _diverseLabel(AppLocalizations l10n) => l10n.genderDiverse;
 String _ageDimensionLabel(AppLocalizations l10n) => l10n.dimensionAge;
 String _nationalityDimensionLabel(AppLocalizations l10n) =>
     l10n.dimensionNationality;
+String _regionDimensionLabel(AppLocalizations l10n) => l10n.dimensionRegion;

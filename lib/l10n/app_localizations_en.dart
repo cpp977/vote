@@ -150,6 +150,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get nationalityOtherLabel => 'Please specify';
 
   @override
+  String get regionLabel => 'Region';
+
+  @override
+  String get loadingLabel => 'Loading...';
+
+  @override
+  String get selectNationalityFirst => 'Select a nationality first';
+
+  @override
+  String get noRegionsAvailable => 'No regions available for this nationality';
+
+  @override
   String get passwordRequiredAlt => 'Please enter a password';
 
   @override
@@ -394,6 +406,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get dimensionNationality => 'Nationality';
+
+  @override
+  String get dimensionRegion => 'Region';
 
   @override
   String get ageUnder18 => 'Under 18';

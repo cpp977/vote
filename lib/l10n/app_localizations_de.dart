@@ -152,6 +152,20 @@ class AppLocalizationsDe extends AppLocalizations {
   String get nationalityOtherLabel => 'Bitte näher angeben';
 
   @override
+  String get regionLabel => 'Region';
+
+  @override
+  String get loadingLabel => 'Wird geladen...';
+
+  @override
+  String get selectNationalityFirst =>
+      'Bitte zuerst eine Staatsangehörigkeit wählen';
+
+  @override
+  String get noRegionsAvailable =>
+      'Keine Regionen für diese Staatsangehörigkeit verfügbar';
+
+  @override
   String get passwordRequiredAlt => 'Bitte gib ein Passwort ein';
 
   @override
@@ -401,6 +415,9 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get dimensionNationality => 'Nationalität';
+
+  @override
+  String get dimensionRegion => 'Region';
 
   @override
   String get ageUnder18 => 'Unter 18';

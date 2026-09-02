@@ -198,6 +198,22 @@
   "@nationalityOtherLabel": {
     "description": "Label for the free-text field shown when 'Other' nationality is selected."
   },
+  "regionLabel": "Region",
+  "@regionLabel": {
+    "description": "Label for the region selector (ISO 3166-2 subdivision code)."
+  },
+  "loadingLabel": "Loading...",
+  "@loadingLabel": {
+    "description": "Loading indicator text for dropdowns."
+  },
+  "selectNationalityFirst": "Select a nationality first",
+  "@selectNationalityFirst": {
+    "description": "Hint shown in region dropdown when no nationality is selected."
+  },
+  "noRegionsAvailable": "No regions available for this nationality",
+  "@noRegionsAvailable": {
+    "description": "Hint shown in region dropdown when no regions exist for the selected nationality."
+  },
   "passwordRequiredAlt": "Please enter a password",
   "@passwordRequiredAlt": {
     "description": "Validation error when the registration password is empty."
@@ -501,6 +517,10 @@
   "dimensionNationality": "Nationality",
   "@dimensionNationality": {
     "description": "Statistics dimension: nationality of respondents."
+  },
+  "dimensionRegion": "Region",
+  "@dimensionRegion": {
+    "description": "Statistics dimension: region (ISO 3166-2 subdivision) of respondents."
   },
   "ageUnder18": "Under 18",
   "@ageUnder18": {
