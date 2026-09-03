@@ -1,9 +1,9 @@
-# Vote
+# Vote4It
 
 [![CI](https://github.com/cpp977/vote/actions/workflows/dart.yml/badge.svg)](https://github.com/cpp977/vote/actions/workflows/dart.yml)
 
 <p align="center">
-  <img alt="Vote logo" src="https://raw.githubusercontent.com/cpp977/vote/main/assets/icon/app_icon.png" width="160" />
+  <img alt="Vote4It logo" src="https://raw.githubusercontent.com/cpp977/vote/main/assets/icon/app_icon.png" width="160" />
 </p>
 
 Cross-platform Flutter frontend for voting-style questionnaires and results.

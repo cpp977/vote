@@ -101,7 +101,7 @@ abstract class AppLocalizations {
   /// Brand name of the application. Kept untranslated on purpose.
   ///
   /// In en, this message translates to:
-  /// **'Vote'**
+  /// **'Vote4It'**
   String get appName;
 
   /// Login screen greeting; {appName} is the brand and stays 'Vote'.

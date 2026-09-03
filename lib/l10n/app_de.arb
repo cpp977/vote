@@ -1,9 +1,9 @@
 {
   "@@author": "ECA",
-  "@@context": "Vote app — German (de) ARB. Mirrors app_en.arb; values translated, placeholder names kept identical.",
+  "@@context": "Vote4It app — German (de) ARB. Mirrors app_en.arb; values translated, placeholder names kept identical.",
   "@@locale": "de",
 
-  "appName": "Vote",
+  "appName": "Vote4It",
 
   "welcomeToApp": "Willkommen bei {appName}",
   "joinApp": "Tritt {appName} bei",

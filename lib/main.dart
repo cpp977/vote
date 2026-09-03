@@ -59,7 +59,7 @@ class MyApp extends StatelessWidget {
       child: Consumer<ConfigurationController>(
         builder: (context, config, _) {
           return MaterialApp(
-            title: 'Vote',
+            title: 'Vote4It',
             navigatorKey: NavigationService.navigatorKey,
             theme: ThemeData(
               colorScheme: ColorScheme.fromSeed(seedColor: config.seedColor),

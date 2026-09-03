@@ -1,9 +1,9 @@
 {
   "@@author": "ECA",
-  "@@context": "Vote app — English (template) ARB. Keys map 1:1 to AppLocalizations getters.",
+  "@@context": "Vote4It app — English (template) ARB. Keys map 1:1 to AppLocalizations getters.",
   "@@locale": "en",
 
-  "appName": "Vote",
+  "appName": "Vote4It",
   "@appName": {
     "description": "Brand name of the application. Kept untranslated on purpose."
   },
