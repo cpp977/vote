@@ -50,6 +50,6 @@ class _HomeShellState extends State<HomeShell> {
     if (_selectedIndex == 1) {
       return MySubmissionsPage(onNavigate: _onSelect);
     }
-    return MyHomePage(title: 'Vote', onNavigate: _onSelect);
+    return MyHomePage(title: 'Vote4It', onNavigate: _onSelect);
   }
 }
