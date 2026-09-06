@@ -43,4 +43,3 @@ jobs:
           packageName: com.dev.vote
           releaseFiles: build/app/outputs/bundle/release/app-release.aab
           tracks: qa
-          status: inProgress
