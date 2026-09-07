@@ -5,6 +5,10 @@ on:
   push:
     branches: [ "develop" ]
 
+concurrency:
+  group: playstore-deploy
+  cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -21,6 +25,80 @@ jobs:
       - name: Install dependencies
         run: flutter pub get
 
+      - name: Get next Play version code
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          PACKAGE_NAME: com.dev.vote
+        run: |
+          python3 -m pip install --quiet google-api-python-client google-auth
+
+          python3 <<'PY'
+          import json
+          import os
+
+          from google.oauth2 import service_account
+          from googleapiclient.discovery import build
+
+          package_name = os.environ["PACKAGE_NAME"]
+
+          credentials = service_account.Credentials.from_service_account_info(
+              json.loads(os.environ["PLAY_SERVICE_ACCOUNT_JSON"]),
+              scopes=["https://www.googleapis.com/auth/androidpublisher"],
+          )
+
+          service = build(
+              "androidpublisher",
+              "v3",
+              credentials=credentials,
+              cache_discovery=False,
+          )
+
+          edit = (
+              service.edits()
+              .insert(packageName=package_name, body={})
+              .execute()
+          )
+
+          edit_id = edit["id"]
+
+          try:
+              response = (
+                  service.edits()
+                  .tracks()
+                  .list(
+                      packageName=package_name,
+                      editId=edit_id,
+                  )
+                  .execute()
+              )
+
+              version_codes = []
+
+              for track in response.get("tracks", []):
+                  for release in track.get("releases", []):
+                      for version_code in release.get("versionCodes", []):
+                          version_codes.append(int(version_code))
+
+              if version_codes:
+                  latest = max(version_codes)
+                  next_version = latest + 1
+              else:
+                  latest = 0
+                  next_version = 1
+
+              print(f"Highest Play versionCode: {latest}")
+              print(f"Next versionCode: {next_version}")
+
+              with open(os.environ["GITHUB_ENV"], "a") as env_file:
+                  env_file.write(f"BUILD_NUMBER={next_version}\n")
+
+          finally:
+              service.edits().delete(
+                  packageName=package_name,
+                  editId=edit_id,
+              ).execute()
+          PY
+
       - name: Restore keystore
         run: |
           echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/upload-keystore.jks
@@ -35,7 +113,13 @@ jobs:
           EOF
 
       - name: Build
-        run: dart run dart_define generate --FLAVOR=production && flutter build appbundle --release --dart-define-from-file=dart_define.json 
+        run: |
+          dart run dart_define generate --FLAVOR=production
+          flutter build appbundle \
+            --release \
+            --build-number="$BUILD_NUMBER" \
+            --dart-define-from-file=dart_define.json
+
       - name: "Publish"
         uses: r0adkll/upload-google-play@v1
         with:
