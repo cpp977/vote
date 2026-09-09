@@ -35,6 +35,7 @@ class _MyHomePageState extends State<MyHomePage> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
   final Set<int> _selectedCategoryIds = {};
+  bool _showUnansweredOnly = false;
   Timer? _debounceTimer;
 
   /// Controls infinite-scroll pagination.
@@ -128,7 +129,7 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   /// Loads questions from the backend using the paginated `/questions/restSearch`
-  /// endpoint.
+  /// or `/questions/restSearch-with-auth` endpoint.
   ///
   /// When [reset] is `true` the current list is cleared, the pagination state is
   /// reset, and the first page (size [pageSize], offset 0) is fetched. This is
@@ -173,7 +174,10 @@ class _MyHomePageState extends State<MyHomePage> {
     final languageCode = ConfigurationController.currentLanguageCode;
     final preAuth = context.read<AuthController>();
     final preBirthYear = preAuth.birthYear;
-    debugPrint('Fetching questions for language: $languageCode');
+    final bool isAuthenticated = preAuth.isAuthenticated;
+    debugPrint(
+      'Fetching questions for language: $languageCode, authenticated: $isAuthenticated',
+    );
 
     try {
       // Use the restSearch endpoint for all question loading.
@@ -181,6 +185,8 @@ class _MyHomePageState extends State<MyHomePage> {
       // the `language` and `age` parameters. Results are fetched in pages of
       // [pageSize] questions; infinite scroll appends further pages as the
       // user scrolls down. Category filtering is applied via `categoryIds`.
+      // When authenticated, use the restSearch-with-auth endpoint which returns
+      // an `answered` field per question and supports the `unanswered_only` filter.
       final currentYear = DateTime.now().year;
       final userAge = preBirthYear != null ? currentYear - preBirthYear : null;
 
@@ -192,13 +198,18 @@ class _MyHomePageState extends State<MyHomePage> {
         if (effectiveSearch.length >= 3) 'search': effectiveSearch,
         if (_selectedCategoryIds.isNotEmpty)
           'categoryIds': _selectedCategoryIds.toList(),
+        if (isAuthenticated && _showUnansweredOnly) 'unanswered_only': true,
       };
       if (userAge != null) {
         body['age'] = userAge;
       }
 
+      final endpoint = isAuthenticated
+          ? '/questions/restSearch-with-auth'
+          : '/questions/restSearch';
+
       final response = await _authMiddleware.post(
-        '${ApiConfig.baseUrl}/questions/restSearch',
+        '${ApiConfig.baseUrl}$endpoint',
         body: jsonEncode(body),
       );
 
@@ -308,12 +319,14 @@ class _MyHomePageState extends State<MyHomePage> {
   void _showCategoryFilterDialog(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final categories = context.read<AuthController>().categories;
+    final isAuthenticated = context.read<AuthController>().isAuthenticated;
     // Sort categories by name for a stable display order.
     final sortedEntries = categories.entries.toList()
       ..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase()));
 
     // Work on a local copy so Cancel leaves the current selection intact.
     final Set<int> tempSelected = Set<int>.from(_selectedCategoryIds);
+    bool tempShowUnansweredOnly = _showUnansweredOnly;
 
     showDialog(
       context: context,
@@ -324,33 +337,58 @@ class _MyHomePageState extends State<MyHomePage> {
               title: Text(l10n.filterDialogTitle),
               content: SizedBox(
                 width: double.maxFinite,
-                child: sortedEntries.isEmpty
-                    ? Padding(
-                        padding: const EdgeInsets.all(16),
-                        child: Center(child: Text(l10n.noCategoriesAvailable)),
-                      )
-                    : ListView(
-                        shrinkWrap: true,
-                        children: sortedEntries.map((entry) {
-                          return CheckboxListTile(
-                            title: Text(entry.value),
-                            value: tempSelected.contains(entry.key),
-                            onChanged: (checked) {
-                              setDialogState(() {
-                                if (checked == true) {
-                                  tempSelected.add(entry.key);
-                                } else {
-                                  tempSelected.remove(entry.key);
-                                }
-                              });
-                            },
-                          );
-                        }).toList(),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    // Unanswered only filter (only shown when authenticated)
+                    if (isAuthenticated)
+                      CheckboxListTile(
+                        title: Text(l10n.unansweredOnly),
+                        subtitle: Text(l10n.unansweredOnlyTooltip),
+                        value: tempShowUnansweredOnly,
+                        onChanged: (checked) {
+                          setDialogState(() {
+                            tempShowUnansweredOnly = checked ?? false;
+                          });
+                        },
                       ),
+                    // Category filter
+                    sortedEntries.isEmpty
+                        ? Padding(
+                            padding: const EdgeInsets.all(16),
+                            child: Center(
+                              child: Text(l10n.noCategoriesAvailable),
+                            ),
+                          )
+                        : Flexible(
+                            child: ListView(
+                              shrinkWrap: true,
+                              children: sortedEntries.map((entry) {
+                                return CheckboxListTile(
+                                  title: Text(entry.value),
+                                  value: tempSelected.contains(entry.key),
+                                  onChanged: (checked) {
+                                    setDialogState(() {
+                                      if (checked == true) {
+                                        tempSelected.add(entry.key);
+                                      } else {
+                                        tempSelected.remove(entry.key);
+                                      }
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ),
+                          ),
+                  ],
+                ),
               ),
               actions: [
                 TextButton(
-                  onPressed: () => setDialogState(() => tempSelected.clear()),
+                  onPressed: () => setDialogState(() {
+                    tempSelected.clear();
+                    tempShowUnansweredOnly = false;
+                  }),
                   child: Text(l10n.clear),
                 ),
                 TextButton(
@@ -364,6 +402,7 @@ class _MyHomePageState extends State<MyHomePage> {
                       _selectedCategoryIds
                         ..clear()
                         ..addAll(tempSelected);
+                      _showUnansweredOnly = tempShowUnansweredOnly;
                     });
                     _fetchQuestions();
                   },
@@ -490,7 +529,8 @@ class _MyHomePageState extends State<MyHomePage> {
           IconButton(
             onPressed: () => _showCategoryFilterDialog(context),
             icon: Badge(
-              isLabelVisible: _selectedCategoryIds.isNotEmpty,
+              isLabelVisible:
+                  _selectedCategoryIds.isNotEmpty || _showUnansweredOnly,
               child: const Icon(Icons.filter_list),
             ),
             tooltip: l10n.filterTooltip,
@@ -562,13 +602,21 @@ class _MyHomePageState extends State<MyHomePage> {
                     ),
                   ),
                 // Active category filter chips
-                if (_selectedCategoryIds.isNotEmpty)
+                if (_selectedCategoryIds.isNotEmpty || _showUnansweredOnly)
                   Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Wrap(
                       spacing: 8,
                       runSpacing: 4,
                       children: [
+                        if (_showUnansweredOnly)
+                          Chip(
+                            label: Text(l10n.unansweredOnly),
+                            onDeleted: () {
+                              setState(() => _showUnansweredOnly = false);
+                              _fetchQuestions();
+                            },
+                          ),
                         ..._selectedCategoryIds.map((id) {
                           final name =
                               authController.categories[id] ??

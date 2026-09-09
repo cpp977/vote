@@ -356,6 +356,15 @@ class AppLocalizationsDe extends AppLocalizations {
   String get alreadyAnswered => 'Du hast diese Frage bereits beantwortet';
 
   @override
+  String get answered => 'Beantwortet';
+
+  @override
+  String get unansweredOnly => 'Nur unbeantwortete';
+
+  @override
+  String get unansweredOnlyTooltip => 'Nur unbeantwortete Fragen anzeigen';
+
+  @override
   String get votesNoun => 'Stimmen';
 
   @override

@@ -710,6 +710,24 @@ abstract class AppLocalizations {
   /// **'You have already answered this question'**
   String get alreadyAnswered;
 
+  /// Label shown on a question card when the user has already answered this question.
+  ///
+  /// In en, this message translates to:
+  /// **'Answered'**
+  String get answered;
+
+  /// Filter option to show only questions the user has not yet answered.
+  ///
+  /// In en, this message translates to:
+  /// **'Unanswered only'**
+  String get unansweredOnly;
+
+  /// Tooltip for the unanswered-only filter checkbox.
+  ///
+  /// In en, this message translates to:
+  /// **'Show only unanswered questions'**
+  String get unansweredOnlyTooltip;
+
   /// Noun label shown in the center of the donut chart.
   ///
   /// In en, this message translates to:
