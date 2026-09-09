@@ -179,6 +179,19 @@
   "voteSubmitFailed": "Stimme konnte nicht abgegeben werden: {error}",
   "alreadyAnswered": "Du hast diese Frage bereits beantwortet",
 
+  "answered": "Beantwortet",
+  "@answered": {
+    "description": "Label shown on a question card when the user has already answered this question."
+  },
+  "unansweredOnly": "Nur unbeantwortete",
+  "@unansweredOnly": {
+    "description": "Filter option to show only questions the user has not yet answered."
+  },
+  "unansweredOnlyTooltip": "Nur unbeantwortete Fragen anzeigen",
+  "@unansweredOnlyTooltip": {
+    "description": "Tooltip for the unanswered-only filter checkbox."
+  },
+
   "votesNoun": "Stimmen",
   "noVotesYet": "Noch keine Stimmen",
   "totalVotes": "{count, plural, =0{Keine Stimmen} =1{{count} Stimme gesamt}other{{count} Stimmen gesamt}}",

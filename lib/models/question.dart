@@ -15,6 +15,10 @@ class Question {
   /// before it may be answered.
   final SpecialCategory specialCategory;
 
+  /// Whether the current user has already answered this question.
+  /// Only populated when using the authenticated search endpoint.
+  final bool answered;
+
   Question({
     required this.id,
     required this.text,
@@ -22,6 +26,7 @@ class Question {
     required this.categoryName,
     required this.language,
     this.specialCategory = SpecialCategory.none,
+    this.answered = false,
   });
 
   factory Question.fromJson(Map<String, dynamic> json) {
@@ -34,6 +39,7 @@ class Question {
       specialCategory: SpecialCategory.fromLabel(
         json['special_category'] as String?,
       ),
+      answered: json['answered'] as bool? ?? false,
     );
   }
 }

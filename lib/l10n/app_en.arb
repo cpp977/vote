@@ -452,6 +452,19 @@
     "description": "Error snack bar shown when submitting a vote fails because the question was already answered (HTTP 409)."
   },
 
+  "answered": "Answered",
+  "@answered": {
+    "description": "Label shown on a question card when the user has already answered this question."
+  },
+  "unansweredOnly": "Unanswered only",
+  "@unansweredOnly": {
+    "description": "Filter option to show only questions the user has not yet answered."
+  },
+  "unansweredOnlyTooltip": "Show only unanswered questions",
+  "@unansweredOnlyTooltip": {
+    "description": "Tooltip for the unanswered-only filter checkbox."
+  },
+
   "votesNoun": "votes",
   "@votesNoun": {
     "description": "Noun label shown in the center of the donut chart."
