@@ -347,6 +347,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get alreadyAnswered => 'You have already answered this question';
 
   @override
+  String get deleteAnswer => 'Delete Answer';
+
+  @override
+  String get deleteAnswerConfirm =>
+      'Are you sure you want to delete your answer? This action cannot be undone.';
+
+  @override
+  String get deleteAnswerSuccess => 'Answer deleted successfully';
+
+  @override
+  String get deleteAnswerFailed => 'Failed to delete the answer';
+
+  @override
   String get answered => 'Answered';
 
   @override
