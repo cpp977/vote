@@ -856,4 +856,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get colorAmber => 'Amber';
+
+  @override
+  String get about => 'About';
+
+  @override
+  String appVersion(String version) {
+    return 'Version $version';
+  }
 }

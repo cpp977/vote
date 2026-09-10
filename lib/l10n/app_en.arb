@@ -1143,5 +1143,18 @@
   "colorAmber": "Amber",
   "@colorAmber": {
     "description": "Name of the Amber theme color option."
+  },
+  "about": "About",
+  "@about": {
+    "description": "Menu item to show app information including version."
+  },
+  "appVersion": "Version {version}",
+  "@appVersion": {
+    "description": "Displays the app version; {version} is the version string from package_info.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
   }
 }
