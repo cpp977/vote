@@ -868,4 +868,12 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get colorAmber => 'Bernstein';
+
+  @override
+  String get about => 'Info';
+
+  @override
+  String appVersion(String version) {
+    return 'Version $version';
+  }
 }

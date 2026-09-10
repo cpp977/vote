@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/configuration_controller.dart';
@@ -71,6 +72,28 @@ class ConfigurationMenu extends StatelessWidget {
             ],
           ),
         ),
+        const PopupMenuDivider(),
+        PopupMenuItem<String>(
+          value: 'about',
+          enabled: false,
+          child: Text(l10n.about),
+        ),
+        PopupMenuItem<String>(
+          value: 'about',
+          child: FutureBuilder<PackageInfo>(
+            future: PackageInfo.fromPlatform(),
+            builder: (context, snapshot) {
+              if (snapshot.hasData) {
+                return Text(l10n.appVersion(snapshot.data!.version));
+              }
+              return const SizedBox(
+                width: 16,
+                height: 16,
+                child: CircularProgressIndicator(strokeWidth: 2),
+              );
+            },
+          ),
+        ),
       ],
     );
   }
@@ -82,6 +105,9 @@ class ConfigurationMenu extends StatelessWidget {
     ConfigurationController config,
     String value,
   ) async {
+    // The 'about' entry is just informational, no action needed.
+    if (value == 'about') return;
+
     if (value == 'theme-color') {
       final String? selectedColorName = await _showSubMenu(
         context,
