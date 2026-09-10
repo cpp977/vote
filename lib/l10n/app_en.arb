@@ -451,6 +451,22 @@
   "@alreadyAnswered": {
     "description": "Error snack bar shown when submitting a vote fails because the question was already answered (HTTP 409)."
   },
+  "deleteAnswer": "Delete Answer",
+  "@deleteAnswer": {
+    "description": "Button label to delete the user's own answer to a question."
+  },
+  "deleteAnswerConfirm": "Are you sure you want to delete your answer? This action cannot be undone.",
+  "@deleteAnswerConfirm": {
+    "description": "Confirmation dialog message when deleting an answer."
+  },
+  "deleteAnswerSuccess": "Answer deleted successfully",
+  "@deleteAnswerSuccess": {
+    "description": "Success message shown after an answer was deleted."
+  },
+  "deleteAnswerFailed": "Failed to delete the answer",
+  "@deleteAnswerFailed": {
+    "description": "Error message shown when deleting an answer fails."
+  },
 
   "answered": "Answered",
   "@answered": {

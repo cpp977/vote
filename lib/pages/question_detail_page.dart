@@ -51,6 +51,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   // Change question state
   bool _isChanging = false;
 
+  // Delete answer state
+  bool _isDeletingAnswer = false;
+
   @override
   void initState() {
     super.initState();
@@ -71,6 +74,9 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
       if (!mounted) return;
       _fetchAnswers();
     });
+    // If the question was already answered (from the authenticated search endpoint),
+    // we don't know which specific answer was chosen, but we can show the delete button.
+    // The delete endpoint only needs the question ID, not the answer ID.
   }
 
   @override
@@ -268,6 +274,80 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
     } finally {
       if (mounted) {
         setState(() => _isChanging = false);
+      }
+    }
+  }
+
+  /// Deletes the user's own answer to the current question.
+  Future<void> _deleteAnswer() async {
+    final l10n = AppLocalizations.of(context);
+    final authController = context.read<AuthController>();
+
+    if (!authController.isAuthenticated) return;
+
+    final confirm = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text(l10n.deleteAnswer),
+        content: Text(l10n.deleteAnswerConfirm),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: Text(l10n.cancel),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: TextButton.styleFrom(
+              foregroundColor: Theme.of(context).colorScheme.error,
+            ),
+            child: Text(l10n.deleteAnswer),
+          ),
+        ],
+      ),
+    );
+
+    if (confirm != true || !mounted) return;
+
+    setState(() => _isDeletingAnswer = true);
+
+    try {
+      final response = await _authMiddleware.delete(
+        '${ApiConfig.baseUrl}/questions/${widget.question.id}/answer',
+      );
+
+      if (!mounted) return;
+
+      if (response.statusCode == 200) {
+        setState(() {
+          _isDeletingAnswer = false;
+          _votedAnswerIds.clear();
+        });
+        // Refresh statistics (cached segments are dropped) so the visible
+        // segment reflects the removed vote.
+        unawaited(_statsController.refresh());
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(l10n.deleteAnswerSuccess),
+            backgroundColor: Colors.green,
+            behavior: SnackBarBehavior.floating,
+          ),
+        );
+      } else if (response.statusCode == 401) {
+        NavigationService.navigateToLogin();
+      } else if (response.statusCode == 404) {
+        showErrorSnackBar(context, l10n.deleteAnswerFailed);
+      } else {
+        final errorMessage = response.body.isNotEmpty
+            ? response.body.toString()
+            : l10n.serverError;
+        showErrorSnackBar(context, l10n.errorWithMessage(errorMessage));
+      }
+    } catch (e) {
+      if (!mounted) return;
+      showErrorSnackBar(context, l10n.deleteAnswerFailed);
+    } finally {
+      if (mounted) {
+        setState(() => _isDeletingAnswer = false);
       }
     }
   }
@@ -533,11 +613,38 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
             const SizedBox(height: 24),
 
             // Answers section
-            Text(
-              l10n.possibleAnswers,
-              style: Theme.of(
-                context,
-              ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+            Row(
+              children: [
+                Text(
+                  l10n.possibleAnswers,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                // Show delete button if the user has already answered (from search endpoint)
+                // or if they just voted in this session.
+                if (widget.question.answered || _votedAnswerIds.isNotEmpty) ...[
+                  const Spacer(),
+                  if (!_isDeletingAnswer)
+                    TextButton.icon(
+                      onPressed: _deleteAnswer,
+                      icon: const Icon(Icons.delete_outline, size: 18),
+                      label: Text(l10n.deleteAnswer),
+                      style: TextButton.styleFrom(
+                        foregroundColor: colorScheme.error,
+                      ),
+                    )
+                  else
+                    SizedBox(
+                      width: 20,
+                      height: 20,
+                      child: CircularProgressIndicator(
+                        strokeWidth: 2,
+                        color: colorScheme.error,
+                      ),
+                    ),
+                ],
+              ],
             ),
             const SizedBox(height: 12),
 

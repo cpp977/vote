@@ -179,6 +179,23 @@
   "voteSubmitFailed": "Stimme konnte nicht abgegeben werden: {error}",
   "alreadyAnswered": "Du hast diese Frage bereits beantwortet",
 
+  "deleteAnswer": "Antwort löschen",
+  "@deleteAnswer": {
+    "description": "Button label to delete the user's own answer to a question."
+  },
+  "deleteAnswerConfirm": "Möchten Sie Ihre Antwort wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "@deleteAnswerConfirm": {
+    "description": "Confirmation dialog message when deleting an answer."
+  },
+  "deleteAnswerSuccess": "Antwort erfolgreich gelöscht",
+  "@deleteAnswerSuccess": {
+    "description": "Success message shown after an answer was deleted."
+  },
+  "deleteAnswerFailed": "Antwort konnte nicht gelöscht werden",
+  "@deleteAnswerFailed": {
+    "description": "Error message shown when deleting an answer fails."
+  },
+
   "answered": "Beantwortet",
   "@answered": {
     "description": "Label shown on a question card when the user has already answered this question."

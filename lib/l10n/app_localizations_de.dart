@@ -356,6 +356,19 @@ class AppLocalizationsDe extends AppLocalizations {
   String get alreadyAnswered => 'Du hast diese Frage bereits beantwortet';
 
   @override
+  String get deleteAnswer => 'Antwort löschen';
+
+  @override
+  String get deleteAnswerConfirm =>
+      'Möchten Sie Ihre Antwort wirklich löschen? Diese Aktion kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get deleteAnswerSuccess => 'Antwort erfolgreich gelöscht';
+
+  @override
+  String get deleteAnswerFailed => 'Antwort konnte nicht gelöscht werden';
+
+  @override
   String get answered => 'Beantwortet';
 
   @override

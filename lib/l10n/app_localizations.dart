@@ -710,6 +710,30 @@ abstract class AppLocalizations {
   /// **'You have already answered this question'**
   String get alreadyAnswered;
 
+  /// Button label to delete the user's own answer to a question.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete Answer'**
+  String get deleteAnswer;
+
+  /// Confirmation dialog message when deleting an answer.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to delete your answer? This action cannot be undone.'**
+  String get deleteAnswerConfirm;
+
+  /// Success message shown after an answer was deleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer deleted successfully'**
+  String get deleteAnswerSuccess;
+
+  /// Error message shown when deleting an answer fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to delete the answer'**
+  String get deleteAnswerFailed;
+
   /// Label shown on a question card when the user has already answered this question.
   ///
   /// In en, this message translates to:
