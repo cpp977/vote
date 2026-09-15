@@ -51,15 +51,22 @@ class DeepLinkService {
   /// Returns the raw token string, or `null` if the URI does not contain
   /// a `token` query parameter.
   static String? extractResetToken(Uri uri) {
-    // Normalize the path — strip trailing slashes.
-    final path = uri.path.replaceAll(RegExp(r'/+$'), '');
-    
+    // Normalize the path:
+    // - Treat an empty path or a single slash as the root path (`/`).
+    // - Strip trailing slashes for other paths (e.g. `/reset-password/` -> `/reset-password`).
+    String path = uri.path;
+    if (path.isEmpty || path == '/') {
+      path = kRootPath;
+    } else {
+      path = path.replaceAll(RegExp(r'/+$'), '');
+    }
+
     // Accept both root path and reset-password path.
     if (path != kRootPath && path != kResetPasswordPath) {
       return null;
     }
-    
-    final token = uri.queryParameters['token'];
+
+    final String? token = uri.queryParameters['token'];
     if (token == null || token.isEmpty) {
       return null;
     }
@@ -80,9 +87,9 @@ class DeepLinkService {
     void Function(String token) onResetTokenReceived,
   ) async {
     // Check the initial URI (cold start).
-    final uri = await getInitialUri();
+    final Uri? uri = await getInitialUri();
     if (uri != null) {
-      final token = extractResetToken(uri);
+      final String? token = extractResetToken(uri);
       if (token != null) {
         onResetTokenReceived(token);
       }
@@ -90,7 +97,7 @@ class DeepLinkService {
 
     // Listen for links received while the app is already running.
     return uriStream.listen((Uri incomingUri) {
-      final token = extractResetToken(incomingUri);
+      final String? token = extractResetToken(incomingUri);
       if (token != null) {
         onResetTokenReceived(token);
       }
