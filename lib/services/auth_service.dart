@@ -9,14 +9,63 @@ import '../models/category_models.dart';
 class AuthService {
   static final String _baseUrl = ApiConfig.baseUrl;
 
+  /// HTTP client used for requests. Can be overridden for testing.
+  @visibleForTesting
+  http.Client httpClient = http.Client();
+
+  /// Performs a GET request.
+  @visibleForTesting
+  Future<http.Response> get(String url, {Map<String, String>? headers}) async {
+    return httpClient.get(Uri.parse(url), headers: headers);
+  }
+
+  /// Performs a POST request.
+  @visibleForTesting
+  Future<http.Response> post(
+    String url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    return httpClient.post(Uri.parse(url), headers: headers, body: body);
+  }
+
+  /// Performs a PUT request.
+  @visibleForTesting
+  Future<http.Response> put(
+    String url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    return httpClient.put(Uri.parse(url), headers: headers, body: body);
+  }
+
+  /// Performs a DELETE request.
+  @visibleForTesting
+  Future<http.Response> delete(
+    String url, {
+    Map<String, String>? headers,
+  }) async {
+    return httpClient.delete(Uri.parse(url), headers: headers);
+  }
+
+  /// Performs a PATCH request.
+  @visibleForTesting
+  Future<http.Response> patch(
+    String url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    return httpClient.patch(Uri.parse(url), headers: headers, body: body);
+  }
+
   /// Fetches the list of available countries from the `GET /countries` endpoint.
   ///
   /// This is an unrestricted endpoint; no authentication required.
   /// Returns a [List<Country>] on success.
   /// Throws [ApiException] on failure.
   Future<List<Country>> getCountries() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/countries'),
+    final response = await get(
+      '$_baseUrl/countries',
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -37,8 +86,8 @@ class AuthService {
   /// Returns a [List<Region>] on success.
   /// Throws [ApiException] on failure.
   Future<List<Region>> getRegions() async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/regions'),
+    final response = await get(
+      '$_baseUrl/regions',
       headers: {'Content-Type': 'application/json'},
     );
 
@@ -57,8 +106,8 @@ class AuthService {
   /// Returns the created [User] on success.
   /// Throws [ApiException] on failure.
   Future<User> register(RegisterRequest request) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/register'),
+    final response = await post(
+      '$_baseUrl/register',
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(request.toJson()),
     );
@@ -74,8 +123,8 @@ class AuthService {
   /// Returns [AuthResponse] with tokens on success.
   /// Throws [ApiException] on failure.
   Future<AuthResponse> login(LoginRequest request) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/login'),
+    final response = await post(
+      '$_baseUrl/login',
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(request.toJson()),
     );
@@ -89,8 +138,8 @@ class AuthService {
 
   /// Logs out a user by revoking the refresh token.
   Future<void> logout(LogoutRequest request, String accessToken) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/logout'),
+    final response = await post(
+      '$_baseUrl/logout',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
@@ -116,8 +165,8 @@ class AuthService {
   /// Returns a new [AuthResponse] with fresh tokens.
   /// Throws [ApiException] on failure.
   Future<AuthResponse> refresh(RefreshRequest request) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/refresh'),
+    final response = await post(
+      '$_baseUrl/refresh',
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(request.toJson()),
     );
@@ -133,8 +182,8 @@ class AuthService {
   /// Returns [User] on success.
   /// Throws [ApiException] on failure.
   Future<User> getCurrentUser(String accessToken) async {
-    final response = await http.get(
-      Uri.parse('$_baseUrl/me'),
+    final response = await get(
+      '$_baseUrl/me',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
@@ -158,8 +207,8 @@ class AuthService {
     String accessToken,
     UpdateUserRequest request,
   ) async {
-    final response = await http.patch(
-      Uri.parse('$_baseUrl/me'),
+    final response = await patch(
+      '$_baseUrl/me',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',
@@ -184,8 +233,8 @@ class AuthService {
   Future<ForgotPasswordResponse> forgotPassword(
     ForgotPasswordRequest request,
   ) async {
-    final response = await http.post(
-      Uri.parse('$_baseUrl/user/password/forgot'),
+    final response = await post(
+      '$_baseUrl/user/password/forgot',
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(request.toJson()),
     );
@@ -207,8 +256,8 @@ class AuthService {
   /// too short, max attempts exceeded, or DB error).
   Future<void> resetPassword(String token, String password) async {
     final request = ResetPasswordRequest(token: token, password: password);
-    final response = await http.post(
-      Uri.parse('$_baseUrl/user/password/reset'),
+    final response = await post(
+      '$_baseUrl/user/password/reset',
       headers: {'Content-Type': 'application/json'},
       body: jsonEncode(request.toJson()),
     );
@@ -237,8 +286,8 @@ class AuthService {
       'Content-Type': 'application/json',
       if (accessToken != null) 'Authorization': 'Bearer $accessToken',
     };
-    final response = await http.get(
-      Uri.parse('$_baseUrl/categories/lang/$languageCode'),
+    final response = await get(
+      '$_baseUrl/categories/lang/$languageCode',
       headers: headers,
     );
 
@@ -259,8 +308,8 @@ class AuthService {
     debugPrint(
       'AuthService.deleteAccount: calling DELETE $_baseUrl/users/me/delete',
     );
-    final response = await http.delete(
-      Uri.parse('$_baseUrl/users/me/delete'),
+    final response = await delete(
+      '$_baseUrl/users/me/delete',
       headers: {
         'Content-Type': 'application/json',
         'Authorization': 'Bearer $accessToken',

@@ -128,7 +128,9 @@ class TokenStorage {
   Future<void> setCategories(Map<int, String> categories) async {
     final prefs = await SharedPreferences.getInstance();
     // JSON requires string keys, so convert int keys to strings
-    final stringKeyMap = categories.map((key, value) => MapEntry(key.toString(), value));
+    final stringKeyMap = categories.map(
+      (key, value) => MapEntry(key.toString(), value),
+    );
     await prefs.setString(_categoriesKey, jsonEncode(stringKeyMap));
   }
 
