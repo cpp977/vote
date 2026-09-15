@@ -2,11 +2,12 @@ import 'dart:async';
 
 import 'package:app_links/app_links.dart';
 
-/// Path segment of the deep-link URL that triggers the reset-password page.
+/// Path segments of the deep-link URL that trigger the reset-password page.
 ///
-/// The backend sends reset links as `https://vote.app/reset-password?token=…`.
-/// Only links whose path is `/reset-password` are handled; all other incoming
-/// URIs are ignored by this service.
+/// The backend sends reset links as `https://vote.app/?token=…` (root path).
+/// Links with either `/` or `/reset-password` paths are handled; all other
+/// incoming URIs are ignored by this service.
+const String kRootPath = '/';
 const String kResetPasswordPath = '/reset-password';
 
 /// Centralized deep-link handler that works across **mobile**, **web**, and
@@ -47,15 +48,17 @@ class DeepLinkService {
   /// Extracts the password-reset token from [uri] if it is a valid
   /// reset-password link.
   ///
-  /// Returns the raw token string, or `null` if the URI does not target
-  /// the reset-password path or does not contain a `token` query parameter.
+  /// Returns the raw token string, or `null` if the URI does not contain
+  /// a `token` query parameter.
   static String? extractResetToken(Uri uri) {
-    // Normalize the path — strip trailing slashes so `/reset-password/`
-    // still matches.
+    // Normalize the path — strip trailing slashes.
     final path = uri.path.replaceAll(RegExp(r'/+$'), '');
-    if (path != kResetPasswordPath) {
+    
+    // Accept both root path and reset-password path.
+    if (path != kRootPath && path != kResetPasswordPath) {
       return null;
     }
+    
     final token = uri.queryParameters['token'];
     if (token == null || token.isEmpty) {
       return null;
