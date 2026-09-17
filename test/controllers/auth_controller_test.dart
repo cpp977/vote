@@ -415,6 +415,205 @@ void main() {
       });
     });
 
+    // ── forgotPassword ───────────────────────
+
+    group('forgotPassword', () {
+      test('returns true on successful request', () async {
+        authService.forgotPasswordResult = const ForgotPasswordResponse(
+          message: 'If the email exists, a reset link has been sent.',
+        );
+
+        final result = await controller.forgotPassword('test@example.com');
+
+        expect(result, isTrue);
+        expect(controller.isLoading, isFalse);
+        expect(controller.error, isNull);
+      });
+
+      test('returns false on ApiException with requestFailed code', () async {
+        authService.forgotPasswordThrows = true;
+        authService.forgotPasswordException = const ApiException(
+          'Request failed with status 500',
+          500,
+          'requestFailed',
+        );
+
+        final result = await controller.forgotPassword('test@example.com');
+
+        expect(result, isFalse);
+        expect(controller.error, isNotNull);
+        expect(controller.error!.code, 'forgotPasswordFailed');
+        expect(controller.error!.detail, 'Request failed with status 500');
+        expect(controller.isLoading, isFalse);
+      });
+
+      test('returns false on ApiException with server message', () async {
+        authService.forgotPasswordThrows = true;
+        authService.forgotPasswordException = const ApiException(
+          'Invalid email format',
+          400,
+        );
+
+        final result = await controller.forgotPassword('invalid-email');
+
+        expect(result, isFalse);
+        expect(controller.error, isNotNull);
+        expect(controller.error!.code, 'forgotPasswordFailed');
+        expect(controller.error!.detail, 'Invalid email format');
+        expect(controller.isLoading, isFalse);
+      });
+
+      test('returns false on unexpected exception', () async {
+        authService.forgotPasswordThrows = true;
+        authService.forgotPasswordException = Exception('Network error');
+
+        final result = await controller.forgotPassword('test@example.com');
+
+        expect(result, isFalse);
+        expect(controller.error?.code, 'forgotPasswordFailed');
+        expect(controller.isLoading, isFalse);
+      });
+    });
+
+    // ── resetPassword ────────────────────────
+
+    group('resetPassword', () {
+      test('returns true on successful reset', () async {
+        final result = await controller.resetPassword(
+          'valid-token',
+          'newpassword123',
+        );
+
+        expect(result, isTrue);
+        expect(controller.isAuthenticated, isFalse);
+        expect(controller.isLoading, isFalse);
+        expect(controller.error, isNull);
+        expect(tokenStorage.clearedAll, isTrue);
+      });
+
+      test('returns false on ApiException with requestFailed code', () async {
+        authService.resetPasswordThrows = true;
+        authService.resetPasswordException = const ApiException(
+          'Request failed with status 500',
+          500,
+          'requestFailed',
+        );
+
+        final result = await controller.resetPassword('token', 'newpassword');
+
+        expect(result, isFalse);
+        expect(controller.error, isNotNull);
+        expect(controller.error!.code, 'passwordResetTokenInvalid');
+        expect(controller.error!.detail, 'Request failed with status 500');
+        expect(controller.isLoading, isFalse);
+      });
+
+      test('returns false on ApiException with server message', () async {
+        authService.resetPasswordThrows = true;
+        authService.resetPasswordException = const ApiException(
+          'Invalid or expired token',
+          400,
+        );
+
+        final result = await controller.resetPassword(
+          'invalid-token',
+          'newpassword',
+        );
+
+        expect(result, isFalse);
+        expect(controller.error, isNotNull);
+        expect(controller.error!.code, 'passwordResetTokenInvalid');
+        expect(controller.error!.detail, 'Invalid or expired token');
+        expect(controller.isLoading, isFalse);
+      });
+
+      test('returns false on unexpected exception', () async {
+        authService.resetPasswordThrows = true;
+        authService.resetPasswordException = Exception('Network error');
+
+        final result = await controller.resetPassword('token', 'newpassword');
+
+        expect(result, isFalse);
+        expect(controller.error?.code, 'passwordResetTokenInvalid');
+        expect(controller.isLoading, isFalse);
+      });
+    });
+
+    // ── deleteAccount ────────────────────────
+
+    group('deleteAccount', () {
+      test('returns true on successful deletion', () async {
+        tokenStorage.accessTokenResult = 'valid-access-token';
+
+        final result = await controller.deleteAccount();
+
+        expect(result, isTrue);
+        expect(controller.isAuthenticated, isFalse);
+        expect(controller.isLoading, isFalse);
+        expect(controller.error, isNull);
+        expect(tokenStorage.clearedAll, isTrue);
+      });
+
+      test('returns false when not authenticated', () async {
+        tokenStorage.accessTokenResult = null;
+
+        final result = await controller.deleteAccount();
+
+        expect(result, isFalse);
+        expect(controller.error, isNotNull);
+        expect(controller.error!.code, 'deleteAccountFailed');
+        expect(controller.error!.detail, 'Not authenticated');
+        expect(controller.isLoading, isFalse);
+      });
+
+      test('returns false on ApiException with requestFailed code', () async {
+        authService.deleteAccountThrows = true;
+        authService.deleteAccountException = const ApiException(
+          'Request failed with status 500',
+          500,
+          'requestFailed',
+        );
+        tokenStorage.accessTokenResult = 'token';
+
+        final result = await controller.deleteAccount();
+
+        expect(result, isFalse);
+        expect(controller.error, isNotNull);
+        expect(controller.error!.code, 'deleteAccountFailed');
+        expect(controller.error!.detail, 'Request failed with status 500');
+        expect(controller.isLoading, isFalse);
+      });
+
+      test('returns false on ApiException with server message', () async {
+        authService.deleteAccountThrows = true;
+        authService.deleteAccountException = const ApiException(
+          'Cannot delete admin account',
+          400,
+        );
+        tokenStorage.accessTokenResult = 'token';
+
+        final result = await controller.deleteAccount();
+
+        expect(result, isFalse);
+        expect(controller.error, isNotNull);
+        expect(controller.error!.code, 'deleteAccountFailed');
+        expect(controller.error!.detail, 'Cannot delete admin account');
+        expect(controller.isLoading, isFalse);
+      });
+
+      test('returns false on unexpected exception', () async {
+        authService.deleteAccountThrows = true;
+        authService.deleteAccountException = Exception('Network error');
+        tokenStorage.accessTokenResult = 'token';
+
+        final result = await controller.deleteAccount();
+
+        expect(result, isFalse);
+        expect(controller.error?.code, 'deleteAccountFailed');
+        expect(controller.isLoading, isFalse);
+      });
+    });
+
     // ── updateUser ───────────────────────────
 
     group('updateUser', () {
@@ -566,6 +765,18 @@ class FakeAuthService extends AuthService {
   List<Country> countriesResult = [];
   List<Region> regionsResult = [];
 
+  ForgotPasswordResponse? forgotPasswordResult;
+  Exception? forgotPasswordException;
+  bool forgotPasswordThrows = false;
+
+  Exception? resetPasswordException;
+  bool resetPasswordThrows = false;
+
+  Exception? deleteAccountException;
+  bool deleteAccountThrows = false;
+
+  bool logoutThrows = false;
+
   @override
   Future<User> register(RegisterRequest request) async {
     lastRegisterRequest = request;
@@ -588,8 +799,6 @@ class FakeAuthService extends AuthService {
   Future<void> logout(LogoutRequest request, String accessToken) async {
     if (logoutThrows) throw Exception('Logout failed');
   }
-
-  bool logoutThrows = false;
 
   @override
   Future<AuthResponse> refresh(RefreshRequest request) async {
@@ -620,6 +829,27 @@ class FakeAuthService extends AuthService {
           username: '',
           email: '',
         );
+  }
+
+  @override
+  Future<ForgotPasswordResponse> forgotPassword(
+    ForgotPasswordRequest request,
+  ) async {
+    if (forgotPasswordThrows) throw forgotPasswordException!;
+    return forgotPasswordResult ??
+        const ForgotPasswordResponse(
+          message: 'If the email exists, a reset link has been sent.',
+        );
+  }
+
+  @override
+  Future<void> resetPassword(String token, String password) async {
+    if (resetPasswordThrows) throw resetPasswordException!;
+  }
+
+  @override
+  Future<void> deleteAccount(String accessToken) async {
+    if (deleteAccountThrows) throw deleteAccountException!;
   }
 
   @override

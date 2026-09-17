@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/widgets.dart';
 import 'package:http/http.dart' as http;
 import '../controllers/configuration_controller.dart';
@@ -18,9 +19,56 @@ class AuthMiddleware {
   final TokenStorage _tokenStorage;
   bool _isRefreshing = false;
 
+  /// HTTP client used for requests. Can be overridden for testing.
+  @visibleForTesting
+  http.Client httpClient = http.Client();
+
   AuthMiddleware({AuthService? authService, TokenStorage? tokenStorage})
     : _authService = authService ?? AuthService(),
       _tokenStorage = tokenStorage ?? TokenStorage();
+
+  /// Performs a GET request.
+  Future<http.Response> _doGet(
+    String url, {
+    Map<String, String>? headers,
+  }) async {
+    return httpClient.get(Uri.parse(url), headers: headers);
+  }
+
+  /// Performs a POST request.
+  Future<http.Response> _doPost(
+    String url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    return httpClient.post(Uri.parse(url), headers: headers, body: body);
+  }
+
+  /// Performs a PUT request.
+  Future<http.Response> _doPut(
+    String url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    return httpClient.put(Uri.parse(url), headers: headers, body: body);
+  }
+
+  /// Performs a DELETE request.
+  Future<http.Response> _doDelete(
+    String url, {
+    Map<String, String>? headers,
+  }) async {
+    return httpClient.delete(Uri.parse(url), headers: headers);
+  }
+
+  /// Performs a PATCH request.
+  Future<http.Response> _doPatch(
+    String url, {
+    Map<String, String>? headers,
+    Object? body,
+  }) async {
+    return httpClient.patch(Uri.parse(url), headers: headers, body: body);
+  }
 
   /// Performs an authenticated GET request.
   /// Automatically handles token refresh on 401 responses.
@@ -84,31 +132,19 @@ class AuthMiddleware {
     http.Response response;
     switch (method) {
       case 'GET':
-        response = await http.get(Uri.parse(url), headers: requestHeaders);
+        response = await _doGet(url, headers: requestHeaders);
         break;
       case 'POST':
-        response = await http.post(
-          Uri.parse(url),
-          headers: requestHeaders,
-          body: body,
-        );
+        response = await _doPost(url, headers: requestHeaders, body: body);
         break;
       case 'PUT':
-        response = await http.put(
-          Uri.parse(url),
-          headers: requestHeaders,
-          body: body,
-        );
+        response = await _doPut(url, headers: requestHeaders, body: body);
         break;
       case 'PATCH':
-        response = await http.patch(
-          Uri.parse(url),
-          headers: requestHeaders,
-          body: body,
-        );
+        response = await _doPatch(url, headers: requestHeaders, body: body);
         break;
       case 'DELETE':
-        response = await http.delete(Uri.parse(url), headers: requestHeaders);
+        response = await _doDelete(url, headers: requestHeaders);
         break;
       default:
         throw UnsupportedError('HTTP method $method not supported');

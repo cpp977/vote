@@ -127,7 +127,11 @@ class TokenStorage {
   /// Stores the available categories as a mapping of category id to name.
   Future<void> setCategories(Map<int, String> categories) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_categoriesKey, jsonEncode(categories));
+    // JSON requires string keys, so convert int keys to strings
+    final stringKeyMap = categories.map(
+      (key, value) => MapEntry(key.toString(), value),
+    );
+    await prefs.setString(_categoriesKey, jsonEncode(stringKeyMap));
   }
 
   /// Retrieves the stored category mapping (category id -> name), or an empty
@@ -140,9 +144,15 @@ class TokenStorage {
     }
     try {
       final decoded = jsonDecode(raw) as Map<String, dynamic>;
-      return decoded.map(
-        (key, value) => MapEntry(int.parse(key), value as String),
-      );
+      final result = <int, String>{};
+      for (final entry in decoded.entries) {
+        final key = int.tryParse(entry.key);
+        final value = entry.value;
+        if (key != null && value is String) {
+          result[key] = value;
+        }
+      }
+      return result;
     } catch (_) {
       return <int, String>{};
     }
