@@ -22,10 +22,8 @@ class _CapturedRequest {
 /// [AuthMiddleware] double that records requests and answers with a canned
 /// response, so the service layer can be tested without real HTTP.
 class _CapturingAuthMiddleware extends AuthMiddleware {
-  _CapturingAuthMiddleware({
-    this.statusCode = 201,
-    Map<String, dynamic>? responseBody,
-  }) : responseBody = responseBody ?? _minimalSubmission;
+  _CapturingAuthMiddleware({this.statusCode = 201, dynamic responseBody})
+    : _responseBody = responseBody ?? _minimalSubmission;
 
   /// Minimal payload every endpoint of the service can decode; individual
   /// tests override it when they inspect the parsed result.
@@ -37,7 +35,15 @@ class _CapturingAuthMiddleware extends AuthMiddleware {
 
   final List<_CapturedRequest> requests = [];
   int statusCode;
-  Map<String, dynamic> responseBody;
+  final dynamic _responseBody;
+
+  dynamic get responseBody => _responseBody;
+
+  @override
+  Future<http.Response> get(String url, {Map<String, String>? headers}) async {
+    requests.add(_CapturedRequest('GET', url, null));
+    return http.Response(jsonEncode(_responseBody), statusCode);
+  }
 
   @override
   Future<http.Response> post(
@@ -46,7 +52,7 @@ class _CapturingAuthMiddleware extends AuthMiddleware {
     Object? body,
   }) async {
     requests.add(_CapturedRequest('POST', url, body));
-    return http.Response(jsonEncode(responseBody), statusCode);
+    return http.Response(jsonEncode(_responseBody), statusCode);
   }
 }
 
@@ -62,6 +68,21 @@ const _createdSubmission = <String, dynamic>{
   'answer_options': [
     {'id': 1, 'question_id': 9, 'text': 'Yes'},
     {'id': 2, 'question_id': 9, 'text': 'No'},
+  ],
+};
+
+const _testSubmission = <String, dynamic>{
+  'id': 1,
+  'text': 'My question?',
+  'category_id': 1,
+  'language': 'en',
+  'min_age': 0,
+  'created_at': '2026-08-24T10:00:00Z',
+  'special_category': 'none',
+  'submission_status': 'pending',
+  'answer_options': [
+    {'id': 1, 'question_id': 1, 'text': 'Yes'},
+    {'id': 2, 'question_id': 1, 'text': 'No'},
   ],
 };
 
@@ -177,5 +198,77 @@ void main() {
         ),
       );
     });
+  });
+
+  group('SubmissionService.getMySubmissions', () {
+    test('returns list of submissions on 200', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 200,
+        responseBody: [_testSubmission, _createdSubmission],
+      );
+      final service = SubmissionService(authMiddleware: middleware);
+
+      final submissions = await service.getMySubmissions();
+
+      expect(submissions, hasLength(2));
+      expect(submissions[0].id, 1);
+      expect(submissions[0].text, 'My question?');
+      expect(submissions[1].id, 9);
+      expect(submissions[1].submissionStatus, 'pending');
+      expect(middleware.requests, hasLength(1));
+      expect(middleware.requests.single.method, 'GET');
+      expect(middleware.requests.single.url, endsWith('/questions/mine'));
+    });
+
+    test('returns empty list when no submissions', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 200,
+        responseBody: [],
+      );
+      final service = SubmissionService(authMiddleware: middleware);
+
+      final submissions = await service.getMySubmissions();
+
+      expect(submissions, isEmpty);
+    });
+
+    test('throws SubmissionException on 401', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 401,
+        responseBody: {'error': 'Unauthorized'},
+      );
+      final service = SubmissionService(authMiddleware: middleware);
+
+      await expectLater(
+        service.getMySubmissions(),
+        throwsA(
+          isA<SubmissionException>().having(
+            (e) => e.statusCode,
+            'statusCode',
+            401,
+          ),
+        ),
+      );
+    });
+
+    test(
+      'throws SubmissionException with parsed error on other errors',
+      () async {
+        final middleware = _CapturingAuthMiddleware(
+          statusCode: 500,
+          responseBody: {'error': 'Internal server error'},
+        );
+        final service = SubmissionService(authMiddleware: middleware);
+
+        await expectLater(
+          service.getMySubmissions(),
+          throwsA(
+            isA<SubmissionException>()
+                .having((e) => e.message, 'message', 'Internal server error')
+                .having((e) => e.statusCode, 'statusCode', 500),
+          ),
+        );
+      },
+    );
   });
 }
