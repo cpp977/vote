@@ -1,11 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
-import 'dart:typed_data';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
 import 'package:vote/models/auth_models.dart';
-import 'package:vote/models/category_models.dart';
 import 'package:vote/services/auth_service.dart';
 
 /// A mock HTTP client that records requests and returns canned responses.

@@ -2,7 +2,6 @@ import 'dart:convert';
 
 import 'package:flutter_test/flutter_test.dart';
 import 'package:http/http.dart' as http;
-import 'package:vote/models/auth_models.dart';
 import 'package:vote/models/special_category.dart';
 import 'package:vote/services/admin_service.dart';
 import 'package:vote/services/auth_middleware.dart';

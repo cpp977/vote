@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -181,7 +183,7 @@ void main() {
       test('parses string keys to int', () async {
         final categories = {'1': 'One', '2': 'Two'};
         final prefs = await SharedPreferences.getInstance();
-        await prefs.setString('categories', '{"1": "One", "2": "Two"}');
+        await prefs.setString('categories', jsonEncode(categories));
         final result = await tokenStorage.getCategories();
         expect(result, {1: 'One', 2: 'Two'});
       });

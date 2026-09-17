@@ -28,7 +28,6 @@ class AuthMiddleware {
       _tokenStorage = tokenStorage ?? TokenStorage();
 
   /// Performs a GET request.
-  @visibleForTesting
   Future<http.Response> _doGet(
     String url, {
     Map<String, String>? headers,
@@ -37,7 +36,6 @@ class AuthMiddleware {
   }
 
   /// Performs a POST request.
-  @visibleForTesting
   Future<http.Response> _doPost(
     String url, {
     Map<String, String>? headers,
@@ -47,7 +45,6 @@ class AuthMiddleware {
   }
 
   /// Performs a PUT request.
-  @visibleForTesting
   Future<http.Response> _doPut(
     String url, {
     Map<String, String>? headers,
@@ -57,7 +54,6 @@ class AuthMiddleware {
   }
 
   /// Performs a DELETE request.
-  @visibleForTesting
   Future<http.Response> _doDelete(
     String url, {
     Map<String, String>? headers,
@@ -66,7 +62,6 @@ class AuthMiddleware {
   }
 
   /// Performs a PATCH request.
-  @visibleForTesting
   Future<http.Response> _doPatch(
     String url, {
     Map<String, String>? headers,

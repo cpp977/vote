@@ -6,7 +6,6 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:vote/services/auth_middleware.dart';
 import 'package:vote/services/auth_service.dart';
-import 'package:vote/services/navigation_service.dart';
 import 'package:vote/services/token_storage.dart';
 
 /// A mock HTTP client that records requests and returns canned responses.
@@ -75,9 +74,9 @@ class _CapturedRequest {
 class _TestableAuthMiddleware extends AuthMiddleware {
   _TestableAuthMiddleware({
     required this.mockClient,
-    AuthService? authService,
-    TokenStorage? tokenStorage,
-  }) : super(authService: authService, tokenStorage: tokenStorage);
+    super.authService,
+    super.tokenStorage,
+  });
 
   final _MockHttpClient mockClient;
 
