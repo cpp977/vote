@@ -38,3 +38,26 @@ jobs:
       # want to change this to 'flutter test'.
       - name: Run tests
         run: dart run dart_define generate --FLAVOR=development && flutter test --dart-define-from-file=dart_define.json
+
+      # Run tests with coverage and enforce 90% threshold (excluding generated files)
+      - name: Run tests with coverage
+        run: |
+          dart run dart_define generate --FLAVOR=development
+          flutter test --dart-define-from-file=dart_define.json --coverage
+
+      - name: Install lcov
+        run: sudo apt-get update && sudo apt-get install -y lcov
+
+      - name: Filter coverage (exclude generated files)
+        run: |
+          lcov --remove coverage/lcov.info "lib/gen/*" "lib/l10n/app_localizations_*" --output-file coverage/lcov.filtered.info --ignore-errors empty
+
+      - name: Check coverage threshold
+        run: |
+          COVERAGE=$(lcov --summary coverage/lcov.filtered.info 2>&1 | grep "lines" | sed -E 's/.*lines\.\.\.\.\.\..: ([0-9.]+)%.+/\1/')
+          echo "Coverage: $COVERAGE%"
+          if (( $(echo "$COVERAGE < 90" | bc -l) )); then
+            echo "Coverage $COVERAGE% is below 90% threshold"
+            exit 1
+          fi
+          echo "Coverage $COVERAGE% meets 90% threshold"
