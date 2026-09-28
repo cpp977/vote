@@ -864,4 +864,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String appVersion(String version) {
     return 'Version $version';
   }
+
+  @override
+  String get privacyStatement => 'Privacy Statement';
+
+  @override
+  String get privacyStatementUnavailable => 'Privacy statement unavailable';
 }

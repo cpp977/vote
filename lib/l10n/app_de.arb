@@ -555,5 +555,13 @@
         "type": "String"
       }
     }
+  },
+  "privacyStatement": "Datenschutzerklärung",
+  "@privacyStatement": {
+    "description": "Label for the privacy statement menu item that opens the privacy policy URL."
+  },
+  "privacyStatementUnavailable": "Datenschutzerklärung nicht verfügbar",
+  "@privacyStatementUnavailable": {
+    "description": "Error shown when the privacy statement URL cannot be opened."
   }
 }

@@ -1156,5 +1156,13 @@
         "type": "String"
       }
     }
+  },
+  "privacyStatement": "Privacy Statement",
+  "@privacyStatement": {
+    "description": "Label for the privacy statement menu item that opens the privacy policy URL."
+  },
+  "privacyStatementUnavailable": "Privacy statement unavailable",
+  "@privacyStatementUnavailable": {
+    "description": "Error shown when the privacy statement URL cannot be opened."
   }
 }
