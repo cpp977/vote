@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../controllers/configuration_controller.dart';
 import '../l10n/app_localizations.dart';
@@ -75,23 +76,14 @@ class ConfigurationMenu extends StatelessWidget {
         const PopupMenuDivider(),
         PopupMenuItem<String>(
           value: 'about',
-          enabled: false,
-          child: Text(l10n.about),
-        ),
-        PopupMenuItem<String>(
-          value: 'about',
-          child: FutureBuilder<PackageInfo>(
-            future: PackageInfo.fromPlatform(),
-            builder: (context, snapshot) {
-              if (snapshot.hasData) {
-                return Text(l10n.appVersion(snapshot.data!.version));
-              }
-              return const SizedBox(
-                width: 16,
-                height: 16,
-                child: CircularProgressIndicator(strokeWidth: 2),
-              );
-            },
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, size: 20),
+              const SizedBox(width: 12),
+              Text(l10n.about),
+              const Spacer(),
+              const Icon(Icons.chevron_right, size: 20),
+            ],
           ),
         ),
       ],
@@ -105,9 +97,6 @@ class ConfigurationMenu extends StatelessWidget {
     ConfigurationController config,
     String value,
   ) async {
-    // The 'about' entry is just informational, no action needed.
-    if (value == 'about') return;
-
     if (value == 'theme-color') {
       final String? selectedColorName = await _showSubMenu(
         context,
@@ -140,7 +129,83 @@ class ConfigurationMenu extends StatelessWidget {
           .where((Locale locale) => locale.languageCode == selectedLanguage)
           .firstOrNull;
       await config.setLocale(selectedLocale);
+    } else if (value == 'about') {
+      final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+      final AppLocalizations l10n = AppLocalizations.of(context);
+      final String? aboutSelection = await _showSubMenu(
+        context,
+        _buildAboutMenu(context),
+      );
+      if (aboutSelection == null) return;
+      if (aboutSelection == 'privacy') {
+        await _openPrivacyStatement(messenger, l10n);
+      }
     }
+  }
+
+  /// Opens the privacy statement URL in an external browser.
+  Future<void> _openPrivacyStatement(
+    ScaffoldMessengerState messenger,
+    AppLocalizations l10n,
+  ) async {
+    final Uri privacyUrl = Uri.parse('https://privacy.vote4it.org/');
+    try {
+      if (await canLaunchUrl(privacyUrl)) {
+        await launchUrl(privacyUrl, mode: LaunchMode.externalApplication);
+      } else {
+        messenger.showSnackBar(
+          SnackBar(
+            content: Text(l10n.privacyStatementUnavailable),
+            duration: const Duration(seconds: 3),
+          ),
+        );
+      }
+    } catch (e) {
+      messenger.showSnackBar(
+        SnackBar(
+          content: Text(l10n.privacyStatementUnavailable),
+          duration: const Duration(seconds: 3),
+        ),
+      );
+    }
+  }
+
+  /// Builds the submenu entries for the "About" section, showing the app
+  /// version and a link to the privacy statement.
+  List<PopupMenuEntry<String>> _buildAboutMenu(BuildContext context) {
+    return <PopupMenuEntry<String>>[
+      PopupMenuItem<String>(
+        enabled: false,
+        child: FutureBuilder<PackageInfo>(
+          future: PackageInfo.fromPlatform(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Text(
+                AppLocalizations.of(context).appVersion(snapshot.data!.version),
+              );
+            }
+            return const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            );
+          },
+        ),
+      ),
+      const PopupMenuDivider(),
+      PopupMenuItem<String>(
+        value: 'privacy',
+        child: Row(
+          children: [
+            const Icon(Icons.privacy_tip_outlined, size: 20),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context).privacyStatement),
+            const Spacer(),
+            const Icon(Icons.open_in_new, size: 18),
+          ],
+        ),
+      ),
+    ];
   }
 
   /// Value used in the language submenu for the "follow the system

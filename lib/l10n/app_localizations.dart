@@ -1645,6 +1645,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Version {version}'**
   String appVersion(String version);
+
+  /// Label for the privacy statement menu item that opens the privacy policy URL.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy Statement'**
+  String get privacyStatement;
+
+  /// Error shown when the privacy statement URL cannot be opened.
+  ///
+  /// In en, this message translates to:
+  /// **'Privacy statement unavailable'**
+  String get privacyStatementUnavailable;
 }
 
 class _AppLocalizationsDelegate
