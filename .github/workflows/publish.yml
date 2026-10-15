@@ -120,6 +120,13 @@ jobs:
             --build-number="$BUILD_NUMBER" \
             --dart-define-from-file=dart_define.json
 
+      - name: Upload app bundle artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: vote-${{ env.VERSION }}-${{ env.BUILD_NUMBER }}
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+
       - name: "Publish"
         uses: r0adkll/upload-google-play@v1
         with:
