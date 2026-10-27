@@ -27,6 +27,12 @@ String localizedAuthError(AppLocalizations l10n, AuthError? error) {
       return error.detail ?? l10n.resetPasswordTokenInvalid;
     case 'passwordResetFailed':
       return l10n.passwordResetFailed(error.detail ?? '');
+    case 'connectionFailed':
+      return l10n.noInternetConnection;
+    case 'connectionTimeout':
+      return l10n.connectionTimeout;
+    case 'sslError':
+      return l10n.connectionFailedGeneric;
     case 'server':
     default:
       return error.detail ?? '';

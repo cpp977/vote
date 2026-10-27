@@ -250,9 +250,17 @@ class AppLocalizationsDe extends AppLocalizations {
   String get serverError => 'Server hat einen Fehler zurückgegeben';
 
   @override
-  String connectionError(String error) {
-    return 'Verbindung fehlgeschlagen: $error';
-  }
+  String get noInternetConnection => 'Keine Internetverbindung';
+
+  @override
+  String get connectionTimeout => 'Verbindungszeitüberschreitung';
+
+  @override
+  String get connectionFailedGeneric => 'Verbindung fehlgeschlagen';
+
+  @override
+  String get unknownError =>
+      'Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.';
 
   @override
   String get questionDetailsTitle => 'Fragendetails';
@@ -340,11 +348,6 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String voteSubmitted(String answer) {
     return 'Stimme für \"$answer\" abgegeben!';
-  }
-
-  @override
-  String errorWithMessage(String message) {
-    return 'Fehler: $message';
   }
 
   @override

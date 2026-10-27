@@ -332,14 +332,21 @@
   "@serverError": {
     "description": "Generic error when the server responds with an unexpected status."
   },
-  "connectionError": "Failed to connect: {error}",
-  "@connectionError": {
-    "description": "Error shown when the network request fails; {error} is the underlying exception message.",
-    "placeholders": {
-      "error": {
-        "type": "String"
-      }
-    }
+  "noInternetConnection": "No internet connection",
+  "@noInternetConnection": {
+    "description": "Error shown when the device has no network connectivity."
+  },
+  "connectionTimeout": "Connection timed out",
+  "@connectionTimeout": {
+    "description": "Error shown when the network request takes too long to complete."
+  },
+  "connectionFailedGeneric": "Connection failed",
+  "@connectionFailedGeneric": {
+    "description": "Error shown when a network/SSL connection could not be established."
+  },
+  "unknownError": "Something went wrong. Please try again.",
+  "@unknownError": {
+    "description": "Generic fallback error shown when the cause is unexpected."
   },
 
   "questionDetailsTitle": "Question Details",
@@ -425,15 +432,6 @@
     "description": "Success snack bar after voting; {answer} is the answer option text returned by the server.",
     "placeholders": {
       "answer": {
-        "type": "String"
-      }
-    }
-  },
-  "errorWithMessage": "Error: {message}",
-  "@errorWithMessage": {
-    "description": "Error snack bar with a server-provided message; {message} is the raw server response.",
-    "placeholders": {
-      "message": {
         "type": "String"
       }
     }

@@ -4,6 +4,7 @@ import '../models/auth_models.dart';
 import '../l10n/auth_error_localization.dart';
 import '../services/auth_service.dart';
 import '../services/token_storage.dart';
+import '../utils/error_handler.dart';
 
 /// Controller for managing authentication state.
 ///
@@ -181,8 +182,8 @@ class AuthController extends ChangeNotifier {
       _setError(_errorFromApi(e));
       _setLoading(false);
       return false;
-    } catch (_) {
-      _setError(const AuthError('registrationFailed', null));
+    } catch (e) {
+      _setError(_errorFromException(e, 'registrationFailed'));
       _setLoading(false);
       return false;
     }
@@ -261,8 +262,8 @@ class AuthController extends ChangeNotifier {
       _setError(_errorFromApi(e));
       _setLoading(false);
       return false;
-    } catch (_) {
-      _setError(const AuthError('loginFailed', null));
+    } catch (e) {
+      _setError(_errorFromException(e, 'loginFailed'));
       _setLoading(false);
       return false;
     }
@@ -337,8 +338,8 @@ class AuthController extends ChangeNotifier {
       }
       _setLoading(false);
       return false;
-    } catch (_) {
-      _setError(const AuthError('forgotPasswordFailed', null));
+    } catch (e) {
+      _setError(_errorFromException(e, 'forgotPasswordFailed'));
       _setLoading(false);
       return false;
     }
@@ -388,8 +389,8 @@ class AuthController extends ChangeNotifier {
       }
       _setLoading(false);
       return false;
-    } catch (_) {
-      _setError(const AuthError('passwordResetTokenInvalid', null));
+    } catch (e) {
+      _setError(_errorFromException(e, 'passwordResetTokenInvalid'));
       _setLoading(false);
       return false;
     }
@@ -441,8 +442,8 @@ class AuthController extends ChangeNotifier {
       }
       _setLoading(false);
       return false;
-    } catch (_) {
-      _setError(const AuthError('deleteAccountFailed', null));
+    } catch (e) {
+      _setError(_errorFromException(e, 'deleteAccountFailed'));
       _setLoading(false);
       return false;
     }
@@ -552,8 +553,8 @@ class AuthController extends ChangeNotifier {
       }
       _setLoading(false);
       return false;
-    } catch (_) {
-      _setError(const AuthError('profileUpdateFailed', null));
+    } catch (e) {
+      _setError(_errorFromException(e, 'profileUpdateFailed'));
       _setLoading(false);
       return false;
     }
@@ -570,6 +571,24 @@ class AuthController extends ChangeNotifier {
       return AuthError('requestFailed', e.statusCode.toString());
     }
     return AuthError('server', e.message);
+  }
+
+  /// Maps a non-[ApiException] (typically a transport-level error such as
+  /// [SocketException] or [TimeoutException]) to a localizable [AuthError].
+  ///
+  /// Network/transport errors receive a dedicated code so that
+  /// [localizedAuthError] can render a friendly, localized message instead of
+  /// leaking the raw Dart exception text. Everything else is surfaced as
+  /// [fallbackCode] with the exception's own [toString] as the detail so that
+  /// genuine server messages are still preserved.
+  AuthError _errorFromException(Object error, String fallbackCode) {
+    return switch (classifyError(error)) {
+      ErrorType.noConnection => const AuthError('connectionFailed', null),
+      ErrorType.timeout => const AuthError('connectionTimeout', null),
+      ErrorType.sslError => const AuthError('sslError', null),
+      ErrorType.malformedResponse ||
+      ErrorType.unknown => AuthError(fallbackCode, error.toString()),
+    };
   }
 
   void _setError(AuthError error) {

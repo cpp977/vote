@@ -530,11 +530,29 @@ abstract class AppLocalizations {
   /// **'Server returned an error'**
   String get serverError;
 
-  /// Error shown when the network request fails; {error} is the underlying exception message.
+  /// Error shown when the device has no network connectivity.
   ///
   /// In en, this message translates to:
-  /// **'Failed to connect: {error}'**
-  String connectionError(String error);
+  /// **'No internet connection'**
+  String get noInternetConnection;
+
+  /// Error shown when the network request takes too long to complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection timed out'**
+  String get connectionTimeout;
+
+  /// Error shown when a network/SSL connection could not be established.
+  ///
+  /// In en, this message translates to:
+  /// **'Connection failed'**
+  String get connectionFailedGeneric;
+
+  /// Generic fallback error shown when the cause is unexpected.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get unknownError;
 
   /// App bar title of the question details screen.
   ///
@@ -691,12 +709,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Vote for \"{answer}\" submitted!'**
   String voteSubmitted(String answer);
-
-  /// Error snack bar with a server-provided message; {message} is the raw server response.
-  ///
-  /// In en, this message translates to:
-  /// **'Error: {message}'**
-  String errorWithMessage(String message);
 
   /// Error snack bar when submitting a vote fails; {error} is the underlying exception message.
   ///

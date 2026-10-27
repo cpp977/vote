@@ -147,7 +147,10 @@
   "retry": "Erneut versuchen",
 
   "serverError": "Server hat einen Fehler zurückgegeben",
-  "connectionError": "Verbindung fehlgeschlagen: {error}",
+  "noInternetConnection": "Keine Internetverbindung",
+  "connectionTimeout": "Verbindungszeitüberschreitung",
+  "connectionFailedGeneric": "Verbindung fehlgeschlagen",
+  "unknownError": "Etwas ist schiefgelaufen. Bitte versuchen Sie es erneut.",
 
   "questionDetailsTitle": "Fragendetails",
   "questionLabel": "Frage",
@@ -175,7 +178,6 @@
   "specialCategoryNone": "Keine besondere Kategorie",
   "statsLoadFailed": "Statistik konnte nicht geladen werden",
   "voteSubmitted": "Stimme für \"{answer}\" abgegeben!",
-  "errorWithMessage": "Fehler: {message}",
   "voteSubmitFailed": "Stimme konnte nicht abgegeben werden: {error}",
   "alreadyAnswered": "Du hast diese Frage bereits beantwortet",
 
