@@ -244,9 +244,16 @@ class AppLocalizationsEn extends AppLocalizations {
   String get serverError => 'Server returned an error';
 
   @override
-  String connectionError(String error) {
-    return 'Failed to connect: $error';
-  }
+  String get noInternetConnection => 'No internet connection';
+
+  @override
+  String get connectionTimeout => 'Connection timed out';
+
+  @override
+  String get connectionFailedGeneric => 'Connection failed';
+
+  @override
+  String get unknownError => 'Something went wrong. Please try again.';
 
   @override
   String get questionDetailsTitle => 'Question Details';
@@ -331,11 +338,6 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String voteSubmitted(String answer) {
     return 'Vote for \"$answer\" submitted!';
-  }
-
-  @override
-  String errorWithMessage(String message) {
-    return 'Error: $message';
   }
 
   @override

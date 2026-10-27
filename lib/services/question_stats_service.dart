@@ -68,10 +68,7 @@ class QuestionStatsService {
             .toList(),
       );
     } catch (_) {
-      return const SegmentResult.error(
-        SegmentErrorKind.loadFailed,
-        errorDetail: 'Malformed statistics response',
-      );
+      return const SegmentResult.error(SegmentErrorKind.loadFailed);
     }
   }
 
@@ -229,10 +226,7 @@ class QuestionStatsController extends ChangeNotifier {
     } catch (e) {
       if (_states[query.cacheKey]?.isLoading ?? false) {
         _states[query.cacheKey] = SegmentLoadState.done(
-          SegmentResult.error(
-            SegmentErrorKind.loadFailed,
-            errorDetail: e.toString(),
-          ),
+          const SegmentResult.error(SegmentErrorKind.loadFailed),
         );
       }
     } finally {

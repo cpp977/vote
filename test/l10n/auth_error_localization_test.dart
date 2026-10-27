@@ -34,6 +34,18 @@ class _TestAppLocalizations extends AppLocalizations {
   @override
   String passwordResetFailed(String detail) => 'Password reset failed: $detail';
 
+  @override
+  String get noInternetConnection => 'No internet connection';
+
+  @override
+  String get connectionTimeout => 'Connection timed out';
+
+  @override
+  String get connectionFailedGeneric => 'Connection failed';
+
+  @override
+  String get unknownError => 'Something went wrong';
+
   // noSuchMethod handles all other required methods
   @override
   dynamic noSuchMethod(Invocation invocation) => 'mock';
@@ -163,6 +175,27 @@ void main() {
       test('returns empty string when detail is null for unknown code', () {
         const error = AuthError('unknownCode', null);
         expect(localizedAuthError(l10n, error), '');
+      });
+    });
+
+    group('connectionFailed', () {
+      test('returns noInternetConnection regardless of detail', () {
+        const error = AuthError('connectionFailed', null);
+        expect(localizedAuthError(l10n, error), 'No internet connection');
+      });
+    });
+
+    group('connectionTimeout', () {
+      test('returns connectionTimeout regardless of detail', () {
+        const error = AuthError('connectionTimeout', null);
+        expect(localizedAuthError(l10n, error), 'Connection timed out');
+      });
+    });
+
+    group('sslError', () {
+      test('returns connectionFailedGeneric regardless of detail', () {
+        const error = AuthError('sslError', null);
+        expect(localizedAuthError(l10n, error), 'Connection failed');
       });
     });
   });

@@ -231,9 +231,7 @@ class _QuestionStatsWidgetState extends State<QuestionStatsWidget>
           l10n.statsNotAvailable,
         ),
         SegmentErrorKind.loadFailed => _buildError(
-          result.errorDetail != null
-              ? l10n.connectionError(result.errorDetail!)
-              : l10n.statsLoadFailed,
+          result.errorDetail ?? l10n.statsLoadFailed,
         ),
       };
     }

@@ -15,6 +15,7 @@ import '../services/admin_service.dart';
 import '../services/auth_middleware.dart';
 import '../services/navigation_service.dart';
 import '../services/question_stats_service.dart';
+import '../utils/error_handler.dart';
 import '../widgets/configuration_menu.dart';
 import '../widgets/question_stats_widget.dart';
 import '../widgets/snack_bars.dart';
@@ -337,10 +338,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
       } else if (response.statusCode == 404) {
         showErrorSnackBar(context, l10n.deleteAnswerFailed);
       } else {
-        final errorMessage = response.body.isNotEmpty
-            ? response.body.toString()
-            : l10n.serverError;
-        showErrorSnackBar(context, l10n.errorWithMessage(errorMessage));
+        showErrorSnackBar(context, l10n.deleteAnswerFailed);
       }
     } catch (e) {
       if (!mounted) return;
@@ -388,7 +386,7 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
       }
     } catch (e) {
       setState(() {
-        _errorMessage = l10n.connectionError(e.toString());
+        _errorMessage = localizedError(l10n, e);
         _isLoading = false;
       });
     }
@@ -500,17 +498,17 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         setState(() {
           _submittingAnswerIds.remove(answer.id);
         });
-        final errorMessage = response.body.isNotEmpty
-            ? response.body.toString()
-            : l10n.serverError;
-        showErrorSnackBar(context, l10n.errorWithMessage(errorMessage));
+        showErrorSnackBar(context, l10n.voteSubmitFailed(l10n.serverError));
       }
     } catch (e) {
       if (!mounted) return;
       setState(() {
         _submittingAnswerIds.remove(answer.id);
       });
-      showErrorSnackBar(context, l10n.voteSubmitFailed(e.toString()));
+      showErrorSnackBar(
+        context,
+        l10n.voteSubmitFailed(localizedError(l10n, e)),
+      );
     }
   }
 

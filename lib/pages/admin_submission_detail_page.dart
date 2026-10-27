@@ -12,6 +12,7 @@ import '../models/special_category.dart';
 import '../models/submission_models.dart';
 import '../services/admin_service.dart';
 import '../services/auth_middleware.dart';
+import '../utils/error_handler.dart';
 import '../widgets/configuration_menu.dart';
 import '../widgets/snack_bars.dart';
 
@@ -138,9 +139,7 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
     } catch (e) {
       if (!mounted) return;
       setState(() {
-        _answersErrorMessage = AppLocalizations.of(
-          context,
-        ).connectionError(e.toString());
+        _answersErrorMessage = localizedError(AppLocalizations.of(context), e);
         _isLoadingAnswers = false;
       });
     }

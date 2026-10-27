@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter_test/flutter_test.dart';
 import 'package:vote/controllers/auth_controller.dart';
 import 'package:vote/models/auth_models.dart';
@@ -199,6 +201,22 @@ void main() {
         expect(controller.error?.code, 'loginFailed');
       });
 
+      test('sets connectionFailed code on SocketException', () async {
+        authService.loginThrows = true;
+        authService.loginException = const SocketException(
+          'Failed to connect to 10.0.2.2',
+        );
+
+        final result = await controller.login(
+          username: 'alice',
+          password: 'secret',
+        );
+
+        expect(result, isFalse);
+        expect(controller.error?.code, 'connectionFailed');
+        expect(controller.error?.detail, isNull);
+      });
+
       test('stores tokens and username on successful login', () async {
         authService.loginResult = const AuthResponse(
           accessToken: 'access-token',
@@ -319,6 +337,23 @@ void main() {
 
         expect(result, isFalse);
         expect(controller.error?.code, 'registrationFailed');
+      });
+
+      test('sets connectionFailed code on SocketException', () async {
+        authService.registerThrows = true;
+        authService.registerException = const SocketException(
+          'Failed to connect to 10.0.2.2',
+        );
+
+        final result = await controller.register(
+          username: 'newuser',
+          email: 'new@example.com',
+          password: 'secret123',
+        );
+
+        expect(result, isFalse);
+        expect(controller.error?.code, 'connectionFailed');
+        expect(controller.error?.detail, isNull);
       });
 
       test('passes optional fields to RegisterRequest', () async {

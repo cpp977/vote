@@ -11,6 +11,7 @@ import '../l10n/app_localizations.dart';
 import '../models/question.dart';
 import '../services/auth_middleware.dart';
 import '../utils/constants.dart';
+import '../utils/error_handler.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/category_section.dart';
 import '../widgets/configuration_menu.dart';
@@ -255,7 +256,7 @@ class _MyHomePageState extends State<MyHomePage> {
       debugPrint('Error fetching questions: $e');
       debugPrint('Stack trace: $stackTrace');
       setState(() {
-        _errorMessage = l10n.connectionError(e.toString());
+        _errorMessage = localizedError(l10n, e);
         _isLoading = false;
         _isLoadingMore = false;
       });
