@@ -5,6 +5,7 @@ import 'package:url_launcher/url_launcher.dart';
 
 import '../controllers/configuration_controller.dart';
 import '../l10n/app_localizations.dart';
+import '../services/navigation_service.dart';
 
 /// A popup menu button displayed in the AppBar that provides access to
 /// app configuration.
@@ -139,6 +140,10 @@ class ConfigurationMenu extends StatelessWidget {
       if (aboutSelection == null) return;
       if (aboutSelection == 'privacy') {
         await _openPrivacyStatement(messenger, l10n);
+      } else if (aboutSelection == 'tutorial') {
+        // Re-open the introduction carousel over the current screen. The
+        // route is registered in [MaterialApp.routes] in main.dart.
+        NavigationService.navigatorKey.currentState?.pushNamed('/intro');
       }
     }
   }
@@ -202,6 +207,17 @@ class ConfigurationMenu extends StatelessWidget {
             Text(AppLocalizations.of(context).privacyStatement),
             const Spacer(),
             const Icon(Icons.open_in_new, size: 18),
+          ],
+        ),
+      ),
+      const PopupMenuDivider(),
+      PopupMenuItem<String>(
+        value: 'tutorial',
+        child: Row(
+          children: [
+            const Icon(Icons.tour_outlined, size: 20),
+            const SizedBox(width: 12),
+            Text(AppLocalizations.of(context).showTutorial),
           ],
         ),
       ),

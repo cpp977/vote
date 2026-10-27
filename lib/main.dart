@@ -16,6 +16,8 @@ import 'pages/reset_password_page.dart';
 import 'l10n/app_localizations.dart';
 import 'services/navigation_service.dart';
 import 'services/deep_link_service.dart';
+import 'services/tutorial_controller.dart';
+import 'widgets/intro_carousel.dart';
 import 'pages/account_locked_page.dart';
 
 import 'gen/dart_define.gen.dart';
@@ -55,6 +57,7 @@ class MyApp extends StatelessWidget {
             ..registerAsAppConfiguration()
             ..loadSavedConfiguration(),
         ),
+        ChangeNotifierProvider(create: (_) => TutorialController()..load()),
       ],
       child: Consumer<ConfigurationController>(
         builder: (context, config, _) {
@@ -74,17 +77,50 @@ class MyApp extends StatelessWidget {
             ),
             themeMode: config.themeMode,
             locale: config.locale,
-            home: const DeepLinkWrapper(),
+            home: const TutorialGate(),
             routes: {
               '/login': (context) => const LoginPage(),
               '/forgot-password': (context) => const ForgotPasswordPage(),
               '/account-locked': (context) => const AccountLockedPage(),
+              '/intro': (context) => const IntroCarouselPage(),
             },
             localizationsDelegates: AppLocalizations.localizationsDelegates,
             supportedLocales: AppLocalizations.supportedLocales,
           );
         },
       ),
+    );
+  }
+}
+
+/// Decides what to show at app launch based on the [TutorialController].
+///
+/// * While the persisted completion flag is still being loaded, a splash
+///   (a centred [CircularProgressIndicator]) is shown so the home screen is
+///   never briefly exposed before the decision is known — this avoids a
+///   flash on returning users.
+/// * When the introduction has never been completed (first run, or after a
+///   manual reset from the configuration menu), [IntroCarousel] is shown.
+///   Completing it marks the tutorial done and hands control over to the
+///   normal app ([DeepLinkWrapper]).
+/// * Otherwise the regular app ([DeepLinkWrapper]) is shown immediately.
+class TutorialGate extends StatelessWidget {
+  const TutorialGate({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Consumer<TutorialController>(
+      builder: (context, tutorial, _) {
+        if (!tutorial.isInitialized) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
+        if (tutorial.shouldShowTutorial) {
+          return IntroCarousel(onComplete: tutorial.complete);
+        }
+        return const DeepLinkWrapper();
+      },
     );
   }
 }

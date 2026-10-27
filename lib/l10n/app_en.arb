@@ -1164,5 +1164,63 @@
   "privacyStatementUnavailable": "Privacy statement unavailable",
   "@privacyStatementUnavailable": {
     "description": "Error shown when the privacy statement URL cannot be opened."
+  },
+
+  "introWelcomeTitle": "Welcome to {appName}",
+  "@introWelcomeTitle": {
+    "description": "Title of the first introduction page; {appName} is the brand name.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "introWelcomeDesc": "A quick tour of the core features to get you started.",
+  "@introWelcomeDesc": {
+    "description": "Subtitle of the first introduction page."
+  },
+  "introVoteTitle": "Vote",
+  "@introVoteTitle": {
+    "description": "Title of the introduction page explaining voting."
+  },
+  "introVoteDesc": "Browse questions and tap one to read it. Then pick an answer to cast your vote.",
+  "@introVoteDesc": {
+    "description": "Description of the introduction page explaining voting."
+  },
+  "introStatsTitle": "Statistics",
+  "@introStatsTitle": {
+    "description": "Title of the introduction page explaining voting statistics."
+  },
+  "introStatsDesc": "After a question has received votes, the results page shows how everyone responded, broken down by age, nationality and other characteristics.",
+  "@introStatsDesc": {
+    "description": "Description of the introduction page explaining voting statistics."
+  },
+  "introSubmitTitle": "Submit a Question",
+  "@introSubmitTitle": {
+    "description": "Title of the introduction page explaining how to submit questions."
+  },
+  "introSubmitDesc": "Have something to ask? Open the 'My Submissions' tab and tap the button to submit your own question for review.",
+  "@introSubmitDesc": {
+    "description": "Description of the introduction page explaining how to submit questions."
+  },
+  "introGetStarted": "Get Started",
+  "@introGetStarted": {
+    "description": "Button on the last introduction page that dismisses the intro and enters the app."
+  },
+  "introSkip": "Skip",
+  "@introSkip": {
+    "description": "Button on every introduction page that dismisses the intro without completing it again."
+  },
+  "introNext": "Next",
+  "@introNext": {
+    "description": "Button on non-final introduction pages that advances to the next page."
+  },
+  "showTutorial": "Show Introduction",
+  "@showTutorial": {
+    "description": "Menu item that re-opens the introduction tour."
+  },
+  "showTutorialDescription": "Re-open the introduction tour that explains the core features of the app.",
+  "@showTutorialDescription": {
+    "description": "Subtitle for the 'Show Introduction' menu item."
   }
 }

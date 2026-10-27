@@ -870,4 +870,50 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get privacyStatementUnavailable => 'Privacy statement unavailable';
+
+  @override
+  String introWelcomeTitle(String appName) {
+    return 'Welcome to $appName';
+  }
+
+  @override
+  String get introWelcomeDesc =>
+      'A quick tour of the core features to get you started.';
+
+  @override
+  String get introVoteTitle => 'Vote';
+
+  @override
+  String get introVoteDesc =>
+      'Browse questions and tap one to read it. Then pick an answer to cast your vote.';
+
+  @override
+  String get introStatsTitle => 'Statistics';
+
+  @override
+  String get introStatsDesc =>
+      'After a question has received votes, the results page shows how everyone responded, broken down by age, nationality and other characteristics.';
+
+  @override
+  String get introSubmitTitle => 'Submit a Question';
+
+  @override
+  String get introSubmitDesc =>
+      'Have something to ask? Open the \'My Submissions\' tab and tap the button to submit your own question for review.';
+
+  @override
+  String get introGetStarted => 'Get Started';
+
+  @override
+  String get introSkip => 'Skip';
+
+  @override
+  String get introNext => 'Next';
+
+  @override
+  String get showTutorial => 'Show Introduction';
+
+  @override
+  String get showTutorialDescription =>
+      'Re-open the introduction tour that explains the core features of the app.';
 }

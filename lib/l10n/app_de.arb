@@ -563,5 +563,63 @@
   "privacyStatementUnavailable": "Datenschutzerklärung nicht verfügbar",
   "@privacyStatementUnavailable": {
     "description": "Error shown when the privacy statement URL cannot be opened."
+  },
+
+  "introWelcomeTitle": "Willkommen bei {appName}",
+  "@introWelcomeTitle": {
+    "description": "Title of the first introduction page; {appName} is the brand name.",
+    "placeholders": {
+      "appName": {
+        "type": "String"
+      }
+    }
+  },
+  "introWelcomeDesc": "Ein kurzer Überblick über die wichtigsten Funktionen, damit du sofort loslegen kannst.",
+  "@introWelcomeDesc": {
+    "description": "Subtitle of the first introduction page."
+  },
+  "introVoteTitle": "Abstimmen",
+  "@introVoteTitle": {
+    "description": "Title of the introduction page explaining voting."
+  },
+  "introVoteDesc": "Durchsuche die Fragen und tippe auf eine, um sie zu lesen. Wähle dann eine Antwort, um deine Stimme abzugeben.",
+  "@introVoteDesc": {
+    "description": "Description of the introduction page explaining voting."
+  },
+  "introStatsTitle": "Statistik",
+  "@introStatsTitle": {
+    "description": "Title of the introduction page explaining voting statistics."
+  },
+  "introStatsDesc": "Sobald eine Frage Stimmen hat, zeigt die Ergebnisseite, wie alle abgestimmt haben – aufgeschlüsselt nach Alter, Nationalität und weiteren Merkmalen.",
+  "@introStatsDesc": {
+    "description": "Description of the introduction page explaining voting statistics."
+  },
+  "introSubmitTitle": "Frage einreichen",
+  "@introSubmitTitle": {
+    "description": "Title of the introduction page explaining how to submit questions."
+  },
+  "introSubmitDesc": "Hast du etwas zu fragen? Öffne den Reiter ‚Meine Einreichungen‘ und tippe auf die Schaltfläche, um deine eigene Frage zur Prüfung einzureichen.",
+  "@introSubmitDesc": {
+    "description": "Description of the introduction page explaining how to submit questions."
+  },
+  "introGetStarted": "Loslegen",
+  "@introGetStarted": {
+    "description": "Button on the last introduction page that dismisses the intro and enters the app."
+  },
+  "introSkip": "Überspringen",
+  "@introSkip": {
+    "description": "Button on every introduction page that dismisses the intro without completing it again."
+  },
+  "introNext": "Weiter",
+  "@introNext": {
+    "description": "Button on non-final introduction pages that advances to the next page."
+  },
+  "showTutorial": "Einführung anzeigen",
+  "@showTutorial": {
+    "description": "Menu item that re-opens the introduction tour."
+  },
+  "showTutorialDescription": "Öffne erneut die Einführung, die die wichtigsten Funktionen der App erklärt.",
+  "@showTutorialDescription": {
+    "description": "Subtitle for the 'Show Introduction' menu item."
   }
 }
