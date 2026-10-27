@@ -1657,6 +1657,84 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Privacy statement unavailable'**
   String get privacyStatementUnavailable;
+
+  /// Title of the first introduction page; {appName} is the brand name.
+  ///
+  /// In en, this message translates to:
+  /// **'Welcome to {appName}'**
+  String introWelcomeTitle(String appName);
+
+  /// Subtitle of the first introduction page.
+  ///
+  /// In en, this message translates to:
+  /// **'A quick tour of the core features to get you started.'**
+  String get introWelcomeDesc;
+
+  /// Title of the introduction page explaining voting.
+  ///
+  /// In en, this message translates to:
+  /// **'Vote'**
+  String get introVoteTitle;
+
+  /// Description of the introduction page explaining voting.
+  ///
+  /// In en, this message translates to:
+  /// **'Browse questions and tap one to read it. Then pick an answer to cast your vote.'**
+  String get introVoteDesc;
+
+  /// Title of the introduction page explaining voting statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics'**
+  String get introStatsTitle;
+
+  /// Description of the introduction page explaining voting statistics.
+  ///
+  /// In en, this message translates to:
+  /// **'After a question has received votes, the results page shows how everyone responded, broken down by age, nationality and other characteristics.'**
+  String get introStatsDesc;
+
+  /// Title of the introduction page explaining how to submit questions.
+  ///
+  /// In en, this message translates to:
+  /// **'Submit a Question'**
+  String get introSubmitTitle;
+
+  /// Description of the introduction page explaining how to submit questions.
+  ///
+  /// In en, this message translates to:
+  /// **'Have something to ask? Open the \'My Submissions\' tab and tap the button to submit your own question for review.'**
+  String get introSubmitDesc;
+
+  /// Button on the last introduction page that dismisses the intro and enters the app.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Started'**
+  String get introGetStarted;
+
+  /// Button on every introduction page that dismisses the intro without completing it again.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip'**
+  String get introSkip;
+
+  /// Button on non-final introduction pages that advances to the next page.
+  ///
+  /// In en, this message translates to:
+  /// **'Next'**
+  String get introNext;
+
+  /// Menu item that re-opens the introduction tour.
+  ///
+  /// In en, this message translates to:
+  /// **'Show Introduction'**
+  String get showTutorial;
+
+  /// Subtitle for the 'Show Introduction' menu item.
+  ///
+  /// In en, this message translates to:
+  /// **'Re-open the introduction tour that explains the core features of the app.'**
+  String get showTutorialDescription;
 }
 
 class _AppLocalizationsDelegate

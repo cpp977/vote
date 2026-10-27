@@ -883,4 +883,50 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get privacyStatementUnavailable =>
       'Datenschutzerklärung nicht verfügbar';
+
+  @override
+  String introWelcomeTitle(String appName) {
+    return 'Willkommen bei $appName';
+  }
+
+  @override
+  String get introWelcomeDesc =>
+      'Ein kurzer Überblick über die wichtigsten Funktionen, damit du sofort loslegen kannst.';
+
+  @override
+  String get introVoteTitle => 'Abstimmen';
+
+  @override
+  String get introVoteDesc =>
+      'Durchsuche die Fragen und tippe auf eine, um sie zu lesen. Wähle dann eine Antwort, um deine Stimme abzugeben.';
+
+  @override
+  String get introStatsTitle => 'Statistik';
+
+  @override
+  String get introStatsDesc =>
+      'Sobald eine Frage Stimmen hat, zeigt die Ergebnisseite, wie alle abgestimmt haben – aufgeschlüsselt nach Alter, Nationalität und weiteren Merkmalen.';
+
+  @override
+  String get introSubmitTitle => 'Frage einreichen';
+
+  @override
+  String get introSubmitDesc =>
+      'Hast du etwas zu fragen? Öffne den Reiter ‚Meine Einreichungen‘ und tippe auf die Schaltfläche, um deine eigene Frage zur Prüfung einzureichen.';
+
+  @override
+  String get introGetStarted => 'Loslegen';
+
+  @override
+  String get introSkip => 'Überspringen';
+
+  @override
+  String get introNext => 'Weiter';
+
+  @override
+  String get showTutorial => 'Einführung anzeigen';
+
+  @override
+  String get showTutorialDescription =>
+      'Öffne erneut die Einführung, die die wichtigsten Funktionen der App erklärt.';
 }
