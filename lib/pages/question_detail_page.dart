@@ -27,7 +27,19 @@ import '../widgets/snack_bars.dart';
 class QuestionDetailsPage extends StatefulWidget {
   final Question question;
 
-  const QuestionDetailsPage({super.key, required this.question});
+  /// Called whenever an action on this page changes the answered state of
+  /// [question] in a way the backing question list must reflect — i.e. after a
+  /// successful answer submission, answer deletion, or an "already answered"
+  /// (409) response. The list page uses this to reload immediately so the
+  /// updated `answered` flag is shown on return instead of only after a
+  /// manual reload.
+  final void Function()? onQuestionUpdated;
+
+  const QuestionDetailsPage({
+    super.key,
+    required this.question,
+    this.onQuestionUpdated,
+  });
 
   @override
   State<QuestionDetailsPage> createState() => _QuestionDetailsPageState();
@@ -41,6 +53,13 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   bool _isLoading = true;
   final Set<int> _submittingAnswerIds = {};
   final Set<int> _votedAnswerIds = {};
+
+  /// Tracks whether the current user has answered this question within this
+  /// page's lifetime, seeded from the [Question.answered] snapshot. This is
+  /// kept separately because the [Question] passed in is an immutable snapshot
+  /// that goes stale the moment the user answers or deletes an answer in this
+  /// session — it would otherwise leave the delete-answer button out of sync.
+  bool _hasAnswered = false;
 
   // Statistics controller owning the active segment, lazy fetching and the
   // per-segment cache (see [QuestionStatsController]).
@@ -58,6 +77,10 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
   @override
   void initState() {
     super.initState();
+    // Seed the answered tracker from the (possibly stale) snapshot carried by
+    // the question. The detail page does not re-fetch the question object, so we
+    // keep our own mutable copy that stays accurate as the user acts.
+    _hasAnswered = widget.question.answered;
     // Overall statistics need no build context (localization happens inside
     // the stats widget), so loading can start right away. Further segments
     // load lazily when the user selects them.
@@ -322,7 +345,11 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         setState(() {
           _isDeletingAnswer = false;
           _votedAnswerIds.clear();
+          _hasAnswered = false;
         });
+        // The cached question list still reports the old `answered` flag;
+        // reload it so the question is no longer marked as answered on return.
+        widget.onQuestionUpdated?.call();
         // Refresh statistics (cached segments are dropped) so the visible
         // segment reflects the removed vote.
         unawaited(_statsController.refresh());
@@ -471,7 +498,12 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         setState(() {
           _submittingAnswerIds.remove(answer.id);
           _votedAnswerIds.add(answer.id);
+          _hasAnswered = true;
         });
+        // Ask the question list to reload so the answered flag (and any active
+        // "unanswered only" filter) is correct on return instead of only after
+        // a manual reload.
+        widget.onQuestionUpdated?.call();
         // Refresh statistics (cached segments are dropped) so the visible
         // segment reflects the new vote.
         unawaited(_statsController.refresh());
@@ -490,7 +522,11 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         // submitting state and inform the user.
         setState(() {
           _submittingAnswerIds.remove(answer.id);
+          // The question is answered (the cached list just hasn't caught up
+          // yet), so offer the delete-answer button and reload the list.
+          _hasAnswered = true;
         });
+        widget.onQuestionUpdated?.call();
         showErrorSnackBar(context, l10n.alreadyAnswered);
       } else if (response.statusCode == 401) {
         NavigationService.navigateToLogin();
@@ -619,9 +655,11 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                     context,
                   ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.w600),
                 ),
-                // Show delete button if the user has already answered (from search endpoint)
-                // or if they just voted in this session.
-                if (widget.question.answered || _votedAnswerIds.isNotEmpty) ...[
+                // Show delete button if the user has already answered. We use
+                // [_hasAnswered] (a mutable tracker) instead of the immutable
+                // [Question.answered] snapshot so the button stays in sync after
+                // the user answers or deletes their answer in this session.
+                if (_hasAnswered || _votedAnswerIds.isNotEmpty) ...[
                   const Spacer(),
                   if (!_isDeletingAnswer)
                     TextButton.icon(
