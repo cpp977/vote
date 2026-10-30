@@ -425,13 +425,38 @@ class _MyHomePageState extends State<MyHomePage> {
     return grouped;
   }
 
-  void _navigateToDetails(Question question) {
-    Navigator.push(
+  /// Opens the [QuestionDetailsPage] for [question].
+  ///
+  /// When the detail page pops with `true` the question was deleted or had its
+  /// text changed, so the list is reloaded to reflect those structural edits.
+  /// Answering and deleting a vote reload the list directly from the detail
+  /// page via [QuestionDetailsPage.onQuestionUpdated] (those actions don't pop
+  /// the route), so this result handling is only needed for the admin
+  /// delete/change path.
+  Future<void> _navigateToDetails(Question question) async {
+    final bool? changed = await Navigator.push<bool>(
       context,
       MaterialPageRoute(
-        builder: (context) => QuestionDetailsPage(question: question),
+        builder: (context) => QuestionDetailsPage(
+          question: question,
+          onQuestionUpdated: _reloadQuestions,
+        ),
       ),
     );
+    if (changed == true && mounted) {
+      _fetchQuestions(reset: true);
+    }
+  }
+
+  /// Reloads the question list, wired into [QuestionDetailsPage.onQuestionUpdated]
+  /// so that answering or deleting a vote is reflected immediately — the
+  /// question's `answered` flag (and any active "unanswered only" filter) is
+  /// correct the moment the user returns to this page, instead of only after
+  /// a manual reload.
+  void _reloadQuestions() {
+    if (mounted) {
+      unawaited(_fetchQuestions(reset: true));
+    }
   }
 
   void showSearchDialog(BuildContext context) {
