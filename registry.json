@@ -12,10 +12,10 @@
       },
       "created_at": "2026-11-04T22:00:11.701677Z",
       "build": {
-        "status": "reserved",
-        "workflow_run_id": null,
-        "artifact_name": null,
-        "sha256": null
+        "status": "upload_failed",
+        "workflow_run_id": 41921149104,
+        "artifact_name": "vote-1.0.0-20",
+        "sha256": "a14ed78b0fb8315fe68af857c54c8b1582783e5eb9a5cb242737496d2552a63c"
       },
       "tracks": {
         "internal": {
