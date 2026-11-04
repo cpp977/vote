@@ -375,6 +375,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get answered => 'Beantwortet';
 
   @override
+  String get unanswered => 'Unbeantwortet';
+
+  @override
   String get unansweredOnly => 'Nur unbeantwortete';
 
   @override
