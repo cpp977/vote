@@ -1,0 +1,178 @@
+name: Android Internal
+
+on:
+  push:
+    branches:
+      - "feat/**"
+      - "fix/**"
+
+# Version-code uniqueness is enforced by the Git-backed registry (CAS push),
+# not by this concurrency group. This group only avoids wasting work on
+# superseded pushes to the same feature branch.
+concurrency:
+  group: android-internal-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-upload:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.2"
+          channel: stable
+
+      - name: Set up uv
+        uses: astral-sh/setup-uv@v6
+        with:
+          enable-cache: true
+          cache-dependency-glob: .github/scripts/uv.lock
+
+      - name: Install release-registry dependencies
+        run: uv sync --project .github/scripts --locked
+
+      - name: Install Flutter dependencies
+        run: flutter pub get
+
+      - name: Read app version
+        id: app-version
+        shell: bash
+        run: |
+          VERSION_NAME="$(sed -n 's/^version:[[:space:]]*//p' pubspec.yaml | head -n 1 | cut -d '+' -f 1)"
+          if [[ -z "$VERSION_NAME" ]]; then
+            echo "Could not read versionName from pubspec.yaml" >&2
+            exit 1
+          fi
+          echo "version_name=$VERSION_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Allocate version code
+        id: allocate
+        shell: bash
+        run: |
+          RESULT="$(uv run --project .github/scripts python -m release_registry.cli \
+            --store git \
+            --repo-root . \
+            --registry-branch release-registry \
+            --registry-path registry.json \
+            allocate \
+            --version-name "${{ steps.app-version.outputs.version_name }}" \
+            --branch "$GITHUB_REF_NAME" \
+            --commit "$GITHUB_SHA")"
+
+          VERSION_CODE="$(echo "$RESULT" | jq -r '.version_code // empty')"
+          if [[ -z "$VERSION_CODE" ]]; then
+            echo "Registry did not return a version_code. Output was: $RESULT" >&2
+            exit 1
+          fi
+
+          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "BUILD_NUMBER=$VERSION_CODE" >> "$GITHUB_ENV"
+          echo "Allocated Play versionCode: $VERSION_CODE"
+
+      # Keep this signing setup aligned with the existing publish.yml.
+      - name: Restore keystore
+        shell: bash
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE }}" | base64 --decode > android/upload-keystore.jks
+
+      - name: Create key.properties
+        shell: bash
+        run: |
+          cat > android/key.properties <<EOF
+          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
+          keyPassword=${{ secrets.KEY_PASSWORD }}
+          keyAlias=${{ secrets.KEY_ALIAS }}
+          storeFile=../upload-keystore.jks
+          EOF
+
+      - name: Build app bundle
+        id: build
+        shell: bash
+        run: |
+          dart run dart_define generate --FLAVOR=production
+          flutter build appbundle \
+            --release \
+            --build-number="$BUILD_NUMBER" \
+            --dart-define-from-file=dart_define.json
+
+      - name: Calculate app bundle SHA-256
+        id: checksum
+        if: success()
+        shell: bash
+        run: |
+          AAB_PATH="build/app/outputs/bundle/release/app-release.aab"
+          SHA256="$(sha256sum "$AAB_PATH" | awk '{print $1}')"
+          echo "sha256=$SHA256" >> "$GITHUB_OUTPUT"
+
+      - name: Upload app bundle artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: vote-${{ steps.app-version.outputs.version_name }}-${{ steps.allocate.outputs.version_code }}
+          path: build/app/outputs/bundle/release/app-release.aab
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Upload to Google Play Internal
+        id: publish
+        if: success()
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          packageName: com.dev.vote
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          tracks: internal
+          status: completed
+
+      # Always persist the outcome once a version code has been reserved.
+      # A failed reservation/build may leave a gap; version codes are never reused.
+      - name: Record build result in registry
+        if: always() && steps.allocate.outputs.version_code != ''
+        shell: bash
+        env:
+          VERSION_CODE: ${{ steps.allocate.outputs.version_code }}
+          BUILD_OUTCOME: ${{ steps.build.outcome }}
+          PUBLISH_OUTCOME: ${{ steps.publish.outcome }}
+          SHA256: ${{ steps.checksum.outputs.sha256 }}
+        run: |
+          if [[ "$BUILD_OUTCOME" != "success" ]]; then
+            STATUS="build_failed"
+          elif [[ "$PUBLISH_OUTCOME" != "success" ]]; then
+            STATUS="upload_failed"
+          else
+            STATUS="uploaded"
+          fi
+
+          ARGS=(
+            --store git
+            --repo-root .
+            --registry-branch release-registry
+            --registry-path registry.json
+            record-build
+            --version-code "$VERSION_CODE"
+            --status "$STATUS"
+            --workflow-run-id "$GITHUB_RUN_ID"
+            --artifact-name "vote-${{ steps.app-version.outputs.version_name }}-${VERSION_CODE}"
+          )
+          if [[ -n "$SHA256" ]]; then
+            ARGS+=(--sha256 "$SHA256")
+          fi
+
+          uv run --project .github/scripts python -m release_registry.cli "${ARGS[@]}"
