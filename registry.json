@@ -34,18 +34,28 @@
       },
       "created_at": "2026-11-04T22:07:38.839781Z",
       "build": {
-        "status": "reserved",
-        "workflow_run_id": null,
-        "artifact_name": null,
-        "sha256": null
+        "status": "uploaded",
+        "workflow_run_id": 41922302546,
+        "artifact_name": "vote-1.0.0-21",
+        "sha256": "bcd2b29a20b853266985ad5247b110326c7e4c7414bd517968963a88ce6530dc"
       },
       "tracks": {
         "internal": {
-          "status": "pending",
-          "promoted_at": null
+          "status": "active",
+          "promoted_at": "2026-11-04T22:13:48.423524Z"
         }
       },
-      "history": []
+      "history": [
+        {
+          "action": "uploaded",
+          "track": "internal",
+          "from_track": null,
+          "to_track": null,
+          "timestamp": "2026-11-04T22:13:48.423547Z",
+          "details": null,
+          "merge_commit": null
+        }
+      ]
     }
   }
 }
