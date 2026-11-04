@@ -365,6 +365,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get answered => 'Answered';
 
   @override
+  String get unanswered => 'Unanswered';
+
+  @override
   String get unansweredOnly => 'Unanswered only';
 
   @override

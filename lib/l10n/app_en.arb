@@ -470,6 +470,10 @@
   "@answered": {
     "description": "Label shown on a question card when the user has already answered this question."
   },
+  "unanswered": "Unanswered",
+  "@unanswered": {
+    "description": "Label shown on a question card when the user has not answered this question."
+  },
   "unansweredOnly": "Unanswered only",
   "@unansweredOnly": {
     "description": "Filter option to show only questions the user has not yet answered."

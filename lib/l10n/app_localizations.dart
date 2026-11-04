@@ -752,6 +752,12 @@ abstract class AppLocalizations {
   /// **'Answered'**
   String get answered;
 
+  /// Label shown on a question card when the user has not answered this question.
+  ///
+  /// In en, this message translates to:
+  /// **'Unanswered'**
+  String get unanswered;
+
   /// Filter option to show only questions the user has not yet answered.
   ///
   /// In en, this message translates to:
