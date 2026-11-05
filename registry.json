@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package_name": "com.dev.vote",
-  "last_allocated_version_code": 21,
+  "last_allocated_version_code": 22,
   "builds": {
     "20": {
       "version_name": "1.0.0",
@@ -56,6 +56,28 @@
           "merge_commit": null
         }
       ]
+    },
+    "22": {
+      "version_name": "1.0.0",
+      "version_code": 22,
+      "source": {
+        "branch": "25/merge",
+        "commit": "7dbb516a69e4eaf294cfb2c662401af26ebbb4fd"
+      },
+      "created_at": "2026-11-05T20:25:51.913770Z",
+      "build": {
+        "status": "reserved",
+        "workflow_run_id": null,
+        "artifact_name": null,
+        "sha256": null
+      },
+      "tracks": {
+        "internal": {
+          "status": "pending",
+          "promoted_at": null
+        }
+      },
+      "history": []
     }
   }
 }
