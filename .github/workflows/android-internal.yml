@@ -1,10 +1,12 @@
 name: Android Internal
 
 on:
-  push:
+  pull_request:
+    types:
+      - opened
+      - synchronize
     branches:
-      - "feat/**"
-      - "fix/**"
+      - develop
 
 # Version-code uniqueness is enforced by the Git-backed registry (CAS push),
 # not by this concurrency group. This group only avoids wasting work on
