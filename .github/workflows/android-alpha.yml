@@ -1,0 +1,460 @@
+
+name: Android Alpha Promotion
+
+on:
+  push:
+    branches:
+      - develop
+
+permissions:
+  contents: write
+
+concurrency:
+  group: android-alpha-promotion
+  cancel-in-progress: false
+
+jobs:
+  promote-alpha:
+    name: Promote uploaded build to Alpha
+    runs-on: ubuntu-latest
+    timeout-minutes: 360
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Install release registry
+        run: uv sync --project .github/scripts --locked
+
+      - name: Find build associated with merge commit
+        id: find_build
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          RESULT="$(
+            uv run --project .github/scripts python -m release_registry.cli \
+              --store git \
+              --repo-root "$GITHUB_WORKSPACE" \
+              --registry-branch release-registry \
+              --registry-path registry.json \
+              find-merge-build \
+              --merge-commit "$GITHUB_SHA"
+          )"
+
+          echo "$RESULT"
+
+          VERSION_CODE="$(jq -er '.version_code' <<< "$RESULT")"
+
+          if [[ ! "$VERSION_CODE" =~ ^[0-9]+$ ]]; then
+            echo "::error::Invalid version code returned by release registry"
+            exit 1
+          fi
+
+          echo "version_code=$VERSION_CODE" >> "$GITHUB_OUTPUT"
+          echo "Selected version code: $VERSION_CODE"
+
+      - name: Read current registry promotion state
+        id: registry_state
+        shell: bash
+        env:
+          VERSION_CODE: ${{ steps.find_build.outputs.version_code }}
+        run: |
+          set -euo pipefail
+
+          git fetch origin \
+            +refs/heads/release-registry:refs/remotes/origin/release-registry
+
+          REGISTRY_JSON="$(
+            git show origin/release-registry:registry.json
+          )"
+
+          ALPHA_STATUS="$(
+            jq -er \
+              --arg code "$VERSION_CODE" \
+              '.builds[$code].tracks.alpha.status // "not_promoted"' \
+              <<< "$REGISTRY_JSON"
+          )"
+
+          echo "Current Alpha registry status: $ALPHA_STATUS"
+          echo "alpha_status=$ALPHA_STATUS" >> "$GITHUB_OUTPUT"
+
+      - name: Request Alpha promotion in registry
+        if: steps.registry_state.outputs.alpha_status != 'pending' && steps.registry_state.outputs.alpha_status != 'active'
+        shell: bash
+        env:
+          VERSION_CODE: ${{ steps.find_build.outputs.version_code }}
+        run: |
+          set -euo pipefail
+
+          uv run --project .github/scripts python -m release_registry.cli \
+            --store git \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --registry-branch release-registry \
+            --registry-path registry.json \
+            request-promotion \
+            --version-code "$VERSION_CODE" \
+            --from-track internal \
+            --to-track alpha
+
+      - name: Promote and monitor Google Play release
+        id: play_api
+        shell: bash
+        env:
+          PLAY_SERVICE_ACCOUNT_JSON: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
+          VERSION_CODE: ${{ steps.find_build.outputs.version_code }}
+          POLL_INTERVAL_SECONDS: "60"
+          POLL_TIMEOUT_SECONDS: "19800"
+        run: |
+          set -euo pipefail
+
+          python - <<'PY'
+          import json
+          import os
+          import re
+          import sys
+          import time
+          from pathlib import Path
+
+          from google.auth.transport.requests import AuthorizedSession
+          from google.oauth2 import service_account
+
+          PACKAGE = "com.dev.vote"
+          TRACK = "alpha"
+          VERSION_CODE = int(os.environ["VERSION_CODE"])
+
+          BASE_URL = (
+              "https://androidpublisher.googleapis.com/"
+              "androidpublisher/v3"
+          )
+
+          POLL_INTERVAL = int(os.environ["POLL_INTERVAL_SECONDS"])
+          POLL_TIMEOUT = int(os.environ["POLL_TIMEOUT_SECONDS"])
+
+          credentials = service_account.Credentials.from_service_account_info(
+              json.loads(os.environ["PLAY_SERVICE_ACCOUNT_JSON"]),
+              scopes=[
+                  "https://www.googleapis.com/auth/androidpublisher"
+              ],
+          )
+
+          session = AuthorizedSession(credentials)
+
+          edit_id = None
+          commit_started = False
+          monitoring_existing_review = False
+
+          def set_result(value):
+              with open(os.environ["GITHUB_OUTPUT"], "a") as output:
+                  output.write(f"result={value}\n")
+
+          def request(method, path, body=None, allow_404=False):
+              url = f"{BASE_URL}{path}"
+
+              response = session.request(
+                  method,
+                  url,
+                  json=body,
+                  timeout=60,
+              )
+
+              if allow_404 and response.status_code == 404:
+                  return None
+
+              if not response.ok:
+                  raise RuntimeError(
+                      f"Google Play API {method} {path} failed: "
+                      f"HTTP {response.status_code}: {response.text}"
+                  )
+
+              if not response.content:
+                  return {}
+
+              return response.json()
+
+          def lifecycle_releases():
+              path = (
+                  f"/applications/{PACKAGE}/tracks/{TRACK}/releases"
+              )
+              result = request("GET", path)
+              return result.get("releases", [])
+
+          def target_lifecycle_state():
+              matching = []
+
+              for release in lifecycle_releases():
+                  codes = {
+                      int(artifact["versionCode"])
+                      for artifact in release.get("activeArtifacts", [])
+                  }
+
+                  if VERSION_CODE in codes:
+                      matching.append(
+                          release.get("releaseLifecycleState")
+                      )
+
+              if not matching:
+                  return None
+
+              # Prefer the most advanced state if the API happens
+              # to return more than one summary for this version.
+              priority = [
+                  "RELEASE_LIFECYCLE_STATE_PUBLISHED",
+                  "RELEASE_LIFECYCLE_STATE_APPROVED_NOT_PUBLISHED",
+                  "RELEASE_LIFECYCLE_STATE_IN_REVIEW",
+                  "RELEASE_LIFECYCLE_STATE_NOT_APPROVED",
+                  "RELEASE_LIFECYCLE_STATE_NOT_SENT_FOR_REVIEW",
+                  "RELEASE_LIFECYCLE_STATE_DRAFT",
+              ]
+
+              for state in priority:
+                  if state in matching:
+                      return state
+
+              return matching[0]
+
+          def finish(result, exit_code=0):
+              set_result(result)
+              sys.exit(exit_code)
+
+          try:
+              print(f"Checking Alpha lifecycle for version {VERSION_CODE}")
+
+              state = target_lifecycle_state()
+              print(f"Current lifecycle state: {state}")
+
+              if state == "RELEASE_LIFECYCLE_STATE_PUBLISHED":
+                  print("Version is already published. Reconciling registry.")
+                  finish("published")
+
+              if state == "RELEASE_LIFECYCLE_STATE_NOT_APPROVED":
+                  print("Google Play rejected this release.")
+                  finish("rejected", 1)
+
+              if state == "RELEASE_LIFECYCLE_STATE_APPROVED_NOT_PUBLISHED":
+                  print(
+                      "Google approved the release, but it still requires "
+                      "manual publication. The registry remains pending."
+                  )
+                  finish("manual_action_required", 1)
+
+              if state == "RELEASE_LIFECYCLE_STATE_IN_REVIEW":
+                  print(
+                      "This version is already in review. "
+                      "Resuming monitoring without creating another edit."
+                  )
+                  monitoring_existing_review = True
+
+              else:
+                  # Create a new edit.
+                  edit = request(
+                      "POST",
+                      f"/applications/{PACKAGE}/edits",
+                      body={},
+                  )
+
+                  edit_id = edit["id"]
+                  print(f"Created Google Play edit: {edit_id}")
+
+                  # Read the current Alpha track within this edit.
+                  track_path = (
+                      f"/applications/{PACKAGE}/edits/"
+                      f"{edit_id}/tracks/{TRACK}"
+                  )
+
+                  current_track = request(
+                      "GET",
+                      track_path,
+                      allow_404=True,
+                  ) or {"track": TRACK, "releases": []}
+
+                  releases = current_track.get("releases", [])
+
+                  matching_releases = [
+                      release
+                      for release in releases
+                      if str(VERSION_CODE) in [
+                          str(code)
+                          for code in release.get("versionCodes", [])
+                      ]
+                  ]
+
+                  if len(matching_releases) > 1:
+                      raise RuntimeError(
+                          "Version code occurs in multiple Alpha releases. "
+                          "Refusing to modify an ambiguous track."
+                      )
+
+                  if matching_releases:
+                      # Reconcile an existing draft or incomplete release.
+                      target_release = matching_releases[0]
+                      target_release["status"] = "completed"
+                      target_release.pop("userFraction", None)
+
+                      print(
+                          f"Updated existing Alpha release for "
+                          f"version {VERSION_CODE}"
+                      )
+                  else:
+                      # Add the already-uploaded version code.
+                      # Google derives the release name from the AAB
+                      # versionName when name is omitted.
+                      releases.append({
+                          "versionCodes": [str(VERSION_CODE)],
+                          "status": "completed",
+                      })
+
+                      print(
+                          f"Added version {VERSION_CODE} to Alpha"
+                      )
+
+                  update_body = {
+                      "track": TRACK,
+                      "releases": releases,
+                  }
+
+                  request(
+                      "PUT",
+                      track_path,
+                      body=update_body,
+                  )
+
+                  print("Updated Alpha track configuration")
+
+                  # Commit submits the changes for review.
+                  # ERROR_IF_IN_REVIEW prevents cancelling another review.
+                  commit_started = True
+
+                  commit_path = (
+                      f"/applications/{PACKAGE}/edits/"
+                      f"{edit_id}:commit"
+                      "?changesInReviewBehavior=ERROR_IF_IN_REVIEW"
+                  )
+
+                  request("POST", commit_path, body={})
+
+                  print(
+                      "Google Play edit committed. "
+                      "Waiting for review and publication."
+                  )
+
+              deadline = time.monotonic() + POLL_TIMEOUT
+
+              while time.monotonic() < deadline:
+                  state = target_lifecycle_state()
+
+                  print(f"Alpha version {VERSION_CODE}: {state}")
+
+                  if state == "RELEASE_LIFECYCLE_STATE_PUBLISHED":
+                      print("Google Play reports the release as PUBLISHED.")
+                      finish("published")
+
+                  if state == "RELEASE_LIFECYCLE_STATE_NOT_APPROVED":
+                      print("Google Play rejected the release.")
+                      finish("rejected", 1)
+
+                  if (
+                      state
+                      == "RELEASE_LIFECYCLE_STATE_APPROVED_NOT_PUBLISHED"
+                  ):
+                      print(
+                          "Google approved the release, but Managed "
+                          "publishing or another publishing action "
+                          "requires manual intervention."
+                      )
+                      finish("manual_action_required", 1)
+
+                  if state is None:
+                      print("Release not visible yet; waiting.")
+
+                  time.sleep(POLL_INTERVAL)
+
+              print(
+                  "Polling timed out. The promotion remains pending. "
+                  "Rerun this workflow later to resume monitoring."
+              )
+              finish("pending", 1)
+
+          except SystemExit:
+              raise
+
+          except Exception as exc:
+              print(f"Google Play promotion error: {exc}", file=sys.stderr)
+
+              # Once commit has started, its outcome may be uncertain
+              # (for example, a network timeout after Google accepted it).
+              # Leave the registry pending so a rerun can reconcile safely.
+              if commit_started or monitoring_existing_review:
+                  finish("pending", 1)
+
+              finish("failed_before_commit", 1)
+
+          finally:
+              # Discard an uncommitted edit. Never delete an edit once
+              # the commit request has started; it may have succeeded.
+              if edit_id and not commit_started:
+                  try:
+                      request(
+                          "DELETE",
+                          f"/applications/{PACKAGE}/edits/{edit_id}",
+                      )
+                      print(f"Deleted unused edit {edit_id}")
+                  except Exception as cleanup_error:
+                      print(
+                          f"Could not delete unused edit: {cleanup_error}",
+                          file=sys.stderr,
+                      )
+          PY
+
+      - name: Record successful Alpha promotion
+        if: steps.play_api.outputs.result == 'published'
+        shell: bash
+        env:
+          VERSION_CODE: ${{ steps.find_build.outputs.version_code }}
+          ALPHA_STATUS: ${{ steps.registry_state.outputs.alpha_status }}
+        run: |
+          set -euo pipefail
+
+          if [[ "$ALPHA_STATUS" == "active" ]]; then
+            echo "Registry already records this promotion as active."
+            exit 0
+          fi
+
+          uv run --project .github/scripts python -m release_registry.cli \
+            --store git \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --registry-branch release-registry \
+            --registry-path registry.json \
+            record-promotion \
+            --version-code "$VERSION_CODE" \
+            --from-track internal \
+            --to-track alpha \
+            --success \
+            --merge-commit "$GITHUB_SHA"
+
+      - name: Record failed Alpha promotion
+        if: always() && (steps.play_api.outputs.result == 'rejected' || steps.play_api.outputs.result == 'failed_before_commit')
+        shell: bash
+        env:
+          VERSION_CODE: ${{ steps.find_build.outputs.version_code }}
+        run: |
+          set -euo pipefail
+
+          uv run --project .github/scripts python -m release_registry.cli \
+            --store git \
+            --repo-root "$GITHUB_WORKSPACE" \
+            --registry-branch release-registry \
+            --registry-path registry.json \
+            record-promotion \
+            --version-code "$VERSION_CODE" \
+            --from-track internal \
+            --to-track alpha \
+            --no-success \
+            --details "Google Play promotion failed. Check the workflow logs." \
+            --merge-commit "$GITHUB_SHA"
