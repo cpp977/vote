@@ -871,6 +871,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String backendVersion(String version) {
+    return 'Backend Version $version';
+  }
+
+  @override
   String get privacyStatement => 'Privacy Statement';
 
   @override

@@ -562,6 +562,15 @@
       }
     }
   },
+  "backendVersion": "Backend-Version {version}",
+  "@backendVersion": {
+    "description": "Displays the backend version; {version} is the version string from the backend.",
+    "placeholders": {
+      "version": {
+        "type": "String"
+      }
+    }
+  },
   "privacyStatement": "Datenschutzerklärung",
   "@privacyStatement": {
     "description": "Label for the privacy statement menu item that opens the privacy policy URL."

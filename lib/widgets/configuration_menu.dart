@@ -1,8 +1,12 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../config/api_config.dart';
 import '../controllers/configuration_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../services/navigation_service.dart';
@@ -176,8 +180,9 @@ class ConfigurationMenu extends StatelessWidget {
   }
 
   /// Builds the submenu entries for the "About" section, showing the app
-  /// version and a link to the privacy statement.
+  /// version, backend version, and a link to the privacy statement.
   List<PopupMenuEntry<String>> _buildAboutMenu(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
     return <PopupMenuEntry<String>>[
       PopupMenuItem<String>(
         enabled: false,
@@ -185,8 +190,27 @@ class ConfigurationMenu extends StatelessWidget {
           future: PackageInfo.fromPlatform(),
           builder: (context, snapshot) {
             if (snapshot.hasData) {
+              return Text(l10n.appVersion(snapshot.data!.version));
+            }
+            return const SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(strokeWidth: 2),
+            );
+          },
+        ),
+      ),
+      PopupMenuItem<String>(
+        enabled: false,
+        child: FutureBuilder<String>(
+          future: _fetchBackendVersion(),
+          builder: (context, snapshot) {
+            if (snapshot.hasData) {
+              return Text(l10n.backendVersion(snapshot.data!));
+            } else if (snapshot.hasError) {
               return Text(
-                AppLocalizations.of(context).appVersion(snapshot.data!.version),
+                l10n.backendVersion('unavailable'),
+                style: TextStyle(color: Theme.of(context).colorScheme.error),
               );
             }
             return const SizedBox(
@@ -204,7 +228,7 @@ class ConfigurationMenu extends StatelessWidget {
           children: [
             const Icon(Icons.privacy_tip_outlined, size: 20),
             const SizedBox(width: 12),
-            Text(AppLocalizations.of(context).privacyStatement),
+            Text(l10n.privacyStatement),
             const Spacer(),
             const Icon(Icons.open_in_new, size: 18),
           ],
@@ -217,11 +241,27 @@ class ConfigurationMenu extends StatelessWidget {
           children: [
             const Icon(Icons.tour_outlined, size: 20),
             const SizedBox(width: 12),
-            Text(AppLocalizations.of(context).showTutorial),
+            Text(l10n.showTutorial),
           ],
         ),
       ),
     ];
+  }
+
+  /// Fetches the backend version from the /version endpoint.
+  Future<String> _fetchBackendVersion() async {
+    try {
+      final response = await http
+          .get(Uri.parse('${ApiConfig.baseUrl}/version'))
+          .timeout(const Duration(seconds: 5));
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body) as Map<String, dynamic>;
+        return data['version'] as String? ?? 'unknown';
+      }
+    } catch (_) {
+      // Ignore errors and return 'unavailable'
+    }
+    return 'unavailable';
   }
 
   /// Value used in the language submenu for the "follow the system

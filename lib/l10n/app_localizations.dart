@@ -1664,6 +1664,12 @@ abstract class AppLocalizations {
   /// **'Version {version}'**
   String appVersion(String version);
 
+  /// Displays the backend version; {version} is the version string from the backend.
+  ///
+  /// In en, this message translates to:
+  /// **'Backend Version {version}'**
+  String backendVersion(String version);
+
   /// Label for the privacy statement menu item that opens the privacy policy URL.
   ///
   /// In en, this message translates to:
