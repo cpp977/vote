@@ -107,6 +107,10 @@
         "internal": {
           "status": "active",
           "promoted_at": "2026-11-08T20:23:10.321033Z"
+        },
+        "alpha": {
+          "status": "pending",
+          "promoted_at": null
         }
       },
       "history": [
@@ -116,6 +120,15 @@
           "from_track": null,
           "to_track": null,
           "timestamp": "2026-11-08T20:23:10.321055Z",
+          "details": null,
+          "merge_commit": null
+        },
+        {
+          "action": "promotion_requested",
+          "track": null,
+          "from_track": "internal",
+          "to_track": "alpha",
+          "timestamp": "2026-11-08T20:23:55.611928Z",
           "details": null,
           "merge_commit": null
         }
