@@ -33,14 +33,14 @@ class _UnansweredCard extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Card(
-      elevation: 6,
-      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      elevation: 3,
+      margin: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
       shadowColor: colorScheme.shadow,
       color: colorScheme.primaryContainer,
       clipBehavior: Clip.antiAlias,
       shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(16),
-        side: BorderSide(color: colorScheme.primary, width: 2),
+        borderRadius: BorderRadius.circular(14),
+        side: BorderSide(color: colorScheme.primary, width: 1.5),
       ),
       child: InkWell(
         onTap: onTap,
@@ -48,62 +48,62 @@ class _UnansweredCard extends StatelessWidget {
           child: Row(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              Container(width: 6, color: colorScheme.primary),
+              Container(width: 4, color: colorScheme.primary),
               Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.all(20),
+                  padding: const EdgeInsets.all(16),
                   child: Row(
                     children: [
                       Container(
-                        width: 52,
-                        height: 52,
+                        width: 44,
+                        height: 44,
                         decoration: BoxDecoration(
                           color: colorScheme.primary,
-                          borderRadius: BorderRadius.circular(16),
+                          borderRadius: BorderRadius.circular(14),
                         ),
                         child: Icon(
                           Icons.help_outline,
                           color: colorScheme.onPrimary,
-                          size: 28,
+                          size: 24,
                         ),
                       ),
-                      const SizedBox(width: 16),
+                      const SizedBox(width: 14),
                       Expanded(
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             Container(
                               padding: const EdgeInsets.symmetric(
-                                horizontal: 10,
-                                vertical: 4,
+                                horizontal: 8,
+                                vertical: 3,
                               ),
                               decoration: BoxDecoration(
                                 color: colorScheme.primary,
-                                borderRadius: BorderRadius.circular(16),
+                                borderRadius: BorderRadius.circular(14),
                               ),
                               child: Text(
                                 l10n.unanswered,
                                 style: textTheme.labelMedium?.copyWith(
                                   color: colorScheme.onPrimary,
-                                  fontWeight: FontWeight.w600,
+                                  fontWeight: FontWeight.w500,
                                 ),
                               ),
                             ),
-                            const SizedBox(height: 10),
+                            const SizedBox(height: 8),
                             Text(
                               question.text,
-                              style: textTheme.titleLarge?.copyWith(
-                                fontWeight: FontWeight.w700,
+                              style: textTheme.titleMedium?.copyWith(
+                                fontWeight: FontWeight.w600,
                                 color: colorScheme.onPrimaryContainer,
                               ),
                             ),
                           ],
                         ),
                       ),
-                      const SizedBox(width: 12),
+                      const SizedBox(width: 10),
                       Container(
-                        width: 40,
-                        height: 40,
+                        width: 36,
+                        height: 36,
                         decoration: BoxDecoration(
                           color: colorScheme.primary,
                           shape: BoxShape.circle,
@@ -111,7 +111,7 @@ class _UnansweredCard extends StatelessWidget {
                         child: Icon(
                           Icons.arrow_forward_ios,
                           color: colorScheme.onPrimary,
-                          size: 16,
+                          size: 14,
                         ),
                       ),
                     ],
