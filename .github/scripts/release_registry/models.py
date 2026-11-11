@@ -1,12 +1,11 @@
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from enum import StrEnum
-from typing import Optional
 
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 
 def utc_now() -> datetime:
-    return datetime.now(timezone.utc)
+    return datetime.now(UTC)
 
 
 class StrictModel(BaseModel):
@@ -50,24 +49,24 @@ class SourceInfo(StrictModel):
 
 class BuildInfo(StrictModel):
     status: BuildStatus = BuildStatus.RESERVED
-    workflow_run_id: Optional[int] = None
-    artifact_name: Optional[str] = None
-    sha256: Optional[str] = None
+    workflow_run_id: int | None = None
+    artifact_name: str | None = None
+    sha256: str | None = None
 
 
 class TrackInfo(StrictModel):
     status: TrackStatus = TrackStatus.NOT_PROMOTED
-    promoted_at: Optional[datetime] = None
+    promoted_at: datetime | None = None
 
 
 class HistoryEvent(StrictModel):
     action: PromotionAction
-    track: Optional[Track] = None
-    from_track: Optional[Track] = None
-    to_track: Optional[Track] = None
+    track: Track | None = None
+    from_track: Track | None = None
+    to_track: Track | None = None
     timestamp: datetime = Field(default_factory=utc_now)
-    details: Optional[str] = None
-    merge_commit: Optional[str] = None
+    details: str | None = None
+    merge_commit: str | None = None
 
 
 class ReleaseBuild(StrictModel):

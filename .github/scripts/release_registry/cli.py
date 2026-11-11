@@ -1,8 +1,9 @@
-
 """Command-line interface for the Android release registry."""
 
 import argparse
+import json
 import subprocess
+import sys
 from pathlib import Path
 
 from .git_store import GitRegistryStore
@@ -76,6 +77,54 @@ def create_parser():
     get_parser = subparsers.add_parser("get")
     get_parser.add_argument("--version-code", type=int, required=True)
 
+    # Google Play API commands.
+    # These commands use PLAY_SERVICE_ACCOUNT_JSON from the environment.
+    play_promote_parser = subparsers.add_parser(
+        "promote",
+        help="Promote an existing uploaded version to a Google Play track",
+    )
+    play_promote_parser.add_argument(
+        "--package-name",
+        default="com.dev.vote",
+    )
+    play_promote_parser.add_argument("--track", required=True)
+    play_promote_parser.add_argument("--version-code", type=int, required=True)
+    play_promote_parser.add_argument("--release-name")
+
+    monitor_parser = subparsers.add_parser(
+        "monitor-promotion",
+        help="Monitor a Google Play release until its lifecycle changes",
+    )
+    monitor_parser.add_argument(
+        "--package-name",
+        default="com.dev.vote",
+    )
+    monitor_parser.add_argument("--track", required=True)
+    monitor_parser.add_argument("--version-code", type=int, required=True)
+    monitor_parser.add_argument(
+        "--timeout-seconds",
+        type=int,
+        default=21600,
+        help="Maximum time to wait (default: 6 hours)",
+    )
+    monitor_parser.add_argument(
+        "--poll-interval-seconds",
+        type=int,
+        default=120,
+        help="Delay between lifecycle checks (default: 120 seconds)",
+    )
+
+    state_parser = subparsers.add_parser(
+        "get-release-state",
+        help="Get the Google Play lifecycle state of a version",
+    )
+    state_parser.add_argument(
+        "--package-name",
+        default="com.dev.vote",
+    )
+    state_parser.add_argument("--track", required=True)
+    state_parser.add_argument("--version-code", type=int, required=True)
+
     return parser
 
 
@@ -133,8 +182,84 @@ def find_merge_build(registry, repository_root, merge_commit):
     return candidates[0]
 
 
+def print_result(result):
+    """Print either a Pydantic model or a JSON-compatible result."""
+    if hasattr(result, "model_dump_json"):
+        print(result.model_dump_json(indent=2))
+    else:
+        print(json.dumps(result, indent=2, default=str))
+
+
+def run_google_play_command(args):
+    """Execute a Google Play API command.
+
+    Imports are deliberately lazy so registry-only commands do not require
+    Google Play API authentication or client initialization.
+    """
+    from .google_play import (
+        create_service,
+        get_release_state,
+        monitor_promotion,
+        promote,
+    )
+
+    service = create_service()
+
+    if args.command == "promote":
+        result = promote(
+            service=service,
+            package_name=args.package_name,
+            track=args.track,
+            version_code=args.version_code,
+            release_name=args.release_name,
+        )
+
+    elif args.command == "monitor-promotion":
+        result = monitor_promotion(
+            service=service,
+            package_name=args.package_name,
+            track=args.track,
+            version_code=args.version_code,
+            timeout_seconds=args.timeout_seconds,
+            poll_interval_seconds=args.poll_interval_seconds,
+        )
+
+    elif args.command == "get-release-state":
+        result = get_release_state(
+            service=service,
+            package_name=args.package_name,
+            track=args.track,
+            version_code=args.version_code,
+        )
+
+    else:
+        raise ValueError(
+            f"Unsupported Google Play command: {args.command}"
+        )
+
+    print_result(result)
+
+
 def main():
-    args = create_parser().parse_args()
+    parser = create_parser()
+    args = parser.parse_args()
+
+    google_play_commands = {
+        "promote",
+        "monitor-promotion",
+        "get-release-state",
+    }
+
+    if args.command in google_play_commands:
+        try:
+            run_google_play_command(args)
+        except Exception as exc:
+            print(
+                f"Google Play command failed: {exc}",
+                file=sys.stderr,
+            )
+            raise SystemExit(1) from exc
+        return
 
     if args.store == "git":
         store = GitRegistryStore(
@@ -214,7 +339,10 @@ def main():
         registry = store.load()
         result = get_build(registry, args.version_code)
 
-    print(result.model_dump_json(indent=2))
+    else:
+        parser.error(f"Unknown command: {args.command}")
+
+    print_result(result)
 
 
 if __name__ == "__main__":
