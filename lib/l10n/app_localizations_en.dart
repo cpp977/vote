@@ -926,4 +926,7 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get showTutorialDescription =>
       'Re-open the introduction tour that explains the core features of the app.';
+
+  @override
+  String get launcherIconLabel => 'App Icon';
 }

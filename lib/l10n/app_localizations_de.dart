@@ -940,4 +940,7 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get showTutorialDescription =>
       'Öffne erneut die Einführung, die die wichtigsten Funktionen der App erklärt.';
+
+  @override
+  String get launcherIconLabel => 'App-Symbol';
 }
