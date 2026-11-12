@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package_name": "com.dev.vote",
-  "last_allocated_version_code": 24,
+  "last_allocated_version_code": 25,
   "builds": {
     "20": {
       "version_name": "1.0.0",
@@ -165,6 +165,28 @@
           "merge_commit": null
         }
       ]
+    },
+    "25": {
+      "version_name": "1.0.0",
+      "version_code": 25,
+      "source": {
+        "branch": "fix/android-ci-fix-registry-commit-sha-entries",
+        "commit": "91fa9f73b2a59619e9e9322dfbdb13853145a6fb"
+      },
+      "created_at": "2026-11-12T20:03:51.537182Z",
+      "build": {
+        "status": "reserved",
+        "workflow_run_id": null,
+        "artifact_name": null,
+        "sha256": null
+      },
+      "tracks": {
+        "internal": {
+          "status": "pending",
+          "promoted_at": null
+        }
+      },
+      "history": []
     }
   }
 }
