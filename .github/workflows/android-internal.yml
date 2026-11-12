@@ -66,6 +66,9 @@ jobs:
 
       - name: Allocate version code
         id: allocate
+        env:
+          SOURCE_BRANCH: ${{ github.head_ref }}
+          SOURCE_COMMIT: ${{ github.event.pull_request.head.sha }}
         shell: bash
         run: |
           RESULT="$(uv run --project .github/scripts python -m release_registry.cli \
@@ -75,8 +78,8 @@ jobs:
             --registry-path registry.json \
             allocate \
             --version-name "${{ steps.app-version.outputs.version_name }}" \
-            --branch "$GITHUB_REF_NAME" \
-            --commit "$GITHUB_SHA")"
+            --branch "$SOURCE_BRANCH" \
+            --commit "$SOURCE_COMMIT")"
 
           VERSION_CODE="$(echo "$RESULT" | jq -r '.version_code // empty')"
           if [[ -z "$VERSION_CODE" ]]; then
