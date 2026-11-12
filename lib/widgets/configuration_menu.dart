@@ -55,6 +55,18 @@ class ConfigurationMenu extends StatelessWidget {
           ),
         ),
         PopupMenuItem<String>(
+          value: 'launcher-icon',
+          child: Row(
+            children: [
+              const Icon(Icons.image_outlined, size: 20),
+              const SizedBox(width: 12),
+              Text(l10n.launcherIconLabel),
+              const Spacer(),
+              const Icon(Icons.chevron_right, size: 20),
+            ],
+          ),
+        ),
+        PopupMenuItem<String>(
           value: 'dark-view',
           child: Row(
             children: [
@@ -112,6 +124,19 @@ class ConfigurationMenu extends StatelessWidget {
         (ColorOption c) => c.name == selectedColorName,
       );
       await config.setSeedColor(colorOption.color);
+    } else if (value == 'launcher-icon') {
+      final String? selectedAlias = await _showSubMenu(
+        context,
+        _buildLauncherIconMenu(context, config),
+      );
+      if (selectedAlias == null) return;
+      // Applying the matching theme color is what actually switches the
+      // icon, so the two settings can never drift apart.
+      final ColorOption colorOption = config.availableColors.firstWhere(
+        (ColorOption c) => c.launcherIconAlias == selectedAlias,
+        orElse: () => config.availableColors.first,
+      );
+      await config.setSeedColor(colorOption.color);
     } else if (value == 'dark-view') {
       final String? selectedModeName = await _showSubMenu(
         context,
@@ -153,23 +178,29 @@ class ConfigurationMenu extends StatelessWidget {
   }
 
   /// Opens the privacy statement URL in an external browser.
+  ///
+  /// The availability check is advisory: when it cannot answer, the launch is
+  /// attempted anyway and only a launch that fails is reported to the user, so
+  /// a device that can handle the URL never loses it to a failed check.
   Future<void> _openPrivacyStatement(
     ScaffoldMessengerState messenger,
     AppLocalizations l10n,
   ) async {
     final Uri privacyUrl = Uri.parse('https://privacy.vote4it.org/');
+    bool launched = false;
+
     try {
       if (await canLaunchUrl(privacyUrl)) {
-        await launchUrl(privacyUrl, mode: LaunchMode.externalApplication);
-      } else {
-        messenger.showSnackBar(
-          SnackBar(
-            content: Text(l10n.privacyStatementUnavailable),
-            duration: const Duration(seconds: 3),
-          ),
+        launched = await launchUrl(
+          privacyUrl,
+          mode: LaunchMode.externalApplication,
         );
       }
     } catch (e) {
+      // Fall through to the report below: the launch did not happen.
+    }
+
+    if (!launched) {
       messenger.showSnackBar(
         SnackBar(
           content: Text(l10n.privacyStatementUnavailable),
@@ -225,11 +256,18 @@ class ConfigurationMenu extends StatelessWidget {
       PopupMenuItem<String>(
         value: 'privacy',
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.privacy_tip_outlined, size: 20),
             const SizedBox(width: 12),
-            Text(l10n.privacyStatement),
-            const Spacer(),
+            Flexible(
+              child: Text(
+                l10n.privacyStatement,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            const SizedBox(width: 12),
             const Icon(Icons.open_in_new, size: 18),
           ],
         ),
@@ -238,10 +276,17 @@ class ConfigurationMenu extends StatelessWidget {
       PopupMenuItem<String>(
         value: 'tutorial',
         child: Row(
+          mainAxisSize: MainAxisSize.min,
           children: [
             const Icon(Icons.tour_outlined, size: 20),
             const SizedBox(width: 12),
-            Text(l10n.showTutorial),
+            Flexible(
+              child: Text(
+                l10n.showTutorial,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
           ],
         ),
       ),
@@ -293,6 +338,24 @@ class ConfigurationMenu extends StatelessWidget {
               ],
             ],
           ),
+        ),
+    ];
+  }
+
+  /// Builds the submenu entries for picking the Android launcher icon.
+  List<PopupMenuEntry<String>> _buildLauncherIconMenu(
+    BuildContext context,
+    ConfigurationController config,
+  ) {
+    final String activeAlias = config.activeLauncherIconAlias;
+
+    return <PopupMenuEntry<String>>[
+      for (final ColorOption option in config.availableLauncherIcons)
+        _radioEntry(
+          context,
+          value: option.launcherIconAlias,
+          label: option.name,
+          selected: option.launcherIconAlias == activeAlias,
         ),
     ];
   }

@@ -1759,6 +1759,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Re-open the introduction tour that explains the core features of the app.'**
   String get showTutorialDescription;
+
+  /// Top-level menu label for choosing the launcher icon shown on the home screen. Android only.
+  ///
+  /// In en, this message translates to:
+  /// **'App Icon'**
+  String get launcherIconLabel;
 }
 
 class _AppLocalizationsDelegate

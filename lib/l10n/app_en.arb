@@ -1233,5 +1233,10 @@
   "showTutorialDescription": "Re-open the introduction tour that explains the core features of the app.",
   "@showTutorialDescription": {
     "description": "Subtitle for the 'Show Introduction' menu item."
+  },
+
+  "launcherIconLabel": "App Icon",
+  "@launcherIconLabel": {
+    "description": "Top-level menu label for choosing the launcher icon shown on the home screen. Android only."
   }
 }

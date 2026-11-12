@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../l10n/app_localizations.dart';
+import '../services/launcher_icon_service.dart';
 
 /// Available theme seed colors for the app's Material 3 color scheme.
 class ColorOption {
@@ -13,7 +14,17 @@ class ColorOption {
   /// The seed [Color] used to generate the Material 3 [ColorScheme].
   final Color color;
 
-  const ColorOption(this.name, this.color);
+  /// The Android launcher icon alias that matches this color best.
+  ///
+  /// Only three launcher icon assets ship with the app, so several seed
+  /// colors share the same alias.
+  final String launcherIconAlias;
+
+  const ColorOption(
+    this.name,
+    this.color, {
+    this.launcherIconAlias = LauncherIconService.aliasDeepPurple,
+  });
 }
 
 /// Controller for managing runtime configuration.
@@ -76,18 +87,77 @@ class ConfigurationController extends ChangeNotifier {
   List<Locale> get availableLocales => AppLocalizations.supportedLocales;
 
   /// Predefined seed colors the user can pick from.
-  List<ColorOption> get availableColors => const [
-    ColorOption('Deep Purple', Colors.deepPurple),
-    ColorOption('Blue', Colors.blue),
-    ColorOption('Teal', Colors.teal),
-    ColorOption('Green', Colors.green),
-    ColorOption('Orange', Colors.orange),
-    ColorOption('Red', Colors.red),
-    ColorOption('Pink', Colors.pink),
-    ColorOption('Cyan', Colors.cyan),
-    ColorOption('Indigo', Colors.indigo),
-    ColorOption('Amber', Colors.amber),
+  ///
+  /// The order also defines the order in which the colors are offered in the
+  /// configuration menu, and which color represents each launcher icon in
+  /// [availableLauncherIcons].
+  List<ColorOption> get availableColors => const <ColorOption>[
+    // One launcher icon asset per line: deep purple, blue and teal. They come
+    // first so the icon submenu lists them in that order.
+    ColorOption(
+      'Deep Purple',
+      Colors.deepPurple,
+      launcherIconAlias: LauncherIconService.aliasDeepPurple,
+    ),
+    ColorOption(
+      'Blue',
+      Colors.blue,
+      launcherIconAlias: LauncherIconService.aliasBlue,
+    ),
+    ColorOption(
+      'Teal',
+      Colors.teal,
+      launcherIconAlias: LauncherIconService.aliasTeal,
+    ),
+    // Colors without a dedicated launcher icon asset reuse the closest match.
+    ColorOption(
+      'Green',
+      Colors.green,
+      launcherIconAlias: LauncherIconService.aliasTeal,
+    ),
+    ColorOption(
+      'Orange',
+      Colors.orange,
+      launcherIconAlias: LauncherIconService.aliasDeepPurple,
+    ),
+    ColorOption(
+      'Red',
+      Colors.red,
+      launcherIconAlias: LauncherIconService.aliasDeepPurple,
+    ),
+    ColorOption(
+      'Pink',
+      Colors.pink,
+      launcherIconAlias: LauncherIconService.aliasBlue,
+    ),
+    ColorOption(
+      'Cyan',
+      Colors.cyan,
+      launcherIconAlias: LauncherIconService.aliasTeal,
+    ),
+    ColorOption(
+      'Indigo',
+      Colors.indigo,
+      launcherIconAlias: LauncherIconService.aliasBlue,
+    ),
+    ColorOption(
+      'Amber',
+      Colors.amber,
+      launcherIconAlias: LauncherIconService.aliasDeepPurple,
+    ),
   ];
+
+  /// The seed colors that map to a distinct Android launcher icon.
+  ///
+  /// Derived from [availableColors] by keeping the first entry per alias, so
+  /// the list always stays in sync with the color definitions.
+  List<ColorOption> get availableLauncherIcons {
+    final Map<String, ColorOption> firstPerAlias = <String, ColorOption>{};
+    for (final ColorOption option in availableColors) {
+      firstPerAlias.putIfAbsent(option.launcherIconAlias, () => option);
+    }
+    return firstPerAlias.values.toList(growable: false);
+  }
 
   ConfigurationController({
     Color? initialSeedColor,
@@ -104,6 +174,7 @@ class ConfigurationController extends ChangeNotifier {
     _seedColor = color;
     notifyListeners();
     await _persistSeedColor(color);
+    await _syncLauncherIcon();
   }
 
   /// Changes the desired theme mode, notifies listeners, and persists the
@@ -165,6 +236,26 @@ class ConfigurationController extends ChangeNotifier {
     if (changed) {
       notifyListeners();
     }
+    await _syncLauncherIcon();
+  }
+
+  /// Synchronizes the Android launcher icon with the current seed color.
+  Future<void> _syncLauncherIcon() async {
+    await LauncherIconService.setLauncherIcon(activeLauncherIconAlias);
+  }
+
+  /// The launcher icon alias that matches the current seed color.
+  String get activeLauncherIconAlias =>
+      _colorOptionFor(_seedColor).launcherIconAlias;
+
+  /// Looks up the [ColorOption] matching [color], falling back to the first
+  /// entry (the default icon) when the color is unknown, e.g. a legacy
+  /// persisted value that is no longer offered.
+  ColorOption _colorOptionFor(Color color) {
+    for (final ColorOption option in availableColors) {
+      if (option.color.toARGB32() == color.toARGB32()) return option;
+    }
+    return availableColors.first;
   }
 
   Future<void> _persistSeedColor(Color color) async {
