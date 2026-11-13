@@ -1,4 +1,3 @@
-
 """Google Play Developer API operations for release promotion."""
 
 from __future__ import annotations
@@ -72,9 +71,7 @@ def _list_track_releases(
         service.applications()
         .tracks()
         .releases()
-        .list(
-            parent=f"applications/{package_name}/tracks/{track}"
-        )
+        .list(parent=f"applications/{package_name}/tracks/{track}")
         .execute()
     )
 
@@ -124,10 +121,7 @@ def _release_contains_version(
     release: dict[str, Any],
     version_code: int,
 ) -> bool:
-    return version_code in {
-        int(code)
-        for code in release.get("versionCodes", [])
-    }
+    return version_code in {int(code) for code in release.get("versionCodes", [])}
 
 
 def promote(
@@ -143,8 +137,8 @@ def promote(
       1. Checks whether the version is already published or under review.
       2. Refuses to interfere with another unfinished release.
       3. Creates an edit.
-      4. Preserves existing track release configurations.
-      5. Adds the requested version as a completed release.
+      4. Preserves non-completed release configurations.
+      5. Replaces the previous completed release with the requested version.
       6. Commits the edit and submits changes for review.
 
     It does not upload a new artifact or allocate a version code.
@@ -197,7 +191,8 @@ def promote(
     unfinished = [
         release
         for release in existing_lifecycle_releases
-        if release.get("releaseLifecycleState") in (
+        if release.get("releaseLifecycleState")
+        in (
             DRAFT,
             NOT_SENT_FOR_REVIEW,
             IN_REVIEW,
@@ -243,13 +238,16 @@ def promote(
 
         existing_releases = track_resource.get("releases", [])
 
-        # Preserve existing release configurations, including the previous
-        # completed release. Remove only an existing entry for this exact
-        # version code to avoid duplicate entries.
+        # Google Play allows only one completed release per track.
+        # Remove the previous completed release and any existing entry
+        # for the version we are promoting.
         preserved_releases = [
             release
             for release in existing_releases
-            if not _release_contains_version(release, version_code)
+            if (
+                release.get("status") != "completed"
+                and not _release_contains_version(release, version_code)
+            )
         ]
 
         new_release = {
