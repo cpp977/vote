@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package_name": "com.dev.vote",
-  "last_allocated_version_code": 25,
+  "last_allocated_version_code": 26,
   "builds": {
     "20": {
       "version_name": "1.0.0",
@@ -210,6 +210,28 @@
           "merge_commit": null
         }
       ]
+    },
+    "26": {
+      "version_name": "1.0.0",
+      "version_code": 26,
+      "source": {
+        "branch": "fix/android-release-promotion",
+        "commit": "f6f2d260ca8b0d5faf5b1e050a300efa5fd7ef39"
+      },
+      "created_at": "2026-11-13T09:46:26.130101Z",
+      "build": {
+        "status": "reserved",
+        "workflow_run_id": null,
+        "artifact_name": null,
+        "sha256": null
+      },
+      "tracks": {
+        "internal": {
+          "status": "pending",
+          "promoted_at": null
+        }
+      },
+      "history": []
     }
   }
 }
