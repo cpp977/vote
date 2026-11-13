@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:vote/controllers/configuration_controller.dart';
+import 'package:vote/l10n/app_localizations.dart';
+import 'package:vote/services/launcher_icon_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -187,6 +189,38 @@ void main() {
       });
     });
 
+    group('colorOptions and availableColors', () {
+      test('offer one entry per available seed color', () {
+        final ConfigurationController controller = ConfigurationController();
+
+        final List<ColorOption> options = controller.colorOptions(_l10nStub());
+
+        expect(
+          options.map((ColorOption option) => option.color),
+          controller.availableColors,
+        );
+        expect(options.map((ColorOption option) => option.name), _stubNames);
+      });
+
+      test('label every launcher icon', () {
+        final ConfigurationController controller = ConfigurationController();
+
+        final List<String> labels = LauncherIconService.icons
+            .map(
+              (LauncherIcon icon) => controller.iconLabel(_l10nStub(), icon.id),
+            )
+            .toList();
+
+        expect(labels, _stubNames);
+      });
+
+      test('fall back to the id for an unknown launcher icon', () {
+        final ConfigurationController controller = ConfigurationController();
+
+        expect(controller.iconLabel(_l10nStub(), 'chartreuse'), 'chartreuse');
+      });
+    });
+
     group('loadSavedConfiguration', () {
       test('restores a persisted seed color and theme mode', () async {
         SharedPreferences.setMockInitialValues(<String, Object>{
@@ -268,6 +302,92 @@ void main() {
         expect(controller.locale, isNull);
         expect(notifications, 0);
       });
+
+      test('restores a persisted launcher icon', () async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'launcher_icon': 'cyan',
+        });
+        final ConfigurationController controller = ConfigurationController();
+        int notifications = 0;
+        controller.addListener(() => notifications++);
+
+        await controller.loadSavedConfiguration();
+
+        expect(controller.launcherIcon.id, 'cyan');
+        expect(notifications, 1);
+      });
+
+      test('does not derive the launcher icon from the seed color', () async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'theme_seed_color': Colors.amber.toARGB32(),
+        });
+        final ConfigurationController controller = ConfigurationController();
+
+        await controller.loadSavedConfiguration();
+
+        expect(
+          controller.launcherIcon,
+          LauncherIconService.defaultIcon,
+          reason: 'the home screen icon is its own setting',
+        );
+      });
     });
   });
+}
+
+/// Names `_stubNames` returns, in the order the controller reads them.
+const List<String> _stubNames = <String>[
+  'color0',
+  'color1',
+  'color2',
+  'color3',
+  'color4',
+  'color5',
+  'color6',
+  'color7',
+  'color8',
+  'color9',
+];
+
+/// A localizations instance whose color and icon names are predictable.
+///
+/// The real strings are translations a test must not duplicate, so every name
+/// getter is answered from [_stubNames].
+AppLocalizations _l10nStub() => _StubLocalizations();
+
+/// Answers the color name getters of [AppLocalizations] from [_stubNames].
+class _StubLocalizations implements AppLocalizations {
+  @override
+  String get colorDeepPurple => _stubNames[0];
+
+  @override
+  String get colorBlue => _stubNames[1];
+
+  @override
+  String get colorTeal => _stubNames[2];
+
+  @override
+  String get colorGreen => _stubNames[3];
+
+  @override
+  String get colorOrange => _stubNames[4];
+
+  @override
+  String get colorRed => _stubNames[5];
+
+  @override
+  String get colorPink => _stubNames[6];
+
+  @override
+  String get colorCyan => _stubNames[7];
+
+  @override
+  String get colorIndigo => _stubNames[8];
+
+  @override
+  String get colorAmber => _stubNames[9];
+
+  @override
+  dynamic noSuchMethod(Invocation invocation) =>
+      throw UnimplementedError('unexpected lookup: ${invocation.memberName}');
 }

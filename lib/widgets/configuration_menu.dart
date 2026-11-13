@@ -9,6 +9,7 @@ import 'package:url_launcher/url_launcher.dart';
 import '../config/api_config.dart';
 import '../controllers/configuration_controller.dart';
 import '../l10n/app_localizations.dart';
+import '../services/launcher_icon_service.dart';
 import '../services/navigation_service.dart';
 
 /// A popup menu button displayed in the AppBar that provides access to
@@ -115,28 +116,26 @@ class ConfigurationMenu extends StatelessWidget {
     String value,
   ) async {
     if (value == 'theme-color') {
+      final AppLocalizations l10n = AppLocalizations.of(context);
       final String? selectedColorName = await _showSubMenu(
         context,
         _buildColorMenu(context, config),
       );
       if (selectedColorName == null) return;
-      final ColorOption colorOption = config.availableColors.firstWhere(
-        (ColorOption c) => c.name == selectedColorName,
-      );
+      final ColorOption colorOption = config
+          .colorOptions(l10n)
+          .firstWhere((ColorOption c) => c.name == selectedColorName);
       await config.setSeedColor(colorOption.color);
     } else if (value == 'launcher-icon') {
-      final String? selectedAlias = await _showSubMenu(
+      final String? selectedIconId = await _showSubMenu(
         context,
         _buildLauncherIconMenu(context, config),
       );
-      if (selectedAlias == null) return;
-      // Applying the matching theme color is what actually switches the
-      // icon, so the two settings can never drift apart.
-      final ColorOption colorOption = config.availableColors.firstWhere(
-        (ColorOption c) => c.launcherIconAlias == selectedAlias,
-        orElse: () => config.availableColors.first,
-      );
-      await config.setSeedColor(colorOption.color);
+      if (selectedIconId == null) return;
+      // The icon is its own setting: the seed color stays as it is.
+      final LauncherIcon? icon = LauncherIconService.iconForId(selectedIconId);
+      if (icon == null) return;
+      await config.setLauncherIcon(icon);
     } else if (value == 'dark-view') {
       final String? selectedModeName = await _showSubMenu(
         context,
@@ -318,8 +317,9 @@ class ConfigurationMenu extends StatelessWidget {
     BuildContext context,
     ConfigurationController config,
   ) {
+    final AppLocalizations l10n = AppLocalizations.of(context);
     return <PopupMenuEntry<String>>[
-      for (final ColorOption colorOption in config.availableColors)
+      for (final ColorOption colorOption in config.colorOptions(l10n))
         PopupMenuItem<String>(
           value: colorOption.name,
           child: Row(
@@ -343,30 +343,35 @@ class ConfigurationMenu extends StatelessWidget {
   }
 
   /// Builds the submenu entries for picking the Android launcher icon.
+  ///
+  /// Each entry previews the icon's real background and glyph colors so the
+  /// options are told apart before picking one.
   List<PopupMenuEntry<String>> _buildLauncherIconMenu(
     BuildContext context,
     ConfigurationController config,
   ) {
-    final String activeAlias = config.activeLauncherIconAlias;
+    final AppLocalizations l10n = AppLocalizations.of(context);
 
     return <PopupMenuEntry<String>>[
-      for (final ColorOption option in config.availableLauncherIcons)
+      for (final LauncherIcon icon in config.availableLauncherIcons)
         _radioEntry(
           context,
-          value: option.launcherIconAlias,
-          label: option.name,
-          selected: option.launcherIconAlias == activeAlias,
+          value: icon.id,
+          label: config.iconLabel(l10n, icon.id),
+          selected: icon.id == config.launcherIcon.id,
+          leading: _LauncherIconBadge(icon: icon),
         ),
     ];
   }
 
   /// Builds a single selectable submenu entry with a radio-style indicator
-  /// reflecting [selected].
+  /// reflecting [selected], and an optional [leading] preview widget.
   PopupMenuItem<String> _radioEntry(
     BuildContext context, {
     required String value,
     required String label,
     required bool selected,
+    Widget? leading,
   }) {
     return PopupMenuItem<String>(
       value: value,
@@ -381,7 +386,10 @@ class ConfigurationMenu extends StatelessWidget {
             color: selected ? Theme.of(context).colorScheme.primary : null,
           ),
           const SizedBox(width: 12),
-          Text(label),
+          if (leading != null) ...[leading, const SizedBox(width: 12)],
+          Flexible(
+            child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis),
+          ),
         ],
       ),
     );
@@ -470,5 +478,33 @@ class ConfigurationMenu extends StatelessWidget {
     );
 
     return showMenu<String>(context: context, position: position, items: menu);
+  }
+}
+
+/// A rounded-square preview of a launcher icon, in the icon's own colors.
+///
+/// The launcher itself renders the generated mipmap assets; this approximates
+/// them in the menu so the entries differ visibly instead of only by name.
+class _LauncherIconBadge extends StatelessWidget {
+  const _LauncherIconBadge({required this.icon});
+
+  final LauncherIcon icon;
+
+  /// Side of the square, matching the menu's 18px radio indicator.
+  static const double _size = 18;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: _size,
+      height: _size,
+      decoration: BoxDecoration(
+        color: icon.background,
+        borderRadius: BorderRadius.circular(4),
+      ),
+      child: Center(
+        child: Icon(Icons.how_to_vote, size: 12, color: icon.foreground),
+      ),
+    );
   }
 }

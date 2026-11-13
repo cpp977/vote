@@ -92,11 +92,23 @@ class MainActivity : FlutterActivity() {
     private companion object {
         const val CHANNEL = "com.dev.vote/launcher_icons"
 
-        /** The `<activity-alias>` names declared in AndroidManifest.xml. */
+        /**
+         * The `<activity-alias>` names declared in AndroidManifest.xml.
+         *
+         * Must stay in sync with `LauncherIconService.icons`, which is the
+         * Dart-side source of truth for the icon list.
+         */
         val LAUNCHER_ICONS = listOf(
             "com.dev.vote.ic_launcher_deep_purple",
             "com.dev.vote.ic_launcher_blue",
             "com.dev.vote.ic_launcher_teal",
+            "com.dev.vote.ic_launcher_green",
+            "com.dev.vote.ic_launcher_orange",
+            "com.dev.vote.ic_launcher_red",
+            "com.dev.vote.ic_launcher_pink",
+            "com.dev.vote.ic_launcher_cyan",
+            "com.dev.vote.ic_launcher_indigo",
+            "com.dev.vote.ic_launcher_amber",
         )
 
         /** The alias that is enabled in AndroidManifest.xml. */
