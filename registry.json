@@ -231,8 +231,8 @@
           "promoted_at": "2026-11-13T09:50:35.754777Z"
         },
         "alpha": {
-          "status": "pending",
-          "promoted_at": null
+          "status": "active",
+          "promoted_at": "2026-11-13T09:51:40.864069Z"
         }
       },
       "history": [
@@ -253,6 +253,15 @@
           "timestamp": "2026-11-13T09:51:34.758771Z",
           "details": null,
           "merge_commit": null
+        },
+        {
+          "action": "promoted",
+          "track": null,
+          "from_track": "internal",
+          "to_track": "alpha",
+          "timestamp": "2026-11-13T09:51:40.864093Z",
+          "details": null,
+          "merge_commit": "b717d15ff6d670e7c571e22d452d8d002326e589"
         }
       ]
     }
