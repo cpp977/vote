@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:http/http.dart' as http;
 import 'package:http/io_client.dart';
@@ -61,31 +62,53 @@ class MyApp extends StatelessWidget {
       ],
       child: Consumer<ConfigurationController>(
         builder: (context, config, _) {
-          return MaterialApp(
-            title: 'Vote4It',
-            navigatorKey: NavigationService.navigatorKey,
-            theme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(seedColor: config.seedColor),
-              useMaterial3: true,
+          final ThemeData lightTheme = ThemeData(
+            colorScheme: ColorScheme.fromSeed(seedColor: config.seedColor),
+            useMaterial3: true,
+          );
+          final ThemeData darkTheme = ThemeData(
+            colorScheme: ColorScheme.fromSeed(
+              seedColor: config.seedColor,
+              brightness: Brightness.dark,
             ),
-            darkTheme: ThemeData(
-              colorScheme: ColorScheme.fromSeed(
-                seedColor: config.seedColor,
-                brightness: Brightness.dark,
-              ),
-              useMaterial3: true,
+            useMaterial3: true,
+          );
+          // Resolve the theme that is actually in effect for the current
+          // [ThemeMode] so the system bars can be styled to match it.
+          final bool isDark =
+              config.themeMode == ThemeMode.dark ||
+              (config.themeMode == ThemeMode.system &&
+                  MediaQuery.platformBrightnessOf(context) == Brightness.dark);
+          final Brightness navBarIconBrightness = isDark
+              ? Brightness.light
+              : Brightness.dark;
+          final Color navBarColor = isDark
+              ? darkTheme.colorScheme.surface
+              : lightTheme.colorScheme.surface;
+
+          return AnnotatedRegion<SystemUiOverlayStyle>(
+            value: SystemUiOverlayStyle(
+              systemNavigationBarColor: navBarColor,
+              systemNavigationBarIconBrightness: navBarIconBrightness,
+              systemNavigationBarContrastEnforced: true,
             ),
-            themeMode: config.themeMode,
-            locale: config.locale,
-            home: const TutorialGate(),
-            routes: {
-              '/login': (context) => const LoginPage(),
-              '/forgot-password': (context) => const ForgotPasswordPage(),
-              '/account-locked': (context) => const AccountLockedPage(),
-              '/intro': (context) => const IntroCarouselPage(),
-            },
-            localizationsDelegates: AppLocalizations.localizationsDelegates,
-            supportedLocales: AppLocalizations.supportedLocales,
+            child: MaterialApp(
+              title: 'Vote4It',
+              navigatorKey: NavigationService.navigatorKey,
+              theme: lightTheme,
+              darkTheme: darkTheme,
+              themeMode: config.themeMode,
+              locale: config.locale,
+              home: const TutorialGate(),
+              routes: {
+                '/login': (context) => const LoginPage(),
+                '/forgot-password': (context) => const ForgotPasswordPage(),
+                '/account-locked': (context) => const AccountLockedPage(),
+                '/intro': (context) => const IntroCarouselPage(),
+              },
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              supportedLocales: AppLocalizations.supportedLocales,
+            ),
           );
         },
       ),
