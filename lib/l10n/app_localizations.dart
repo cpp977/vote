@@ -1160,6 +1160,12 @@ abstract class AppLocalizations {
   /// **'New Question'**
   String get createQuestion;
 
+  /// Title of the dialog shown to guests who try to submit a question from the question list.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to submit a question'**
+  String get signInToSubmitQuestion;
+
   /// Title of the dialog used to submit a new question.
   ///
   /// In en, this message translates to:

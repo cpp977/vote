@@ -784,6 +784,10 @@
   "@createQuestion": {
     "description": "Label of the floating action button that opens the submit-question dialog."
   },
+  "signInToSubmitQuestion": "Sign in to submit a question",
+  "@signInToSubmitQuestion": {
+    "description": "Title of the dialog shown to guests who try to submit a question from the question list."
+  },
   "newQuestionTitle": "Submit a Question",
   "@newQuestionTitle": {
     "description": "Title of the dialog used to submit a new question."

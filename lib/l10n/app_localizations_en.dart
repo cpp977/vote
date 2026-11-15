@@ -601,6 +601,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createQuestion => 'New Question';
 
   @override
+  String get signInToSubmitQuestion => 'Sign in to submit a question';
+
+  @override
   String get newQuestionTitle => 'Submit a Question';
 
   @override

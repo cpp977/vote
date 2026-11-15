@@ -310,6 +310,7 @@
   "mySubmissions": "Meine Einreichungen",
   "mySubmissionsEmpty": "Du hast noch keine Fragen eingereicht.",
   "createQuestion": "Neue Frage",
+  "signInToSubmitQuestion": "Anmelden, um eine Frage zu stellen",
   "newQuestionTitle": "Frage einreichen",
   "questionTextLabel": "Frage",
   "questionTextHint": "Gib deine Frage ein...",

@@ -15,6 +15,7 @@ import '../utils/error_handler.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/category_section.dart';
 import '../widgets/configuration_menu.dart';
+import '../widgets/submit_question_button.dart';
 import '../widgets/user_menu_button.dart';
 import 'question_detail_page.dart';
 
@@ -592,7 +593,14 @@ class _MyHomePageState extends State<MyHomePage> {
             )
           : ListView(
               controller: _scrollController,
-              padding: const EdgeInsets.all(16),
+              // Bottom padding keeps the last question clear of the
+              // floating action button.
+              padding: const EdgeInsets.only(
+                left: 16,
+                right: 16,
+                top: 16,
+                bottom: 96,
+              ),
               children: [
                 // Search field at the top
                 buildSearchField(),
@@ -698,6 +706,9 @@ class _MyHomePageState extends State<MyHomePage> {
                   ),
               ],
             ),
+      // Lets users submit a question straight from the question list instead
+      // of going through the drawer -> "My Submissions" first.
+      floatingActionButton: const SubmitQuestionButton(),
     );
   }
 }
