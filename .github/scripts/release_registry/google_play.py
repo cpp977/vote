@@ -337,11 +337,34 @@ def monitor_promotion(
         lifecycle = state["lifecycle_state"]
 
         if lifecycle == PUBLISHED:
-            return {
-                **state,
-                "result": "published",
-            }
+            # Do not trust a single PUBLISHED response. Google Play's
+            # lifecycle state may be temporarily stale while processing.
+            remaining = deadline - time.monotonic()
 
+            if remaining <= 0:
+                return {
+                    **state,
+                    "result": "timeout",
+                }
+
+            time.sleep(min(poll_interval_seconds, remaining))
+
+            confirmation = get_release_state(
+                service,
+                package_name,
+                track,
+                version_code,
+            )
+
+            if confirmation["lifecycle_state"] == PUBLISHED:
+                return {
+                    **confirmation,
+                    "result": "published",
+                    "confirmed": True,
+                }
+
+            # The state changed or is not yet stable. Resume normal polling.
+            continue
         if lifecycle == NOT_APPROVED:
             return {
                 **state,

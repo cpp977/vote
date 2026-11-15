@@ -65,6 +65,17 @@ void main() {
   });
 
   group('Theme Color', () {
+    testWidgets('lists every predefined color', (tester) async {
+      await pumpMenu(tester);
+
+      await openSubMenu(tester, 'Theme Color');
+
+      expect(find.text('Deep Purple'), findsOneWidget);
+      expect(find.text('Blue'), findsOneWidget);
+      expect(find.text('Amber'), findsOneWidget);
+      expect(find.text('Chartreuse'), findsNothing);
+    });
+
     testWidgets('marks the current seed color with a check', (tester) async {
       await pumpMenu(tester, seedColor: Colors.red);
 
@@ -100,38 +111,65 @@ void main() {
 
       await openSubMenu(tester, 'App Icon');
 
-      // The icons are offered by the name of the theme color they belong to.
-      expect(find.text('Deep Purple'), findsOneWidget);
-      expect(find.text('Blue'), findsOneWidget);
-      expect(find.text('Teal'), findsOneWidget);
-      expect(find.text('Green'), findsNothing);
+      for (final LauncherIcon icon in LauncherIconService.icons) {
+        expect(
+          find.text(_titleCase(icon.id)),
+          findsOneWidget,
+          reason: 'missing entry for ${icon.id}',
+        );
+      }
+      expect(find.text('Chartreuse'), findsNothing);
     });
 
-    testWidgets('marks the icon matching the current seed color as active', (
-      tester,
-    ) async {
-      await pumpMenu(tester, seedColor: Colors.blue);
+    testWidgets('marks the selected icon with a check', (tester) async {
+      await pumpMenu(tester, launcherIcon: LauncherIconService.icons[2]);
 
       await openSubMenu(tester, 'App Icon');
 
-      expect(isChecked(tester, 'Blue'), isTrue);
+      expect(isChecked(tester, 'Teal'), isTrue);
       expect(isChecked(tester, 'Deep Purple'), isFalse);
-      expect(isChecked(tester, 'Teal'), isFalse);
+      expect(isChecked(tester, 'Blue'), isFalse);
     });
 
-    testWidgets('picking an icon applies the matching seed color', (
-      tester,
-    ) async {
+    testWidgets('marks exactly one icon as selected', (tester) async {
+      await pumpMenu(tester, launcherIcon: LauncherIconService.icons[4]);
+
+      await openSubMenu(tester, 'App Icon');
+
+      final List<String> checked = <String>[];
+      for (final LauncherIcon icon in LauncherIconService.icons) {
+        final String label = _titleCase(icon.id);
+        if (isChecked(tester, label)) checked.add(label);
+      }
+
+      expect(checked, <String>['Orange']);
+    });
+
+    testWidgets('picking an icon changes only the icon', (tester) async {
       final ConfigurationController controller = await pumpMenu(tester);
 
-      expect(controller.seedColor, Colors.deepPurple);
+      expect(controller.launcherIcon, LauncherIconService.defaultIcon);
 
       await openSubMenu(tester, 'App Icon');
       await tester.tap(find.text('Teal'));
       await settlePersistence(tester);
 
-      expect(controller.seedColor, Colors.teal);
-      expect(controller.activeLauncherIconAlias, LauncherIconService.aliasTeal);
+      expect(controller.launcherIcon.id, 'teal');
+      expect(controller.seedColor, Colors.deepPurple);
+    });
+
+    testWidgets('picking a theme color leaves the icon alone', (tester) async {
+      final ConfigurationController controller = await pumpMenu(
+        tester,
+        launcherIcon: LauncherIconService.icons[2],
+      );
+
+      await openSubMenu(tester, 'Theme Color');
+      await tester.tap(find.text('Red'));
+      await settlePersistence(tester);
+
+      expect(controller.seedColor, Colors.red);
+      expect(controller.launcherIcon.id, 'teal');
     });
 
     testWidgets('keeps the icon when dismissed', (tester) async {
@@ -140,10 +178,28 @@ void main() {
       await openSubMenu(tester, 'App Icon');
       await dismissSubMenu(tester);
 
-      expect(
-        controller.activeLauncherIconAlias,
-        LauncherIconService.aliasDeepPurple,
-      );
+      expect(controller.launcherIcon, LauncherIconService.defaultIcon);
+    });
+
+    testWidgets('previews each icon in its own colors', (tester) async {
+      await pumpMenu(tester);
+
+      await openSubMenu(tester, 'App Icon');
+
+      final List<_IconPreview> previews = _iconPreviews(tester);
+
+      expect(previews, hasLength(LauncherIconService.icons.length));
+      for (final LauncherIcon icon in LauncherIconService.icons) {
+        expect(
+          previews.any(
+            (_IconPreview preview) =>
+                preview.background == icon.background &&
+                preview.foreground == icon.foreground,
+          ),
+          isTrue,
+          reason: 'no preview using the colors of ${icon.id}',
+        );
+      }
     });
   });
 
@@ -447,18 +503,21 @@ Future<void> openAboutEntry(WidgetTester tester, String label) async {
 /// embedded in the real app shell, and returns the backing controller.
 ///
 /// The controller is seeded through its constructor rather than
-/// [ConfigurationController.setSeedColor], because persistence needs a real
+/// [ConfigurationController.setSeedColor] and
+/// [ConfigurationController.setLauncherIcon], because persistence needs a real
 /// async round trip that the widget test's fake clock cannot complete.
 Future<ConfigurationController> pumpMenu(
   WidgetTester tester, {
   Color? seedColor,
   ThemeMode themeMode = ThemeMode.system,
   Locale? locale,
+  LauncherIcon? launcherIcon,
 }) async {
   final ConfigurationController controller = ConfigurationController(
     initialSeedColor: seedColor,
     initialThemeMode: themeMode,
     initialLocale: locale,
+    initialLauncherIcon: launcherIcon,
   );
 
   await tester.pumpWidget(
@@ -510,6 +569,54 @@ Future<void> dismissSubMenu(WidgetTester tester) async {
   await tester.pump(const Duration(milliseconds: 300));
 }
 
+/// Returns the display name the configuration menu uses for the launcher icon
+/// identified by the snake-case [id], e.g. `deep_purple` becomes
+/// `Deep Purple`.
+///
+/// The menu takes its labels from the ARB entries, which a test cannot read,
+/// so the wording is reconstructed the same way the ARB values spell it out.
+String _titleCase(String id) {
+  return id
+      .split('_')
+      .map(
+        (String word) => word.isEmpty
+            ? word
+            : '${word[0].toUpperCase()}${word.substring(1)}',
+      )
+      .join(' ');
+}
+
+/// An icon preview as rendered in the launcher icon submenu.
+@immutable
+class _IconPreview {
+  const _IconPreview(this.background, this.foreground);
+
+  final Color background;
+  final Color foreground;
+}
+
+/// Collects the icon previews built by the currently open menu.
+///
+/// A preview is the rounded square filled with an icon's background color and
+/// holding its glyph in the icon's foreground color; the enclosing row keeps
+/// the radio indicator and the label in default colors, so only the previews
+/// carry a `BoxDecoration`.
+List<_IconPreview> _iconPreviews(WidgetTester tester) {
+  final List<_IconPreview> previews = <_IconPreview>[];
+
+  for (final Element element in find.byType(Container).evaluate()) {
+    final Container container = element.widget as Container;
+    final BoxDecoration? decoration = container.decoration as BoxDecoration?;
+    if (decoration?.color == null) continue;
+
+    final Center center = container.child! as Center;
+    final Icon glyph = center.child! as Icon;
+    previews.add(_IconPreview(decoration!.color!, glyph.color!));
+  }
+
+  return previews;
+}
+
 /// Whether the submenu entry labelled [label] shows its "selected" marker.
 ///
 /// Theme colors are marked with a check that is only built for the active
@@ -518,10 +625,13 @@ bool isChecked(WidgetTester tester, String label) {
   final Finder text = find.text(label);
   if (text.evaluate().isEmpty) return false;
 
-  final Finder row = find.ancestor(of: text, matching: find.byType(Row)).first;
-  final Finder marker = find.descendant(of: row, matching: find.byType(Icon));
-  if (marker.evaluate().isEmpty) return false;
+  // The outermost row is the one the popup item lays out; nested rows belong
+  // to the entry's leading widgets and hold their own icons.
+  final Finder row = find.ancestor(of: text, matching: find.byType(Row)).last;
+  final Finder markers = find.descendant(of: row, matching: find.byType(Icon));
+  if (markers.evaluate().isEmpty) return false;
 
-  final IconData? icon = tester.widget<Icon>(marker).icon;
+  // The marker is the entry's first child, ahead of any leading preview.
+  final IconData? icon = tester.widgetList<Icon>(markers).first.icon;
   return icon == Icons.check || icon == Icons.radio_button_checked;
 }

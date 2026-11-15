@@ -6,25 +6,17 @@ import 'package:shared_preferences/shared_preferences.dart';
 import '../l10n/app_localizations.dart';
 import '../services/launcher_icon_service.dart';
 
-/// Available theme seed colors for the app's Material 3 color scheme.
+/// A theme seed color the user can pick, paired with its display name.
+@immutable
 class ColorOption {
-  /// Human-readable name of the color.
+  /// Creates a seed color option.
+  const ColorOption(this.name, this.color);
+
+  /// Localized display name of the color.
   final String name;
 
   /// The seed [Color] used to generate the Material 3 [ColorScheme].
   final Color color;
-
-  /// The Android launcher icon alias that matches this color best.
-  ///
-  /// Only three launcher icon assets ship with the app, so several seed
-  /// colors share the same alias.
-  final String launcherIconAlias;
-
-  const ColorOption(
-    this.name,
-    this.color, {
-    this.launcherIconAlias = LauncherIconService.aliasDeepPurple,
-  });
 }
 
 /// Controller for managing runtime configuration.
@@ -38,10 +30,12 @@ class ConfigurationController extends ChangeNotifier {
   static const String _seedColorKey = 'theme_seed_color';
   static const String _themeModeKey = 'theme_mode';
   static const String _localeKey = 'locale';
+  static const String _launcherIconKey = 'launcher_icon';
 
   Color _seedColor;
   ThemeMode _themeMode;
   Locale? _locale;
+  LauncherIcon _launcherIcon;
 
   /// The app-wide configuration instance registered via
   /// [registerAsAppConfiguration], or `null` before registration.
@@ -86,95 +80,87 @@ class ConfigurationController extends ChangeNotifier {
   /// app ships translations for.
   List<Locale> get availableLocales => AppLocalizations.supportedLocales;
 
-  /// Predefined seed colors the user can pick from.
+  /// Predefined seed colors the user can pick from, in menu order.
   ///
-  /// The order also defines the order in which the colors are offered in the
-  /// configuration menu, and which color represents each launcher icon in
-  /// [availableLauncherIcons].
-  List<ColorOption> get availableColors => const <ColorOption>[
-    // One launcher icon asset per line: deep purple, blue and teal. They come
-    // first so the icon submenu lists them in that order.
-    ColorOption(
-      'Deep Purple',
-      Colors.deepPurple,
-      launcherIconAlias: LauncherIconService.aliasDeepPurple,
-    ),
-    ColorOption(
-      'Blue',
-      Colors.blue,
-      launcherIconAlias: LauncherIconService.aliasBlue,
-    ),
-    ColorOption(
-      'Teal',
-      Colors.teal,
-      launcherIconAlias: LauncherIconService.aliasTeal,
-    ),
-    // Colors without a dedicated launcher icon asset reuse the closest match.
-    ColorOption(
-      'Green',
-      Colors.green,
-      launcherIconAlias: LauncherIconService.aliasTeal,
-    ),
-    ColorOption(
-      'Orange',
-      Colors.orange,
-      launcherIconAlias: LauncherIconService.aliasDeepPurple,
-    ),
-    ColorOption(
-      'Red',
-      Colors.red,
-      launcherIconAlias: LauncherIconService.aliasDeepPurple,
-    ),
-    ColorOption(
-      'Pink',
-      Colors.pink,
-      launcherIconAlias: LauncherIconService.aliasBlue,
-    ),
-    ColorOption(
-      'Cyan',
-      Colors.cyan,
-      launcherIconAlias: LauncherIconService.aliasTeal,
-    ),
-    ColorOption(
-      'Indigo',
-      Colors.indigo,
-      launcherIconAlias: LauncherIconService.aliasBlue,
-    ),
-    ColorOption(
-      'Amber',
-      Colors.amber,
-      launcherIconAlias: LauncherIconService.aliasDeepPurple,
-    ),
+  /// [l10n] supplies the localized display names; the color themselves are
+  /// fixed so a persisted selection keeps working across languages.
+  List<ColorOption> colorOptions(AppLocalizations l10n) => <ColorOption>[
+    ColorOption(l10n.colorDeepPurple, Colors.deepPurple),
+    ColorOption(l10n.colorBlue, Colors.blue),
+    ColorOption(l10n.colorTeal, Colors.teal),
+    ColorOption(l10n.colorGreen, Colors.green),
+    ColorOption(l10n.colorOrange, Colors.orange),
+    ColorOption(l10n.colorRed, Colors.red),
+    ColorOption(l10n.colorPink, Colors.pink),
+    ColorOption(l10n.colorCyan, Colors.cyan),
+    ColorOption(l10n.colorIndigo, Colors.indigo),
+    ColorOption(l10n.colorAmber, Colors.amber),
   ];
 
-  /// The seed colors that map to a distinct Android launcher icon.
+  /// Predefined seed colors the user can pick from.
+  List<Color> get availableColors => const <Color>[
+    Colors.deepPurple,
+    Colors.blue,
+    Colors.teal,
+    Colors.green,
+    Colors.orange,
+    Colors.red,
+    Colors.pink,
+    Colors.cyan,
+    Colors.indigo,
+    Colors.amber,
+  ];
+
+  /// The launcher icons the app ships, in the order they are offered.
   ///
-  /// Derived from [availableColors] by keeping the first entry per alias, so
-  /// the list always stays in sync with the color definitions.
-  List<ColorOption> get availableLauncherIcons {
-    final Map<String, ColorOption> firstPerAlias = <String, ColorOption>{};
-    for (final ColorOption option in availableColors) {
-      firstPerAlias.putIfAbsent(option.launcherIconAlias, () => option);
-    }
-    return firstPerAlias.values.toList(growable: false);
+  /// Independent of [availableColors]: the home screen icon is its own
+  /// setting, so it can stay put while the in-app theme changes.
+  List<LauncherIcon> get availableLauncherIcons => LauncherIconService.icons;
+
+  /// Returns the localized display name of the launcher icon with [id].
+  ///
+  /// The icons share their wording with the theme colors, so the label comes
+  /// from the same ARB entries; an unknown id falls back to the id itself,
+  /// which is what the icon's resources are named after.
+  String iconLabel(AppLocalizations l10n, String id) {
+    return switch (id) {
+      'deep_purple' => l10n.colorDeepPurple,
+      'blue' => l10n.colorBlue,
+      'teal' => l10n.colorTeal,
+      'green' => l10n.colorGreen,
+      'orange' => l10n.colorOrange,
+      'red' => l10n.colorRed,
+      'pink' => l10n.colorPink,
+      'cyan' => l10n.colorCyan,
+      'indigo' => l10n.colorIndigo,
+      'amber' => l10n.colorAmber,
+      _ => id,
+    };
   }
+
+  /// The launcher icon currently shown on the home screen.
+  LauncherIcon get launcherIcon => _launcherIcon;
 
   ConfigurationController({
     Color? initialSeedColor,
     ThemeMode? initialThemeMode,
     Locale? initialLocale,
+    LauncherIcon? initialLauncherIcon,
   }) : _seedColor = initialSeedColor ?? Colors.deepPurple,
        _themeMode = initialThemeMode ?? ThemeMode.system,
-       _locale = initialLocale;
+       _locale = initialLocale,
+       _launcherIcon = initialLauncherIcon ?? LauncherIconService.defaultIcon;
 
   /// Changes the theme seed color, notifies listeners, and persists the
   /// selection.
+  ///
+  /// This only affects the in-app theme: the home screen icon is a separate
+  /// setting.
   Future<void> setSeedColor(Color color) async {
     if (_seedColor == color) return;
     _seedColor = color;
     notifyListeners();
     await _persistSeedColor(color);
-    await _syncLauncherIcon();
   }
 
   /// Changes the desired theme mode, notifies listeners, and persists the
@@ -196,8 +182,22 @@ class ConfigurationController extends ChangeNotifier {
     await _persistLocale(locale);
   }
 
-  /// Loads the previously saved seed color, theme mode and language from
-  /// persistent storage and notifies listeners if any of them changed.
+  /// Changes the home screen launcher icon, notifies listeners, persists the
+  /// selection and hands it to the platform so the icon is swapped.
+  ///
+  /// This is independent of the theme: picking an icon leaves the seed color
+  /// untouched.
+  Future<void> setLauncherIcon(LauncherIcon icon) async {
+    if (_launcherIcon.id == icon.id) return;
+    _launcherIcon = icon;
+    notifyListeners();
+    await _persistLauncherIcon(icon);
+    await LauncherIconService.setLauncherIcon(icon.alias);
+  }
+
+  /// Loads the previously saved seed color, theme mode, language and launcher
+  /// icon from persistent storage and notifies listeners if any of them
+  /// changed.
   Future<void> loadSavedConfiguration() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
 
@@ -233,29 +233,23 @@ class ConfigurationController extends ChangeNotifier {
       await prefs.remove(_localeKey);
     }
 
+    final String? iconId = prefs.getString(_launcherIconKey);
+    final LauncherIcon? savedIcon = iconId == null
+        ? null
+        : LauncherIconService.iconForId(iconId);
+    if (savedIcon != null && savedIcon.id != _launcherIcon.id) {
+      _launcherIcon = savedIcon;
+      changed = true;
+    } else if (iconId != null && savedIcon == null) {
+      // An icon that is no longer shipped would otherwise stay selected in
+      // the menu while a different one is enabled on the home screen.
+      await prefs.remove(_launcherIconKey);
+    }
+
     if (changed) {
       notifyListeners();
     }
-    await _syncLauncherIcon();
-  }
-
-  /// Synchronizes the Android launcher icon with the current seed color.
-  Future<void> _syncLauncherIcon() async {
-    await LauncherIconService.setLauncherIcon(activeLauncherIconAlias);
-  }
-
-  /// The launcher icon alias that matches the current seed color.
-  String get activeLauncherIconAlias =>
-      _colorOptionFor(_seedColor).launcherIconAlias;
-
-  /// Looks up the [ColorOption] matching [color], falling back to the first
-  /// entry (the default icon) when the color is unknown, e.g. a legacy
-  /// persisted value that is no longer offered.
-  ColorOption _colorOptionFor(Color color) {
-    for (final ColorOption option in availableColors) {
-      if (option.color.toARGB32() == color.toARGB32()) return option;
-    }
-    return availableColors.first;
+    await LauncherIconService.setLauncherIcon(_launcherIcon.alias);
   }
 
   Future<void> _persistSeedColor(Color color) async {
@@ -275,5 +269,10 @@ class ConfigurationController extends ChangeNotifier {
     } else {
       await prefs.setString(_localeKey, locale.languageCode);
     }
+  }
+
+  Future<void> _persistLauncherIcon(LauncherIcon icon) async {
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_launcherIconKey, icon.id);
   }
 }
