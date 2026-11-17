@@ -680,6 +680,30 @@ abstract class AppLocalizations {
   /// **'Approval settings'**
   String get approvalSettingsTitle;
 
+  /// Hint in the approval settings explaining what an admin must fill in before a submission can be approved.
+  ///
+  /// In en, this message translates to:
+  /// **'A category and at least two answer options are required to approve.'**
+  String get approvalRequirementsHint;
+
+  /// Heading of the editor an admin uses to add the answer options a submission is missing.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer options to complete the question'**
+  String get answerOptionsRequired;
+
+  /// Hint above the approval answer-options editor stating how many options are still missing before the question can be approved.
+  ///
+  /// In en, this message translates to:
+  /// **'An approved question needs at least two answer options, so add {count} more.'**
+  String answerOptionsNeedMore(int count);
+
+  /// Note in the admin approval settings when the question already carries answer options.
+  ///
+  /// In en, this message translates to:
+  /// **'The submitter already provided enough answer options.'**
+  String get answersAlreadyProvided;
+
   /// Label of the minimum-age input an admin sets when approving a submission.
   ///
   /// In en, this message translates to:
@@ -1190,6 +1214,24 @@ abstract class AppLocalizations {
   /// **'Category'**
   String get categoryLabel;
 
+  /// Label for the optional category selector in the submit dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Category (optional)'**
+  String get categoryOptionalLabel;
+
+  /// Dropdown entry filing a question without a category; an administrator assigns one during approval.
+  ///
+  /// In en, this message translates to:
+  /// **'No category'**
+  String get noCategory;
+
+  /// Prompt of the category selector in the admin approval settings.
+  ///
+  /// In en, this message translates to:
+  /// **'Select a category'**
+  String get selectCategory;
+
   /// Label for the language selector in the submit dialog.
   ///
   /// In en, this message translates to:
@@ -1268,6 +1310,12 @@ abstract class AppLocalizations {
   /// **'Answer options'**
   String get answerOptionsLabel;
 
+  /// Hint below the answer-options heading explaining that the options may be omitted.
+  ///
+  /// In en, this message translates to:
+  /// **'Optional — add answer options, or leave them out and an administrator will add them during approval.'**
+  String get answersOptionalHint;
+
   /// Label for a single answer-option input; {number} is its 1-based position.
   ///
   /// In en, this message translates to:
@@ -1291,12 +1339,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Remove answer option'**
   String get removeAnswerOption;
-
-  /// Error shown when the submit-question dialog has no answer options filled in.
-  ///
-  /// In en, this message translates to:
-  /// **'Please provide at least one answer option'**
-  String get atLeastOneAnswerOption;
 
   /// Error shown when the user tries to add more than the allowed number of answer options; {max} is the limit.
   ///

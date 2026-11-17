@@ -5,19 +5,24 @@ import '../controllers/auth_controller.dart';
 import '../controllers/configuration_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../services/submission_service.dart';
+import '../utils/constants.dart';
 
-/// Maximum number of answer options a submission may carry. Mirrors the
-/// backend limit enforced for `POST /questions/submissions`.
-const int kMaxAnswerOptions = 50;
+/// Dropdown value standing for "filed without a category".
+///
+/// A [DropdownButton] never shows a `null`-valued item as its selection, so the
+/// "No category" entry uses a sentinel that cannot collide with a real category
+/// id (database ids start at 1).
+const int _noCategoryValue = 0;
 
 /// Shows the dialog that submits a new question for review.
 ///
-/// The dialog collects the question text, a category and at least one answer
-/// option and posts them via [SubmissionService.submitQuestion], which stores
-/// the question as a `pending` submission server-side. Guests cannot submit
-/// (the category list is only available to authenticated users), so callers
-/// should check [AuthController.isAuthenticated] first — see
-/// `SubmitQuestionButton`, which does that for them.
+/// The dialog collects the question text and optionally a category and answer
+/// options, and posts them via [SubmissionService.submitQuestion], which stores
+/// the question as a `pending` submission server-side. An administrator has to
+/// complete whatever the user left out before the question can be approved.
+/// Guests cannot submit (the category list is only available to authenticated
+/// users), so callers should check [AuthController.isAuthenticated] first —
+/// see `SubmitQuestionButton`, which does that for them.
 ///
 /// On success a confirmation snackbar is shown and [onSubmitted] is invoked —
 /// the submissions page uses it to reload its list. A `401` response logs the
@@ -91,7 +96,12 @@ class _CreateQuestionDialogState extends State<_CreateQuestionDialog> {
   ];
 
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
-  int? _selectedCategoryId;
+
+  /// Selected category, or [_noCategoryValue] when the user files the question
+  /// without one. The dialog uses a sentinel rather than `null` because a
+  /// [DropdownButton] never displays a `null`-valued item as its selection.
+  int _selectedCategoryId = _noCategoryValue;
+
   String? _errorText;
   bool _isSubmitting = false;
 
@@ -114,19 +124,12 @@ class _CreateQuestionDialogState extends State<_CreateQuestionDialog> {
   Future<void> _submit() async {
     final l10n = AppLocalizations.of(context);
     if (!_formKey.currentState!.validate()) return;
-    // At least one non-empty answer option is required by the backend;
-    // surface a localized error instead of sending an empty submission.
+    // Answer options are optional; only the ones the user actually filled in
+    // are sent, and blank entries are dropped by the service.
     final options = _answerControllers
         .map((c) => c.text.trim())
         .where((t) => t.isNotEmpty)
         .toList();
-    if (options.isEmpty) {
-      setState(() {
-        _isSubmitting = false;
-        _errorText = l10n.atLeastOneAnswerOption;
-      });
-      return;
-    }
     setState(() {
       _isSubmitting = true;
       _errorText = null;
@@ -135,7 +138,9 @@ class _CreateQuestionDialogState extends State<_CreateQuestionDialog> {
     try {
       await widget.submissionService.submitQuestion(
         text: _questionController.text.trim(),
-        categoryId: _selectedCategoryId!,
+        categoryId: _selectedCategoryId == _noCategoryValue
+            ? null
+            : _selectedCategoryId,
         language: _currentLanguageCode(),
         answerOptions: options,
       );
@@ -233,20 +238,31 @@ class _CreateQuestionDialogState extends State<_CreateQuestionDialog> {
               DropdownButtonFormField<int>(
                 initialValue: _selectedCategoryId,
                 decoration: InputDecoration(
-                  labelText: l10n.categoryLabel,
+                  labelText: l10n.categoryOptionalLabel,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
                 ),
-                items: _sortedCategories
-                    .map(
-                      (e) =>
-                          DropdownMenuItem(value: e.key, child: Text(e.value)),
-                    )
-                    .toList(),
-                onChanged: (value) =>
-                    setState(() => _selectedCategoryId = value),
-                validator: (value) => value == null ? l10n.requiredField : null,
+                items: [
+                  DropdownMenuItem<int>(
+                    value: _noCategoryValue,
+                    child: Text(
+                      l10n.noCategory,
+                      style: TextStyle(
+                        color: colorScheme.onSurfaceVariant,
+                        fontStyle: FontStyle.italic,
+                      ),
+                    ),
+                  ),
+                  ..._sortedCategories.map(
+                    (e) => DropdownMenuItem(value: e.key, child: Text(e.value)),
+                  ),
+                ],
+                onChanged: (value) {
+                  if (value != null) {
+                    setState(() => _selectedCategoryId = value);
+                  }
+                },
               ),
               if (widget.categories.isEmpty)
                 Padding(
@@ -264,6 +280,13 @@ class _CreateQuestionDialogState extends State<_CreateQuestionDialog> {
                 style: Theme.of(
                   context,
                 ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+              ),
+              const SizedBox(height: 4),
+              Text(
+                l10n.answersOptionalHint,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 8),
               ..._answerControllers.asMap().entries.map((entry) {
@@ -287,13 +310,12 @@ class _CreateQuestionDialogState extends State<_CreateQuestionDialog> {
                           textInputAction: TextInputAction.next,
                         ),
                       ),
-                      if (_answerControllers.length > 1)
-                        IconButton(
-                          onPressed: () => _removeAnswerOption(index),
-                          icon: const Icon(Icons.remove_circle_outline),
-                          tooltip: l10n.removeAnswerOption,
-                          visualDensity: VisualDensity.compact,
-                        ),
+                      IconButton(
+                        onPressed: () => _removeAnswerOption(index),
+                        icon: const Icon(Icons.remove_circle_outline),
+                        tooltip: l10n.removeAnswerOption,
+                        visualDensity: VisualDensity.compact,
+                      ),
                     ],
                   ),
                 );

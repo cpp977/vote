@@ -133,29 +133,56 @@ void main() {
     });
 
     test(
-      'throws and never contacts the backend without usable options',
+      'files the question without options when every entry is blank',
       () async {
         final middleware = _CapturingAuthMiddleware();
         final service = SubmissionService(authMiddleware: middleware);
 
-        await expectLater(
-          service.submitQuestion(
-            text: 'Question?',
-            categoryId: 1,
-            language: 'en',
-            answerOptions: ['', '   '],
-          ),
-          throwsA(
-            isA<SubmissionException>().having(
-              (e) => e.message,
-              'message',
-              'At least one answer option is required',
-            ),
-          ),
+        // Answer options are optional now: blank entries are dropped and the
+        // question is filed without any.
+        final submission = await service.submitQuestion(
+          text: 'Question?',
+          categoryId: 1,
+          language: 'en',
+          answerOptions: ['', '   '],
         );
-        expect(middleware.requests, isEmpty);
+
+        expect(submission.submissionStatus, 'pending');
+        expect(middleware.requests.single.jsonBody, {
+          'text': 'Question?',
+          'category_id': 1,
+          'language': 'en',
+        });
       },
     );
+
+    test('omits the category when none is given', () async {
+      final middleware = _CapturingAuthMiddleware();
+      final service = SubmissionService(authMiddleware: middleware);
+
+      await service.submitQuestion(text: 'Question?', language: 'de');
+
+      expect(middleware.requests.single.jsonBody, {
+        'text': 'Question?',
+        'language': 'de',
+      });
+    });
+
+    test('sends a null category when the caller passes one', () async {
+      final middleware = _CapturingAuthMiddleware();
+      final service = SubmissionService(authMiddleware: middleware);
+
+      await service.submitQuestion(
+        text: 'Question?',
+        categoryId: null,
+        language: 'en',
+      );
+
+      expect(middleware.requests.single.jsonBody, {
+        'text': 'Question?',
+        'language': 'en',
+      });
+    });
 
     test('parses the created submission from the 201 response', () async {
       final middleware = _CapturingAuthMiddleware(

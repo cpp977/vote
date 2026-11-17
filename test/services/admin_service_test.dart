@@ -129,6 +129,33 @@ void main() {
       expect(request.jsonBody, {'min_age': 18, 'special_category': 'health'});
     });
 
+    test('sends the completed category and answer options', () async {
+      final middleware = _CapturingAuthMiddleware(
+        responseBody: _approvedSubmission,
+      );
+      final service = AdminService(authMiddleware: middleware);
+
+      await service.approveQuestion(
+        5,
+        categoryId: 3,
+        answerOptions: ['Yes', 'No'],
+      );
+
+      expect(middleware.requests.single.jsonBody, {
+        'category_id': 3,
+        'answer_options': ['Yes', 'No'],
+      });
+    });
+
+    test('omits answer options when none are completed', () async {
+      final middleware = _CapturingAuthMiddleware();
+      final service = AdminService(authMiddleware: middleware);
+
+      await service.approveQuestion(5, categoryId: 2);
+
+      expect(middleware.requests.single.jsonBody, {'category_id': 2});
+    });
+
     test('sends an empty body when no overrides are given', () async {
       final middleware = _CapturingAuthMiddleware();
       final service = AdminService(authMiddleware: middleware);

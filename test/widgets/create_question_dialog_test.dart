@@ -7,6 +7,7 @@ import 'package:vote/controllers/auth_controller.dart';
 import 'package:vote/l10n/app_localizations.dart';
 import 'package:vote/models/submission_models.dart';
 import 'package:vote/services/submission_service.dart';
+import 'package:vote/utils/constants.dart';
 import 'package:vote/widgets/create_question_dialog.dart';
 
 void main() {
@@ -19,7 +20,7 @@ void main() {
   });
 
   group('showCreateQuestionDialog', () {
-    testWidgets('asks for a question, a category and answer options', (
+    testWidgets('asks for a question and offers a category and answers', (
       tester,
     ) async {
       await pumpDialog(tester);
@@ -31,6 +32,15 @@ void main() {
       expect(find.text('Cancel'), findsOneWidget);
       // Question text plus the two initial answer options.
       expect(find.byType(TextFormField), findsNWidgets(3));
+    });
+
+    testWidgets('marks the category and the answer options as optional', (
+      tester,
+    ) async {
+      await pumpDialog(tester);
+
+      expect(find.text('Category (optional)'), findsOneWidget);
+      expect(find.textContaining('Optional'), findsWidgets);
     });
 
     testWidgets('lists the categories of the auth controller', (tester) async {
@@ -48,18 +58,32 @@ void main() {
       expect(find.text('No categories available'), findsOneWidget);
     });
 
-    testWidgets('requires the question text and a category', (tester) async {
+    testWidgets('offers filing without a category', (tester) async {
+      await pumpDialog(tester);
+
+      // The default selection files the question without a category.
+      expect(find.text('No category'), findsOneWidget);
+
+      await openCategoryDropdown(tester);
+
+      expect(find.text('No category'), findsWidgets);
+    });
+
+    testWidgets('requires only the question text', (tester) async {
       await pumpDialog(tester);
 
       await tapSubmit(tester);
 
-      // One message per required field that is still empty.
-      expect(find.text('This field is required'), findsNWidgets(2));
+      // Only the question text is mandatory; the category and the answer
+      // options may be left out.
+      expect(find.text('This field is required'), findsOneWidget);
     });
 
-    testWidgets('rejects a submission without answer options', (tester) async {
-      await pumpDialog(tester);
-      await selectCategory(tester, 'General');
+    testWidgets('files the question without category and answer options', (
+      tester,
+    ) async {
+      final _FakeSubmissionService service = _FakeSubmissionService();
+      await pumpDialog(tester, submissionService: service);
 
       await tester.enterText(
         find.byType(TextFormField).first,
@@ -67,16 +91,31 @@ void main() {
       );
       await tapSubmit(tester);
 
-      expect(
-        find.text('Please provide at least one answer option'),
-        findsOneWidget,
-      );
+      expect(service.submissions.single.categoryId, isNull);
+      expect(service.submissions.single.answerOptions, isEmpty);
+      expect(find.text('Submit a Question'), findsNothing);
+    });
+
+    testWidgets('removes every answer option', (tester) async {
+      await pumpDialog(tester);
+
+      await tester.tap(find.byTooltip('Remove answer option').first);
+      await tester.pumpAndSettle();
+      await tester.tap(find.byTooltip('Remove answer option').first);
+      await tester.pumpAndSettle();
+
+      // Only the question text field is left.
+      expect(find.byType(TextFormField), findsOneWidget);
+      expect(find.text('Add answer option'), findsOneWidget);
     });
 
     testWidgets('adds and removes answer options', (tester) async {
       await pumpDialog(tester);
 
-      await tester.tap(find.text('Add answer option'));
+      final Finder addButton = find.text('Add answer option');
+      await tester.ensureVisible(addButton);
+      await tester.pumpAndSettle();
+      await tester.tap(addButton);
       await tester.pumpAndSettle();
       expect(find.byType(TextFormField), findsNWidgets(4));
 
@@ -299,9 +338,9 @@ class _FakeSubmissionService extends SubmissionService {
   @override
   Future<Submission> submitQuestion({
     required String text,
-    required int categoryId,
+    int? categoryId,
     required String language,
-    required List<String> answerOptions,
+    List<String> answerOptions = const <String>[],
   }) async {
     submissions.add(
       _SubmittedQuestion(
@@ -336,7 +375,7 @@ class _SubmittedQuestion {
   });
 
   final String text;
-  final int categoryId;
+  final int? categoryId;
   final String language;
   final List<String> answerOptions;
 }

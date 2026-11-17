@@ -5,6 +5,10 @@ import 'package:flutter/material.dart';
 /// localized equivalent can be shown instead.
 const String uncategorizedFallback = 'Uncategorized';
 
+/// Maximum number of answer options a question may carry. Mirrors the backend
+/// limit enforced for `POST /questions/submissions` and the admin approval.
+const int kMaxAnswerOptions = 50;
+
 /// Number of questions requested per page from the backend.
 const int pageSize = 20;
 

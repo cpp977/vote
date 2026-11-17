@@ -195,9 +195,13 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final submission = _submissions[index];
-                final categoryName =
-                    authController.categories[submission.categoryId] ??
-                    l10n.categoryFallback(submission.categoryId);
+                // Submissions may be filed without a category; an admin
+                // assigns one before the question is approved.
+                final int? categoryId = submission.categoryId;
+                final String categoryName = categoryId == null
+                    ? l10n.uncategorized
+                    : authController.categories[categoryId] ??
+                          l10n.categoryFallback(categoryId);
                 final dateText = _formatDate(submission.createdAt);
                 return Card(
                   elevation: 2,
