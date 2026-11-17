@@ -411,6 +411,25 @@
   "@approvalSettingsTitle": {
     "description": "Section title for the min-age/special-category inputs shown to admins when approving a submission."
   },
+  "approvalRequirementsHint": "A category and at least two answer options are required to approve.",
+  "@approvalRequirementsHint": {
+    "description": "Hint in the approval settings explaining what an admin must fill in before a submission can be approved."
+  },
+  "answerOptionsRequired": "Answer options to complete the question",
+  "@answerOptionsRequired": {
+    "description": "Heading of the editor an admin uses to add the answer options a submission is missing."
+  },
+  "answerOptionsNeedMore": "An approved question needs at least two answer options, so add {count} more.",
+  "@answerOptionsNeedMore": {
+    "description": "Hint above the approval answer-options editor stating how many options are still missing before the question can be approved.",
+    "placeholders": {
+      "count": {"type": "int"}
+    }
+  },
+  "answersAlreadyProvided": "The submitter already provided enough answer options.",
+  "@answersAlreadyProvided": {
+    "description": "Note in the admin approval settings when the question already carries answer options."
+  },
   "approvalMinAgeLabel": "Minimum age",
   "@approvalMinAgeLabel": {
     "description": "Label of the minimum-age input an admin sets when approving a submission."
@@ -784,6 +803,10 @@
   "@createQuestion": {
     "description": "Label of the floating action button that opens the submit-question dialog."
   },
+  "signInToSubmitQuestion": "Sign in to submit a question",
+  "@signInToSubmitQuestion": {
+    "description": "Title of the dialog shown to guests who try to submit a question from the question list."
+  },
   "newQuestionTitle": "Submit a Question",
   "@newQuestionTitle": {
     "description": "Title of the dialog used to submit a new question."
@@ -799,6 +822,18 @@
   "categoryLabel": "Category",
   "@categoryLabel": {
     "description": "Label for the category selector in the submit dialog."
+  },
+  "categoryOptionalLabel": "Category (optional)",
+  "@categoryOptionalLabel": {
+    "description": "Label for the optional category selector in the submit dialog."
+  },
+  "noCategory": "No category",
+  "@noCategory": {
+    "description": "Dropdown entry filing a question without a category; an administrator assigns one during approval."
+  },
+  "selectCategory": "Select a category",
+  "@selectCategory": {
+    "description": "Prompt of the category selector in the admin approval settings."
   },
   "languageLabel": "Language",
   "@languageLabel": {
@@ -858,6 +893,10 @@
   "@answerOptionsLabel": {
     "description": "Section label for the answer-option fields in the submit-question dialog."
   },
+  "answersOptionalHint": "Optional — add answer options, or leave them out and an administrator will add them during approval.",
+  "@answersOptionalHint": {
+    "description": "Hint below the answer-options heading explaining that the options may be omitted."
+  },
   "answerOptionLabel": "Answer option {number}",
   "@answerOptionLabel": {
     "description": "Label for a single answer-option input; {number} is its 1-based position.",
@@ -878,10 +917,6 @@
   "removeAnswerOption": "Remove answer option",
   "@removeAnswerOption": {
     "description": "Tooltip for the button that removes an answer-option field in the submit-question dialog."
-  },
-  "atLeastOneAnswerOption": "Please provide at least one answer option",
-  "@atLeastOneAnswerOption": {
-    "description": "Error shown when the submit-question dialog has no answer options filled in."
   },
   "maxAnswerOptionsReached": "You can add at most {max} answer options",
   "@maxAnswerOptionsReached": {

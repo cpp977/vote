@@ -22,7 +22,9 @@ class AdminException implements Exception {
 ///  - [getSubmissions] lists every submission that is not yet approved via
 ///    `GET /admin/questions/submissions` (the review queue).
 ///  - [approveQuestion] marks a submission as `approved` (publicly visible)
-///    through `POST /admin/questions/{id}/approve`.
+///    through `POST /admin/questions/{id}/approve`; it also assigns the
+///    category and the answer options an admin completes for submissions that
+///    were filed without them.
 ///  - [rejectQuestion] marks a submission as `rejected` through
 ///    `POST /admin/questions/{id}/reject`.
 ///  - [getUsers] lists all registered users via `GET /admin/users`.
@@ -39,7 +41,8 @@ class AdminService {
   AdminService({AuthMiddleware? authMiddleware})
     : _authMiddleware = authMiddleware ?? AuthMiddleware();
 
-  /// Loads the full review queue (all submissions that are not yet approved).
+  /// Loads the full review queue (all submissions that are not yet approved)
+  /// via `GET /admin/questions/submissions`.
   ///
   /// Returns an empty list when there are no submissions to review.
   /// Throws [AdminException] on failure. A `401`/`403` status is surfaced so
@@ -68,17 +71,31 @@ class AdminService {
   /// [specialCategory] (defaulting to [SpecialCategory.none]); both are sent
   /// in the request body and stored on the approved question.
   ///
+  /// [categoryId] assigns a category to submissions that were filed without
+  /// one, and [answerOptions] fills in answers for submissions that arrived
+  /// with none; an approved question always needs both, so the backend rejects
+  /// an approval that would leave either empty. [answerOptions] must not be
+  /// sent for a question that already has answers.
+  ///
   /// Returns the updated [Submission] (status `approved`).
   /// Throws [AdminException] on failure (including `401`/`403`).
   Future<Submission> approveQuestion(
     int id, {
     int? minAge,
     SpecialCategory? specialCategory,
+    int? categoryId,
+    List<String>? answerOptions,
   }) async {
     return _review(
       '${ApiConfig.baseUrl}/admin/questions/$id/approve',
       'approve',
-      body: {'min_age': ?minAge, 'special_category': ?specialCategory?.label},
+      body: {
+        'min_age': ?minAge,
+        'special_category': ?specialCategory?.label,
+        'category_id': ?categoryId,
+        if (answerOptions != null && answerOptions.isNotEmpty)
+          'answer_options': answerOptions,
+      },
     );
   }
 

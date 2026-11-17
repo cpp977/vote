@@ -19,6 +19,16 @@ void main() {
       ],
     };
 
+    test('parses a submission filed without a category', () {
+      final submission = Submission.fromJson(<String, dynamic>{
+        ...sampleJson,
+        'category_id': null,
+      });
+
+      expect(submission.categoryId, isNull);
+      expect(submission.text, 'Should we adopt a new style guide?');
+    });
+
     test('parses all fields including nested answerOptions', () {
       final submission = Submission.fromJson(sampleJson);
 

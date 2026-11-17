@@ -334,6 +334,23 @@ class AppLocalizationsDe extends AppLocalizations {
   String get approvalSettingsTitle => 'Freigabe-Einstellungen';
 
   @override
+  String get approvalRequirementsHint =>
+      'Zum Freigeben sind eine Kategorie und mindestens zwei Antwortmöglichkeiten erforderlich.';
+
+  @override
+  String get answerOptionsRequired =>
+      'Antwortmöglichkeiten zur Vervollständigung';
+
+  @override
+  String answerOptionsNeedMore(int count) {
+    return 'Zum Freigeben sind mindestens zwei Antwortmöglichkeiten nötig, also bitte $count weitere angeben.';
+  }
+
+  @override
+  String get answersAlreadyProvided =>
+      'Die einreichende Person hat bereits genügend Antwortmöglichkeiten angegeben.';
+
+  @override
   String get approvalMinAgeLabel => 'Mindestalter';
 
   @override
@@ -611,6 +628,9 @@ class AppLocalizationsDe extends AppLocalizations {
   String get createQuestion => 'Neue Frage';
 
   @override
+  String get signInToSubmitQuestion => 'Anmelden, um eine Frage zu stellen';
+
+  @override
   String get newQuestionTitle => 'Frage einreichen';
 
   @override
@@ -621,6 +641,15 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get categoryLabel => 'Kategorie';
+
+  @override
+  String get categoryOptionalLabel => 'Kategorie (optional)';
+
+  @override
+  String get noCategory => 'Keine Kategorie';
+
+  @override
+  String get selectCategory => 'Kategorie auswählen';
 
   @override
   String get languageLabel => 'Sprache';
@@ -665,6 +694,10 @@ class AppLocalizationsDe extends AppLocalizations {
   String get answerOptionsLabel => 'Antwortmöglichkeiten';
 
   @override
+  String get answersOptionalHint =>
+      'Optional – Antwortmöglichkeiten hinzufügen oder offenlassen; die Administration ergänzt sie bei der Freigabe.';
+
+  @override
   String answerOptionLabel(int number) {
     return 'Antwortmöglichkeit $number';
   }
@@ -677,10 +710,6 @@ class AppLocalizationsDe extends AppLocalizations {
 
   @override
   String get removeAnswerOption => 'Antwortmöglichkeit entfernen';
-
-  @override
-  String get atLeastOneAnswerOption =>
-      'Bitte gib mindestens eine Antwortmöglichkeit an';
 
   @override
   String maxAnswerOptionsReached(int max) {

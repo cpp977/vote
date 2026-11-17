@@ -3,26 +3,22 @@ import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
 import '../controllers/auth_controller.dart';
-import '../controllers/configuration_controller.dart';
 import '../l10n/app_localizations.dart';
 import '../models/submission_models.dart';
 import '../services/submission_service.dart';
 import '../widgets/app_drawer.dart';
 import '../widgets/configuration_menu.dart';
+import '../widgets/submit_question_button.dart';
 import '../widgets/user_menu_button.dart';
-
-/// Maximum number of answer options a submission may carry. Mirrors the
-/// backend limit enforced for `POST /questions/submissions`.
-const int kMaxAnswerOptions = 50;
 
 /// The user's own question submissions.
 ///
 /// Lists everything the current user has submitted (pending, approved or
 /// rejected) via `GET /questions/mine`. Submissions start out `pending` and are
 /// only visible to the public once an administrator approves them. A floating
-/// action button opens a dialog to submit a new question together with its
-/// answer options, which the backend stores as a `pending` submission through
-/// `POST /questions/submissions`.
+/// action button (see [SubmitQuestionButton]) opens the shared
+/// submit-question dialog, which the backend stores as a `pending` submission
+/// through `POST /questions/submissions`.
 class MySubmissionsPage extends StatefulWidget {
   /// Called when the user picks a destination from the [AppDrawer]. Supplied by
   /// the composition root so this page never imports the questions page
@@ -85,275 +81,6 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
         _isLoading = false;
       });
     }
-  }
-
-  /// Opens the "submit a new question" dialog and, on success, refreshes the
-  /// list.
-  Future<void> _showCreateDialog(BuildContext context) async {
-    final l10n = AppLocalizations.of(context);
-    final authController = context.read<AuthController>();
-    final categories = authController.categories;
-
-    final sortedCategories = categories.entries.toList()
-      ..sort((a, b) => a.value.toLowerCase().compareTo(b.value.toLowerCase()));
-
-    final textController = TextEditingController();
-    // One text field per answer option. A submission must carry at least one
-    // non-empty option, so we start with two empty fields (a typical poll
-    // needs at least two choices).
-    final List<TextEditingController> answerControllers = [
-      TextEditingController(),
-      TextEditingController(),
-    ];
-    final formKey = GlobalKey<FormState>();
-    int? selectedCategoryId;
-    String? errorText;
-    bool isSubmitting = false;
-
-    if (!context.mounted) return;
-    await showDialog(
-      context: context,
-      builder: (dialogContext) {
-        return StatefulBuilder(
-          builder: (context, setDialogState) {
-            return AlertDialog(
-              title: Text(l10n.newQuestionTitle),
-              content: SingleChildScrollView(
-                child: Form(
-                  key: formKey,
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (errorText != null) ...[
-                        Container(
-                          padding: const EdgeInsets.all(12),
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.errorContainer,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Text(
-                            errorText!,
-                            style: TextStyle(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onErrorContainer,
-                              fontSize: 14,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 12),
-                      ],
-                      TextFormField(
-                        controller: textController,
-                        decoration: InputDecoration(
-                          labelText: l10n.questionTextLabel,
-                          hintText: l10n.questionTextHint,
-                          alignLabelWithHint: true,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        maxLines: 3,
-                        textInputAction: TextInputAction.next,
-                        validator: (value) =>
-                            (value == null || value.trim().isEmpty)
-                            ? l10n.requiredField
-                            : null,
-                      ),
-                      const SizedBox(height: 16),
-                      DropdownButtonFormField<int>(
-                        initialValue: selectedCategoryId,
-                        decoration: InputDecoration(
-                          labelText: l10n.categoryLabel,
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                        ),
-                        items: sortedCategories
-                            .map(
-                              (e) => DropdownMenuItem(
-                                value: e.key,
-                                child: Text(e.value),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) =>
-                            setDialogState(() => selectedCategoryId = value),
-                        validator: (value) =>
-                            value == null ? l10n.requiredField : null,
-                      ),
-                      if (categories.isEmpty)
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8),
-                          child: Text(
-                            l10n.noCategoriesAvailable,
-                            style: Theme.of(context).textTheme.bodySmall
-                                ?.copyWith(
-                                  color: Theme.of(
-                                    context,
-                                  ).colorScheme.onSurfaceVariant,
-                                ),
-                          ),
-                        ),
-                      const SizedBox(height: 20),
-                      Text(
-                        l10n.answerOptionsLabel,
-                        style: Theme.of(context).textTheme.titleSmall?.copyWith(
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      const SizedBox(height: 8),
-                      ...answerControllers.asMap().entries.map((entry) {
-                        final index = entry.key;
-                        final controller = entry.value;
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 8),
-                          child: Row(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Expanded(
-                                child: TextFormField(
-                                  controller: controller,
-                                  decoration: InputDecoration(
-                                    labelText: l10n.answerOptionLabel(
-                                      index + 1,
-                                    ),
-                                    hintText: l10n.answerOptionHint,
-                                    border: OutlineInputBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                  ),
-                                  textInputAction: TextInputAction.next,
-                                ),
-                              ),
-                              if (answerControllers.length > 1)
-                                IconButton(
-                                  onPressed: () {
-                                    setDialogState(() {
-                                      answerControllers.removeAt(index);
-                                      controller.dispose();
-                                    });
-                                  },
-                                  icon: const Icon(Icons.remove_circle_outline),
-                                  tooltip: l10n.removeAnswerOption,
-                                  visualDensity: VisualDensity.compact,
-                                ),
-                            ],
-                          ),
-                        );
-                      }),
-                      OutlinedButton.icon(
-                        onPressed: answerControllers.length >= kMaxAnswerOptions
-                            ? null
-                            : () => setDialogState(
-                                () => answerControllers.add(
-                                  TextEditingController(),
-                                ),
-                              ),
-                        icon: const Icon(Icons.add),
-                        label: Text(l10n.addAnswerOption),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: isSubmitting
-                      ? null
-                      : () => Navigator.of(context).pop(),
-                  child: Text(l10n.cancel),
-                ),
-                FilledButton(
-                  onPressed: isSubmitting
-                      ? null
-                      : () async {
-                          if (!formKey.currentState!.validate()) return;
-                          // At least one non-empty answer option is required by
-                          // the backend; surface a localized error instead of
-                          // sending an empty submission.
-                          final options = answerControllers
-                              .map((c) => c.text.trim())
-                              .where((t) => t.isNotEmpty)
-                              .toList();
-                          if (options.isEmpty) {
-                            setDialogState(() {
-                              isSubmitting = false;
-                              errorText = l10n.atLeastOneAnswerOption;
-                            });
-                            return;
-                          }
-                          setDialogState(() {
-                            isSubmitting = true;
-                            errorText = null;
-                          });
-                          try {
-                            await _submissionService.submitQuestion(
-                              text: textController.text.trim(),
-                              categoryId: selectedCategoryId!,
-                              language: _currentLanguageCode(),
-                              answerOptions: options,
-                            );
-                            if (!context.mounted) return;
-                            Navigator.of(context).pop();
-                            ScaffoldMessenger.of(context).showSnackBar(
-                              SnackBar(
-                                content: Text(l10n.submissionCreated),
-                                backgroundColor: Colors.green,
-                              ),
-                            );
-                            _loadSubmissions();
-                          } on SubmissionException catch (e) {
-                            if (e.statusCode == 401) {
-                              if (!context.mounted) return;
-                              Navigator.of(context).pop();
-                              context.read<AuthController>().logout(
-                                showLoginPage: true,
-                              );
-                              return;
-                            }
-                            setDialogState(() {
-                              isSubmitting = false;
-                              errorText = e.message;
-                            });
-                          } catch (_) {
-                            setDialogState(() {
-                              isSubmitting = false;
-                              errorText = l10n.submissionFailed;
-                            });
-                          }
-                        },
-                  child: isSubmitting
-                      ? const SizedBox(
-                          height: 20,
-                          width: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            color: Colors.white,
-                          ),
-                        )
-                      : Text(l10n.submit),
-                ),
-              ],
-            );
-          },
-        );
-      },
-    );
-    // Free the controllers created for the dialog (question and all
-    // answer-option fields).
-    textController.dispose();
-    for (final controller in answerControllers) {
-      controller.dispose();
-    }
-  }
-
-  /// Returns the 2-character language code backend requests should use,
-  /// constrained to the languages the app actually supports.
-  String _currentLanguageCode() {
-    final code = ConfigurationController.currentLanguageCode;
-    return code == 'de' ? 'de' : 'en';
   }
 
   /// Builds the status chip (pending / approved / rejected) for a submission.
@@ -468,9 +195,13 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
               separatorBuilder: (_, _) => const SizedBox(height: 12),
               itemBuilder: (context, index) {
                 final submission = _submissions[index];
-                final categoryName =
-                    authController.categories[submission.categoryId] ??
-                    l10n.categoryFallback(submission.categoryId);
+                // Submissions may be filed without a category; an admin
+                // assigns one before the question is approved.
+                final int? categoryId = submission.categoryId;
+                final String categoryName = categoryId == null
+                    ? l10n.uncategorized
+                    : authController.categories[categoryId] ??
+                          l10n.categoryFallback(categoryId);
                 final dateText = _formatDate(submission.createdAt);
                 return Card(
                   elevation: 2,
@@ -516,11 +247,7 @@ class _MySubmissionsPageState extends State<MySubmissionsPage> {
                 );
               },
             ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () => _showCreateDialog(context),
-        icon: const Icon(Icons.add),
-        label: Text(l10n.createQuestion),
-      ),
+      floatingActionButton: SubmitQuestionButton(onSubmitted: _loadSubmissions),
     );
   }
 }

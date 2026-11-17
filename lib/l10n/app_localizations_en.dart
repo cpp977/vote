@@ -324,6 +324,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get approvalSettingsTitle => 'Approval settings';
 
   @override
+  String get approvalRequirementsHint =>
+      'A category and at least two answer options are required to approve.';
+
+  @override
+  String get answerOptionsRequired => 'Answer options to complete the question';
+
+  @override
+  String answerOptionsNeedMore(int count) {
+    return 'An approved question needs at least two answer options, so add $count more.';
+  }
+
+  @override
+  String get answersAlreadyProvided =>
+      'The submitter already provided enough answer options.';
+
+  @override
   String get approvalMinAgeLabel => 'Minimum age';
 
   @override
@@ -601,6 +617,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get createQuestion => 'New Question';
 
   @override
+  String get signInToSubmitQuestion => 'Sign in to submit a question';
+
+  @override
   String get newQuestionTitle => 'Submit a Question';
 
   @override
@@ -611,6 +630,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get categoryLabel => 'Category';
+
+  @override
+  String get categoryOptionalLabel => 'Category (optional)';
+
+  @override
+  String get noCategory => 'No category';
+
+  @override
+  String get selectCategory => 'Select a category';
 
   @override
   String get languageLabel => 'Language';
@@ -654,6 +682,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get answerOptionsLabel => 'Answer options';
 
   @override
+  String get answersOptionalHint =>
+      'Optional — add answer options, or leave them out and an administrator will add them during approval.';
+
+  @override
   String answerOptionLabel(int number) {
     return 'Answer option $number';
   }
@@ -666,10 +698,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get removeAnswerOption => 'Remove answer option';
-
-  @override
-  String get atLeastOneAnswerOption =>
-      'Please provide at least one answer option';
 
   @override
   String maxAnswerOptionsReached(int max) {

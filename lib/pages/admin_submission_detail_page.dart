@@ -12,6 +12,7 @@ import '../models/special_category.dart';
 import '../models/submission_models.dart';
 import '../services/admin_service.dart';
 import '../services/auth_middleware.dart';
+import '../utils/constants.dart';
 import '../utils/error_handler.dart';
 import '../widgets/configuration_menu.dart';
 import '../widgets/snack_bars.dart';
@@ -24,10 +25,25 @@ import '../widgets/snack_bars.dart';
 /// [reject] the submission; once decided the actions are disabled and a note is
 /// shown. Returning to the queue after a decision triggers a reload so the new
 /// status is reflected.
+///
+/// Submissions may be filed without a category and without answer options. The
+/// approval settings therefore also let the administrator pick the category and
+/// enter answer options; an approved question must have both, so [approve]
+/// stays disabled until they are complete.
 class AdminSubmissionDetailPage extends StatefulWidget {
+  /// [adminService] and [authMiddleware] can be replaced in tests.
+  const AdminSubmissionDetailPage({
+    super.key,
+    required this.submission,
+    this.adminService,
+    this.authMiddleware,
+  });
+
   final Submission submission;
 
-  const AdminSubmissionDetailPage({super.key, required this.submission});
+  final AdminService? adminService;
+
+  final AuthMiddleware? authMiddleware;
 
   @override
   State<AdminSubmissionDetailPage> createState() =>
@@ -35,8 +51,8 @@ class AdminSubmissionDetailPage extends StatefulWidget {
 }
 
 class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
-  final AdminService _adminService = AdminService();
-  final AuthMiddleware _authMiddleware = AuthMiddleware();
+  late final AdminService _adminService;
+  late final AuthMiddleware _authMiddleware;
 
   late Submission _submission;
   bool _reviewed = false;
@@ -50,16 +66,30 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
   );
   SpecialCategory _selectedSpecialCategory = SpecialCategory.none;
 
+  /// Category assigned during approval. `null` means "not picked yet" and
+  /// blocks the approval, which always needs a category.
+  int? _selectedCategoryId;
+
   // Answer-options state.
   List<AnswerOption> _answers = [];
   bool _isLoadingAnswers = true;
   String? _answersErrorMessage;
   bool _answersNotVisible = false;
 
+  /// Inputs of the answer-options editor, shown when the submission arrived
+  /// without answers. Kept in sync with [_answers] so the editor disappears as
+  /// soon as the question has answers.
+  final List<TextEditingController> _answerControllers = [];
+
   @override
   void initState() {
     super.initState();
+    _adminService = widget.adminService ?? AdminService();
+    _authMiddleware = widget.authMiddleware ?? AuthMiddleware();
     _submission = widget.submission;
+    _selectedCategoryId = _submission.categoryId;
+    // Start with one empty option so the admin can type straight away.
+    _answerControllers.add(TextEditingController());
     // A submission that is already decided is treated as reviewed so returning
     // to the queue reloads it (harmlessly) and the actions stay disabled.
     _reviewed = _submission.isApproved || _submission.isRejected;
@@ -71,7 +101,35 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
   @override
   void dispose() {
     _minAgeController.dispose();
+    for (final controller in _answerControllers) {
+      controller.dispose();
+    }
     super.dispose();
+  }
+
+  /// Categories sorted by name for a stable display order.
+  List<int> get _sortedCategoryIds {
+    final Map<int, String> categories = context
+        .read<AuthController>()
+        .categories;
+    final List<int> ids = categories.keys.toList();
+    ids.sort(
+      (a, b) =>
+          categories[a]!.toLowerCase().compareTo(categories[b]!.toLowerCase()),
+    );
+    return ids;
+  }
+
+  /// Categories available for the language the app currently uses, as
+  /// id -> name.
+  Map<int, String> get _categories => context.read<AuthController>().categories;
+
+  /// Display name of a category id, falling back to the localized
+  /// "Uncategorized" for submissions without one.
+  String _categoryLabel(int? categoryId) {
+    if (categoryId == null) return AppLocalizations.of(context).uncategorized;
+    return _categories[categoryId] ??
+        AppLocalizations.of(context).categoryFallback(categoryId);
   }
 
   /// Localized display label for a special category.
@@ -123,7 +181,11 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
           _isLoadingAnswers = false;
         });
       } else if (response.statusCode == 401) {
-        if (mounted) context.read<AuthController>().logout(showLoginPage: true);
+        if (!mounted) return;
+        // Stop the loading indicator before the login screen replaces this
+        // page, otherwise the answers section keeps spinning.
+        setState(() => _isLoadingAnswers = false);
+        context.read<AuthController>().logout(showLoginPage: true);
       } else if (response.statusCode == 404) {
         // Not visible to the reviewer (e.g. still pending) – inform, don't err.
         setState(() {
@@ -147,11 +209,45 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
 
   bool get _alreadyReviewed => _submission.isApproved || _submission.isRejected;
 
+  /// An approved question is public and its answers cannot be edited
+  /// afterwards, so it needs at least two options to be worth voting on.
+  static const int _minAnswerOptions = 2;
+
+  /// Answer options the question already carries, i.e. the ones the submitter
+  /// provided. They are never replaced, only added to.
+  int get _existingAnswerCount => _answers.length;
+
+  /// Non-empty options currently entered in the answer-options editor.
+  List<String> get _enteredAnswerOptions => _answerControllers
+      .map((controller) => controller.text.trim())
+      .where((text) => text.isNotEmpty)
+      .toList();
+
+  /// How many answer options the question would have after the approval.
+  int get _resultingAnswerCount =>
+      _existingAnswerCount + _enteredAnswerOptions.length;
+
+  /// The question still needs answer options, so the editor is shown. Once it
+  /// carries [ _minAnswerOptions ] options the submitter is done and the admin
+  /// must not add more (the backend rejects that with 409).
+  bool get _needsAnswerOptions => _existingAnswerCount < _minAnswerOptions;
+
+  /// An approved question needs a category and at least
+  /// [ _minAnswerOptions ] answer options.
+  ///
+  /// Options the submitter already provided count towards that; whatever is
+  /// missing is entered in the editor.
+  bool get _canApprove =>
+      !_isReviewing &&
+      _selectedCategoryId != null &&
+      _resultingAnswerCount >= _minAnswerOptions;
+
   Future<void> _review(
     Future<Submission> Function(int) action,
     String message,
-    String failureMessage,
-  ) async {
+    String failureMessage, {
+    bool surfaceBackendMessage = false,
+  }) async {
     setState(() => _isReviewing = true);
     try {
       final updated = await action(_submission.id);
@@ -171,12 +267,55 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
         return;
       }
       setState(() => _isReviewing = false);
-      showErrorSnackBar(context, failureMessage);
+      // Validation errors (e.g. a missing category) are reported by the
+      // backend with a precise message, which beats the generic one.
+      showErrorSnackBar(
+        context,
+        surfaceBackendMessage && e.message.isNotEmpty
+            ? e.message
+            : failureMessage,
+      );
     } catch (_) {
       if (!mounted) return;
       setState(() => _isReviewing = false);
       showErrorSnackBar(context, failureMessage);
     }
+  }
+
+  /// Appends an empty answer option to the approval editor.
+  void _addAnswerOption() {
+    setState(() => _answerControllers.add(TextEditingController()));
+  }
+
+  /// Removes the answer option at [index] from the approval editor.
+  void _removeAnswerOption(int index) {
+    setState(() {
+      _answerControllers.removeAt(index).dispose();
+    });
+  }
+
+  /// Approves the submission, completing whatever the submitter left out.
+  Future<void> _approve() async {
+    if (!_canApprove) return;
+    final int? categoryId = _selectedCategoryId;
+    // Answer options are only sent while the question has fewer than the
+    // required minimum; the backend appends them to whatever the submitter
+    // provided and rejects options for a question that is already complete.
+    final List<String>? answerOptions = _needsAnswerOptions
+        ? _enteredAnswerOptions
+        : null;
+    await _review(
+      (id) => _adminService.approveQuestion(
+        id,
+        minAge: int.tryParse(_minAgeController.text.trim())?.clamp(0, 120) ?? 0,
+        specialCategory: _selectedSpecialCategory,
+        categoryId: categoryId,
+        answerOptions: answerOptions,
+      ),
+      AppLocalizations.of(context).submissionApprovedMessage,
+      AppLocalizations.of(context).approveFailed,
+      surfaceBackendMessage: true,
+    );
   }
 
   Widget _statusChip(BuildContext context) {
@@ -219,10 +358,10 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     final colorScheme = Theme.of(context).colorScheme;
-    final authController = context.watch<AuthController>();
-    final categoryName =
-        authController.categories[_submission.categoryId] ??
-        l10n.categoryFallback(_submission.categoryId);
+    // Watching the controller keeps the category list and the labels in sync
+    // with the loaded categories and the app language.
+    context.watch<AuthController>();
+    final categoryName = _categoryLabel(_submission.categoryId);
     final dateText = _formatDate(_submission.createdAt);
     final actionsDisabled = _alreadyReviewed || _isReviewing;
 
@@ -495,6 +634,9 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
                   Expanded(
                     child: DropdownButtonFormField<SpecialCategory>(
                       initialValue: _selectedSpecialCategory,
+                      // Long category names would otherwise overflow the row
+                      // on narrow screens.
+                      isExpanded: true,
                       decoration: InputDecoration(
                         labelText: l10n.specialCategoryLabel,
                         border: OutlineInputBorder(
@@ -520,6 +662,116 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
                     ),
                   ),
                 ],
+              ),
+              const SizedBox(height: 12),
+              // Category: required for approval. Submissions filed without a
+              // category start unassigned here.
+              DropdownButtonFormField<int>(
+                initialValue: _selectedCategoryId,
+                isExpanded: true,
+                decoration: InputDecoration(
+                  labelText: l10n.categoryLabel,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+                hint: Text(l10n.selectCategory),
+                items: _sortedCategoryIds
+                    .map(
+                      (id) => DropdownMenuItem(
+                        value: id,
+                        child: Text(
+                          _categories[id] ?? l10n.categoryFallback(id),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    )
+                    .toList(),
+                onChanged: _alreadyReviewed
+                    ? null
+                    : (value) {
+                        if (value != null) {
+                          setState(() => _selectedCategoryId = value);
+                        }
+                      },
+              ),
+              const SizedBox(height: 12),
+              // Answer options. An approved question needs at least
+              // [_minAnswerOptions] of them and answers cannot be edited
+              // afterwards, so the editor stays available while the submitter
+              // provided too few: whatever the admin types is appended to the
+              // existing options, never replacing them.
+              if (_needsAnswerOptions) ...[
+                Text(
+                  l10n.answerOptionsRequired,
+                  style: Theme.of(
+                    context,
+                  ).textTheme.titleSmall?.copyWith(fontWeight: FontWeight.w600),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  l10n.answerOptionsNeedMore(
+                    _minAnswerOptions - _existingAnswerCount,
+                  ),
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                ..._answerControllers.asMap().entries.map((entry) {
+                  final index = entry.key;
+                  final controller = entry.value;
+                  return Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Row(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Expanded(
+                          child: TextFormField(
+                            controller: controller,
+                            onChanged: (_) => setState(() {}),
+                            decoration: InputDecoration(
+                              labelText: l10n.answerOptionLabel(index + 1),
+                              hintText: l10n.answerOptionHint,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () => _removeAnswerOption(index),
+                          icon: const Icon(Icons.remove_circle_outline),
+                          tooltip: l10n.removeAnswerOption,
+                          visualDensity: VisualDensity.compact,
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: OutlinedButton.icon(
+                    onPressed: _answerControllers.length >= kMaxAnswerOptions
+                        ? null
+                        : _addAnswerOption,
+                    icon: const Icon(Icons.add),
+                    label: Text(l10n.addAnswerOption),
+                  ),
+                ),
+              ] else
+                Text(
+                  l10n.answersAlreadyProvided,
+                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                    color: colorScheme.onSurfaceVariant,
+                  ),
+                ),
+              const SizedBox(height: 12),
+              Text(
+                l10n.approvalRequirementsHint,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: colorScheme.onSurfaceVariant,
+                ),
               ),
               const SizedBox(height: 24),
             ],
@@ -562,27 +814,7 @@ class _AdminSubmissionDetailPageState extends State<AdminSubmissionDetailPage> {
                 children: [
                   Expanded(
                     child: FilledButton.icon(
-                      onPressed: actionsDisabled
-                          ? null
-                          : () {
-                              // The backend clamps/validates the value; a
-                              // missing or out-of-range input falls back to
-                              // the default (0 = no restriction).
-                              final minAge =
-                                  int.tryParse(
-                                    _minAgeController.text.trim(),
-                                  )?.clamp(0, 120) ??
-                                  0;
-                              _review(
-                                (id) => _adminService.approveQuestion(
-                                  id,
-                                  minAge: minAge,
-                                  specialCategory: _selectedSpecialCategory,
-                                ),
-                                l10n.submissionApprovedMessage,
-                                l10n.approveFailed,
-                              );
-                            },
+                      onPressed: _canApprove ? _approve : null,
                       icon: _isReviewing
                           ? const SizedBox(
                               width: 18,

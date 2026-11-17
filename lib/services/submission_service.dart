@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:vote/config/api_config.dart';
 import 'package:vote/models/submission_models.dart';
 import 'package:vote/services/auth_middleware.dart';
+import 'package:vote/utils/constants.dart';
 
 /// Exception thrown when a submission-related API call fails.
 class SubmissionException implements Exception {
@@ -21,8 +22,8 @@ class SubmissionException implements Exception {
 ///    (any status) via `GET /questions/mine`.
 ///  - [submitQuestion] creates a new submission on behalf of the authenticated
 ///    user via `POST /questions/submissions`; the question is submitted together
-///    with its [answerOptions] and the backend stores both atomically as
-///    `pending`.
+///    with its answer options (both optional) and the backend stores them
+///    atomically as `pending`.
 ///
 /// Requests go through [AuthMiddleware] so expired access tokens are refreshed
 /// transparently and retried.
@@ -59,35 +60,34 @@ class SubmissionService {
   /// The submission is stored as `pending` server-side; clients cannot
   /// self-approve. [language] must be a 2-character code (e.g. `en`, `de`).
   /// The submitting user does not choose a minimum age; admins set it (and the
-  /// special category) when approving. [answerOptions] must contain at least
-  /// one non-empty answer; the backend inserts the question together with its
-  /// answer options in a single transaction and rejects submissions with too
-  /// few or too many (more than 50) options.
+  /// special category) when approving. Both [categoryId] and [answerOptions]
+  /// are optional: a submission without them is stored incomplete and has to be
+  /// completed by an administrator before it may be approved. When
+  /// [answerOptions] are given they must contain at least one non-empty answer
+  /// and at most [kMaxAnswerOptions] (50); the backend inserts the question
+  /// together with its answer options in a single transaction and rejects
+  /// submissions with too many options.
   ///
   /// Returns the created [Submission] (status `pending`, including its
   /// [Submission.answerOptions]) on success.
-  /// Throws [SubmissionException] on failure, including when [answerOptions]
-  /// contains no usable (non-empty) entry.
+  /// Throws [SubmissionException] on failure.
   Future<Submission> submitQuestion({
     required String text,
-    required int categoryId,
+    int? categoryId,
     required String language,
-    required List<String> answerOptions,
+    List<String> answerOptions = const <String>[],
   }) async {
     // Trim and drop empty entries so a submission never reaches the backend
-    // with blank options; the backend requires at least one.
+    // with blank options.
     final cleanedOptions = answerOptions
         .map((o) => o.trim())
         .where((o) => o.isNotEmpty)
         .toList();
-    if (cleanedOptions.isEmpty) {
-      throw const SubmissionException('At least one answer option is required');
-    }
     final body = jsonEncode(<String, Object>{
       'text': text,
-      'category_id': categoryId,
+      'category_id': ?categoryId,
       'language': language,
-      'answer_options': cleanedOptions,
+      if (cleanedOptions.isNotEmpty) 'answer_options': cleanedOptions,
     });
     final response = await _authMiddleware.post(
       '${ApiConfig.baseUrl}/questions/submissions',

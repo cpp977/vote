@@ -32,7 +32,11 @@ class AnswerOption {
 class Submission {
   final int id;
   final String text;
-  final int categoryId;
+
+  /// Category this submission was filed under, or `null` when the user did not
+  /// pick one. An administrator has to assign a category before approving.
+  final int? categoryId;
+
   final String language;
   final int minAge;
   final String createdAt;
@@ -70,7 +74,7 @@ class Submission {
     return Submission(
       id: json['id'] as int,
       text: json['text'] as String,
-      categoryId: json['category_id'] as int,
+      categoryId: json['category_id'] as int?,
       language: json['language'] as String? ?? 'en',
       minAge: json['min_age'] as int? ?? 0,
       createdAt: json['created_at'] as String? ?? '',
