@@ -433,6 +433,10 @@
         "internal": {
           "status": "active",
           "promoted_at": "2026-11-17T13:19:18.180374Z"
+        },
+        "alpha": {
+          "status": "pending",
+          "promoted_at": null
         }
       },
       "history": [
@@ -442,6 +446,15 @@
           "from_track": null,
           "to_track": null,
           "timestamp": "2026-11-17T13:19:18.180397Z",
+          "details": null,
+          "merge_commit": null
+        },
+        {
+          "action": "promotion_requested",
+          "track": null,
+          "from_track": "internal",
+          "to_track": "alpha",
+          "timestamp": "2026-11-17T13:23:01.405285Z",
           "details": null,
           "merge_commit": null
         }
