@@ -106,7 +106,10 @@ class MyApp extends StatelessWidget {
                 '/account-locked': (context) => const AccountLockedPage(),
                 '/intro': (context) => const IntroCarouselPage(),
               },
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
+              localizationsDelegates: [
+                AppLocalizations.delegate,
+                ...GlobalMaterialLocalizations.delegates,
+              ],
               supportedLocales: AppLocalizations.supportedLocales,
             ),
           );
