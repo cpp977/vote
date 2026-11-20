@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 /// Fallback category name used by [Question.fromJson] when the backend
 /// returns none. It is matched (case-sensitively) at the display site so the
