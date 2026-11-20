@@ -1,7 +1,7 @@
 {
   "schema_version": 1,
   "package_name": "com.dev.vote",
-  "last_allocated_version_code": 31,
+  "last_allocated_version_code": 32,
   "builds": {
     "20": {
       "version_name": "1.0.0",
@@ -468,6 +468,28 @@
           "merge_commit": "f7f49f7238e14b8ce7e3492516aa765266bbdaf6"
         }
       ]
+    },
+    "32": {
+      "version_name": "1.0.0",
+      "version_code": 32,
+      "source": {
+        "branch": "chore/upgrade-third-party-deps",
+        "commit": "5a8ac2debe490b01a32bbde3d3ce67bdc73b5a28"
+      },
+      "created_at": "2026-11-20T11:20:03.082876Z",
+      "build": {
+        "status": "reserved",
+        "workflow_run_id": null,
+        "artifact_name": null,
+        "sha256": null
+      },
+      "tracks": {
+        "internal": {
+          "status": "pending",
+          "promoted_at": null
+        }
+      },
+      "history": []
     }
   }
 }
