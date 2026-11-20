@@ -532,9 +532,9 @@
       },
       "created_at": "2026-11-20T22:21:43.958959Z",
       "build": {
-        "status": "reserved",
-        "workflow_run_id": null,
-        "artifact_name": null,
+        "status": "build_failed",
+        "workflow_run_id": 44828186319,
+        "artifact_name": "vote-1.0.0-34",
         "sha256": null
       },
       "tracks": {
