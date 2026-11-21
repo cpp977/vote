@@ -110,7 +110,6 @@ class MyApp extends StatelessWidget {
                 AppLocalizations.delegate,
                 ...GlobalMaterialLocalizations.delegates,
               ],
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
               supportedLocales: AppLocalizations.supportedLocales,
             ),
           );
