@@ -153,341 +153,349 @@ class _RegisterPageState extends State<RegisterPage> {
                   const SizedBox(height: 32),
 
                   // Registration Form
-                  Form(
-                    key: _formKey,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.stretch,
-                      children: [
-                        // Username field
-                        TextFormField(
-                          controller: _usernameController,
-                          decoration: InputDecoration(
-                            labelText: l10n.usernameLabel,
-                            prefixIcon: const Icon(Icons.person_outline),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                  // AutofillGroup so password managers can offer username
+                  // suggestions and save the freshly created credentials.
+                  AutofillGroup(
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          // Username field
+                          TextFormField(
+                            controller: _usernameController,
+                            autofillHints: const [AutofillHints.newUsername],
+                            decoration: InputDecoration(
+                              labelText: l10n.usernameLabel,
+                              prefixIcon: const Icon(Icons.person_outline),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return l10n.usernameRequiredAlt;
+                              }
+                              if (value.trim().length < 3) {
+                                return l10n.usernameMinLength;
+                              }
+                              return null;
+                            },
                           ),
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return l10n.usernameRequiredAlt;
-                            }
-                            if (value.trim().length < 3) {
-                              return l10n.usernameMinLength;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        // Email field
-                        TextFormField(
-                          controller: _emailController,
-                          decoration: InputDecoration(
-                            labelText: l10n.emailLabel,
-                            prefixIcon: const Icon(Icons.email_outlined),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                          // Email field
+                          TextFormField(
+                            controller: _emailController,
+                            autofillHints: const [AutofillHints.email],
+                            decoration: InputDecoration(
+                              labelText: l10n.emailLabel,
+                              prefixIcon: const Icon(Icons.email_outlined),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
+                            keyboardType: TextInputType.emailAddress,
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              if (value == null || value.trim().isEmpty) {
+                                return l10n.emailRequired;
+                              }
+                              if (!RegExp(
+                                r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                              ).hasMatch(value.trim())) {
+                                return l10n.emailInvalid;
+                              }
+                              return null;
+                            },
                           ),
-                          keyboardType: TextInputType.emailAddress,
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            if (value == null || value.trim().isEmpty) {
-                              return l10n.emailRequired;
-                            }
-                            if (!RegExp(
-                              r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
-                            ).hasMatch(value.trim())) {
-                              return l10n.emailInvalid;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
+                          const SizedBox(height: 16),
 
-                        // Birth year field
-                        DropdownButtonFormField<int>(
-                          initialValue: _birthYear,
-                          decoration: InputDecoration(
-                            labelText: l10n.birthYearLabel,
-                            prefixIcon: const Icon(Icons.cake_outlined),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
+                          // Birth year field
+                          DropdownButtonFormField<int>(
+                            initialValue: _birthYear,
+                            decoration: InputDecoration(
+                              labelText: l10n.birthYearLabel,
+                              prefixIcon: const Icon(Icons.cake_outlined),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
                             ),
-                          ),
-                          items: _birthYears
-                              .map(
-                                (year) => DropdownMenuItem(
-                                  value: year,
-                                  child: Text(year.toString()),
-                                ),
-                              )
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              _birthYear = value;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Gender field
-                        DropdownButtonFormField<String>(
-                          initialValue: _gender,
-                          decoration: InputDecoration(
-                            labelText: l10n.genderLabel,
-                            prefixIcon: const Icon(Icons.person_outline),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          items: [
-                            DropdownMenuItem(
-                              value: 'm',
-                              child: Text(l10n.genderMale),
-                            ),
-                            DropdownMenuItem(
-                              value: 'w',
-                              child: Text(l10n.genderFemale),
-                            ),
-                            DropdownMenuItem(
-                              value: 'd',
-                              child: Text(l10n.genderDiverse),
-                            ),
-                          ],
-                          onChanged: (value) {
-                            setState(() {
-                              _gender = value;
-                            });
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Nationality field
-                        _isLoadingCountries
-                            ? DropdownButtonFormField<String>(
-                                initialValue: _nationality,
-                                decoration: InputDecoration(
-                                  labelText: l10n.nationalityLabel,
-                                  prefixIcon: const Icon(Icons.flag_outlined),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                            items: _birthYears
+                                .map(
+                                  (year) => DropdownMenuItem(
+                                    value: year,
+                                    child: Text(year.toString()),
                                   ),
-                                ),
-                                items: const [],
-                                onChanged: null,
-                                hint: Text(l10n.loadingLabel),
-                              )
-                            : DropdownButtonFormField<String>(
-                                initialValue: _nationality,
-                                decoration: InputDecoration(
-                                  labelText: l10n.nationalityLabel,
-                                  prefixIcon: const Icon(Icons.flag_outlined),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
+                                )
+                                .toList(),
+                            onChanged: (value) {
+                              setState(() {
+                                _birthYear = value;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Gender field
+                          DropdownButtonFormField<String>(
+                            initialValue: _gender,
+                            decoration: InputDecoration(
+                              labelText: l10n.genderLabel,
+                              prefixIcon: const Icon(Icons.person_outline),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            items: [
+                              DropdownMenuItem(
+                                value: 'm',
+                                child: Text(l10n.genderMale),
+                              ),
+                              DropdownMenuItem(
+                                value: 'w',
+                                child: Text(l10n.genderFemale),
+                              ),
+                              DropdownMenuItem(
+                                value: 'd',
+                                child: Text(l10n.genderDiverse),
+                              ),
+                            ],
+                            onChanged: (value) {
+                              setState(() {
+                                _gender = value;
+                              });
+                            },
+                          ),
+                          const SizedBox(height: 16),
+
+                          // Nationality field
+                          _isLoadingCountries
+                              ? DropdownButtonFormField<String>(
+                                  initialValue: _nationality,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.nationalityLabel,
+                                    prefixIcon: const Icon(Icons.flag_outlined),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
                                   ),
+                                  items: const [],
+                                  onChanged: null,
+                                  hint: Text(l10n.loadingLabel),
+                                )
+                              : DropdownButtonFormField<String>(
+                                  initialValue: _nationality,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.nationalityLabel,
+                                    prefixIcon: const Icon(Icons.flag_outlined),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  items: _countries
+                                      .map(
+                                        (c) => DropdownMenuItem(
+                                          value: c.code,
+                                          child: Text(c.name),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (value) {
+                                    setState(() {
+                                      _nationality = value;
+                                      _region =
+                                          null; // Reset region when nationality changes
+                                    });
+                                  },
                                 ),
-                                items: _countries
-                                    .map(
-                                      (c) => DropdownMenuItem(
-                                        value: c.code,
-                                        child: Text(c.name),
-                                      ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) {
+                          const SizedBox(height: 16),
+
+                          // Region field
+                          filteredRegions.isEmpty
+                              ? DropdownButtonFormField<String>(
+                                  initialValue: _region,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.regionLabel,
+                                    prefixIcon: const Icon(Icons.map_outlined),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  items: const [],
+                                  onChanged: null,
+                                  hint: _nationality == null
+                                      ? Text(l10n.selectNationalityFirst)
+                                      : Text(l10n.noRegionsAvailable),
+                                )
+                              : DropdownButtonFormField<String>(
+                                  initialValue: _region,
+                                  decoration: InputDecoration(
+                                    labelText: l10n.regionLabel,
+                                    prefixIcon: const Icon(Icons.map_outlined),
+                                    border: OutlineInputBorder(
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                  ),
+                                  items: filteredRegions
+                                      .map(
+                                        (r) => DropdownMenuItem(
+                                          value: r.code,
+                                          child: Text(r.name),
+                                        ),
+                                      )
+                                      .toList(),
+                                  onChanged: (value) =>
+                                      setState(() => _region = value),
+                                ),
+                          const SizedBox(height: 16),
+
+                          // Password field
+                          TextFormField(
+                            controller: _passwordController,
+                            obscureText: _obscurePassword,
+                            autofillHints: const [AutofillHints.newPassword],
+                            decoration: InputDecoration(
+                              labelText: l10n.passwordLabel,
+                              prefixIcon: const Icon(Icons.lock_outline),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscurePassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                                onPressed: () {
                                   setState(() {
-                                    _nationality = value;
-                                    _region =
-                                        null; // Reset region when nationality changes
+                                    _obscurePassword = !_obscurePassword;
                                   });
                                 },
                               ),
-                        const SizedBox(height: 16),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            textInputAction: TextInputAction.next,
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return l10n.passwordRequiredAlt;
+                              }
+                              if (value.length < 6) {
+                                return l10n.passwordMinLength;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 16),
 
-                        // Region field
-                        filteredRegions.isEmpty
-                            ? DropdownButtonFormField<String>(
-                                initialValue: _region,
-                                decoration: InputDecoration(
-                                  labelText: l10n.regionLabel,
-                                  prefixIcon: const Icon(Icons.map_outlined),
-                                  border: OutlineInputBorder(
+                          // Confirm password field
+                          TextFormField(
+                            controller: _confirmPasswordController,
+                            obscureText: _obscureConfirmPassword,
+                            autofillHints: const [AutofillHints.newPassword],
+                            decoration: InputDecoration(
+                              labelText: l10n.confirmPasswordLabel,
+                              prefixIcon: const Icon(Icons.lock_outlined),
+                              suffixIcon: IconButton(
+                                icon: Icon(
+                                  _obscureConfirmPassword
+                                      ? Icons.visibility_outlined
+                                      : Icons.visibility_off_outlined,
+                                ),
+                                onPressed: () {
+                                  setState(() {
+                                    _obscureConfirmPassword =
+                                        !_obscureConfirmPassword;
+                                  });
+                                },
+                              ),
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                            ),
+                            textInputAction: TextInputAction.done,
+                            onFieldSubmitted: (_) => _handleRegister(),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return l10n.confirmPasswordRequired;
+                              }
+                              if (value != _passwordController.text) {
+                                return l10n.passwordsDoNotMatch;
+                              }
+                              return null;
+                            },
+                          ),
+                          const SizedBox(height: 24),
+
+                          // Error message
+                          Consumer<AuthController>(
+                            builder: (context, auth, _) {
+                              if (auth.error == null) {
+                                return const SizedBox.shrink();
+                              }
+                              return Container(
+                                padding: const EdgeInsets.all(12),
+                                margin: const EdgeInsets.only(bottom: 16),
+                                decoration: BoxDecoration(
+                                  color: colorScheme.errorContainer,
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Row(
+                                  children: [
+                                    Icon(
+                                      Icons.error_outline,
+                                      color: colorScheme.onErrorContainer,
+                                      size: 20,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Expanded(
+                                      child: Text(
+                                        localizedAuthError(l10n, auth.error),
+                                        style: TextStyle(
+                                          color: colorScheme.onErrorContainer,
+                                          fontSize: 14,
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
+                            },
+                          ),
+
+                          // Register button
+                          Consumer<AuthController>(
+                            builder: (context, auth, _) {
+                              return FilledButton(
+                                onPressed: auth.isLoading
+                                    ? null
+                                    : _handleRegister,
+                                style: FilledButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 16,
+                                  ),
+                                  shape: RoundedRectangleBorder(
                                     borderRadius: BorderRadius.circular(12),
                                   ),
                                 ),
-                                items: const [],
-                                onChanged: null,
-                                hint: _nationality == null
-                                    ? Text(l10n.selectNationalityFirst)
-                                    : Text(l10n.noRegionsAvailable),
-                              )
-                            : DropdownButtonFormField<String>(
-                                initialValue: _region,
-                                decoration: InputDecoration(
-                                  labelText: l10n.regionLabel,
-                                  prefixIcon: const Icon(Icons.map_outlined),
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                ),
-                                items: filteredRegions
-                                    .map(
-                                      (r) => DropdownMenuItem(
-                                        value: r.code,
-                                        child: Text(r.name),
+                                child: auth.isLoading
+                                    ? const SizedBox(
+                                        height: 20,
+                                        width: 20,
+                                        child: CircularProgressIndicator(
+                                          strokeWidth: 2,
+                                          color: Colors.white,
+                                        ),
+                                      )
+                                    : Text(
+                                        l10n.createAccount,
+                                        style: TextStyle(fontSize: 16),
                                       ),
-                                    )
-                                    .toList(),
-                                onChanged: (value) =>
-                                    setState(() => _region = value),
-                              ),
-                        const SizedBox(height: 16),
-
-                        // Password field
-                        TextFormField(
-                          controller: _passwordController,
-                          obscureText: _obscurePassword,
-                          decoration: InputDecoration(
-                            labelText: l10n.passwordLabel,
-                            prefixIcon: const Icon(Icons.lock_outline),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
+                              );
+                            },
                           ),
-                          textInputAction: TextInputAction.next,
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return l10n.passwordRequiredAlt;
-                            }
-                            if (value.length < 6) {
-                              return l10n.passwordMinLength;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 16),
-
-                        // Confirm password field
-                        TextFormField(
-                          controller: _confirmPasswordController,
-                          obscureText: _obscureConfirmPassword,
-                          decoration: InputDecoration(
-                            labelText: l10n.confirmPasswordLabel,
-                            prefixIcon: const Icon(Icons.lock_outlined),
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscureConfirmPassword
-                                    ? Icons.visibility_outlined
-                                    : Icons.visibility_off_outlined,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscureConfirmPassword =
-                                      !_obscureConfirmPassword;
-                                });
-                              },
-                            ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                          textInputAction: TextInputAction.done,
-                          onFieldSubmitted: (_) => _handleRegister(),
-                          validator: (value) {
-                            if (value == null || value.isEmpty) {
-                              return l10n.confirmPasswordRequired;
-                            }
-                            if (value != _passwordController.text) {
-                              return l10n.passwordsDoNotMatch;
-                            }
-                            return null;
-                          },
-                        ),
-                        const SizedBox(height: 24),
-
-                        // Error message
-                        Consumer<AuthController>(
-                          builder: (context, auth, _) {
-                            if (auth.error == null) {
-                              return const SizedBox.shrink();
-                            }
-                            return Container(
-                              padding: const EdgeInsets.all(12),
-                              margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: colorScheme.errorContainer,
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Row(
-                                children: [
-                                  Icon(
-                                    Icons.error_outline,
-                                    color: colorScheme.onErrorContainer,
-                                    size: 20,
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Expanded(
-                                    child: Text(
-                                      localizedAuthError(l10n, auth.error),
-                                      style: TextStyle(
-                                        color: colorScheme.onErrorContainer,
-                                        fontSize: 14,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            );
-                          },
-                        ),
-
-                        // Register button
-                        Consumer<AuthController>(
-                          builder: (context, auth, _) {
-                            return FilledButton(
-                              onPressed: auth.isLoading
-                                  ? null
-                                  : _handleRegister,
-                              style: FilledButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 16,
-                                ),
-                                shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                              ),
-                              child: auth.isLoading
-                                  ? const SizedBox(
-                                      height: 20,
-                                      width: 20,
-                                      child: CircularProgressIndicator(
-                                        strokeWidth: 2,
-                                        color: Colors.white,
-                                      ),
-                                    )
-                                  : Text(
-                                      l10n.createAccount,
-                                      style: TextStyle(fontSize: 16),
-                                    ),
-                            );
-                          },
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 24),
