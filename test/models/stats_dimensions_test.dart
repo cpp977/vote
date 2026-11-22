@@ -1,5 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:vote/l10n/app_localizations.dart';
 import 'package:vote/models/answer_stats.dart';
 import 'package:vote/models/stats_dimensions.dart';
