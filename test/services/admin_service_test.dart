@@ -588,4 +588,168 @@ void main() {
       );
     });
   });
+
+  group('AdminService.getAnswerSubmissions', () {
+    test('returns the review queue on 200', () async {
+      final middleware = _CapturingAuthMiddleware(
+        responseBody: [_testAnswerSubmission],
+      );
+      final service = AdminService(authMiddleware: middleware);
+
+      final submissions = await service.getAnswerSubmissions();
+
+      expect(submissions, hasLength(1));
+      expect(submissions.single.id, 12);
+      expect(submissions.single.text, 'Team C');
+      expect(middleware.requests.single.method, 'GET');
+      expect(
+        middleware.requests.single.url,
+        endsWith('/admin/answer-submissions'),
+      );
+    });
+
+    test('passes the status filter as a query parameter', () async {
+      final middleware = _CapturingAuthMiddleware(
+        responseBody: [_testAnswerSubmission],
+      );
+      final service = AdminService(authMiddleware: middleware);
+
+      await service.getAnswerSubmissions(status: 'pending');
+
+      expect(
+        middleware.requests.single.url,
+        allOf(
+          contains('/admin/answer-submissions'),
+          endsWith('status=pending'),
+        ),
+      );
+    });
+
+    test('throws AdminException on 403', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 403,
+        responseBody: {'error': 'Admin privileges required'},
+      );
+      final service = AdminService(authMiddleware: middleware);
+
+      await expectLater(
+        service.getAnswerSubmissions(),
+        throwsA(
+          isA<AdminException>().having((e) => e.statusCode, 'statusCode', 401),
+        ),
+      );
+    });
+  });
+
+  group('AdminService.approveAnswerSubmission', () {
+    test('posts to the approve endpoint and parses the result', () async {
+      final middleware = _CapturingAuthMiddleware(
+        responseBody: _approvedAnswerSubmission,
+      );
+      final service = AdminService(authMiddleware: middleware);
+
+      final submission = await service.approveAnswerSubmission(12);
+
+      expect(middleware.requests.single.method, 'POST');
+      expect(
+        middleware.requests.single.url,
+        endsWith('/admin/answer-submissions/12/approve'),
+      );
+      expect(submission.submissionStatus, 'approved');
+      expect(submission.reviewedBy, isNotNull);
+    });
+
+    test('throws AdminException on 409 (already reviewed)', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 409,
+        responseBody: {'error': 'the submission has already been reviewed'},
+      );
+      final service = AdminService(authMiddleware: middleware);
+
+      await expectLater(
+        service.approveAnswerSubmission(12),
+        throwsA(
+          isA<AdminException>()
+              .having(
+                (e) => e.message,
+                'message',
+                'the submission has already been reviewed',
+              )
+              .having((e) => e.statusCode, 'statusCode', 409),
+        ),
+      );
+    });
+
+    test('throws AdminException on 404', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 404,
+        responseBody: {'error': 'Not found'},
+      );
+      final service = AdminService(authMiddleware: middleware);
+
+      await expectLater(
+        service.approveAnswerSubmission(999),
+        throwsA(
+          isA<AdminException>().having((e) => e.statusCode, 'statusCode', 404),
+        ),
+      );
+    });
+  });
+
+  group('AdminService.rejectAnswerSubmission', () {
+    test('posts to the reject endpoint and parses the result', () async {
+      final middleware = _CapturingAuthMiddleware(
+        responseBody: _rejectedAnswerSubmission,
+      );
+      final service = AdminService(authMiddleware: middleware);
+
+      final submission = await service.rejectAnswerSubmission(12);
+
+      expect(middleware.requests.single.method, 'POST');
+      expect(
+        middleware.requests.single.url,
+        endsWith('/admin/answer-submissions/12/reject'),
+      );
+      expect(submission.submissionStatus, 'rejected');
+    });
+  });
 }
+
+const _testAnswerSubmission = <String, dynamic>{
+  'id': 12,
+  'question_id': 7,
+  'question_text': 'Who is going to win?',
+  'text': 'Team C',
+  'language': 'en',
+  'submission_status': 'pending',
+  'created_at': '2026-08-24T10:00:00Z',
+  'submitted_by': '6f1c0a2e-1111-2222-3333-444455556666',
+  'reviewed_by': null,
+  'reviewed_at': null,
+};
+
+const _approvedAnswerSubmission = <String, dynamic>{
+  'id': 12,
+  'question_id': 7,
+  'question_text': 'Who is going to win?',
+  'text': 'Team C',
+  'language': 'en',
+  'submission_status': 'approved',
+  'created_at': '2026-08-24T10:00:00Z',
+  'submitted_by': '6f1c0a2e-1111-2222-3333-444455556666',
+  'reviewed_by': 'admin-uuid',
+  'reviewed_at': '2026-08-24T11:00:00Z',
+};
+
+const _rejectedAnswerSubmission = <String, dynamic>{
+  'id': 12,
+  'question_id': 7,
+  'question_text': 'Who is going to win?',
+  'text': 'Team C',
+  'language': 'en',
+  'submission_status': 'rejected',
+  'created_at': '2026-08-24T10:00:00Z',
+  'submitted_by': '6f1c0a2e-1111-2222-3333-444455556666',
+  'reviewed_by': 'admin-uuid',
+  'reviewed_at': '2026-08-24T11:00:00Z',
+};

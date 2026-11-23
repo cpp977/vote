@@ -16,6 +16,7 @@ class IntroPageData {
     required this.title,
     required this.description,
     this.asset,
+    this.sinceRevision = 1,
   });
 
   final IconData icon;
@@ -24,15 +25,28 @@ class IntroPageData {
 
   /// Optional illustration asset; when `null` the [icon] is shown instead.
   final String? asset;
+
+  /// First tour revision that includes this page.
+  ///
+  /// Returning users whose completed revision is older start at the first
+  /// page whose [sinceRevision] is higher than theirs, so an update that
+  /// adds a page replays only that page instead of the whole tour.
+  final int sinceRevision;
 }
 
 /// A full-screen, swipeable introduction carousel shown the first time a user
-/// opens the app and (re-)triggerable from the configuration menu.
+/// opens the app, when the tour content changed since the user last saw it,
+/// and (re-)triggerable from the configuration menu.
 ///
-/// The carousel explains the three core workflows of Vote4It — browsing and
-/// voting on questions, inspecting the resulting statistics, and submitting
-/// one's own questions — before handing control back to the caller via
-/// [onComplete].
+/// The carousel explains the core workflows of Vote4It — browsing and voting
+/// on questions, inspecting the resulting statistics, submitting one's own
+/// questions, and suggesting new answer options for existing questions —
+/// before handing control back to the caller via [onComplete].
+///
+/// [initialPage] decides which page opens first: the launch gate passes the
+/// first page a returning user has not seen yet (see
+/// [startPageForSeenRevision]), while the configuration menu's re-open always
+/// starts at the beginning.
 ///
 /// [onComplete] is invoked exactly once the user is ready to enter the app,
 /// whether they tapped "Get Started" or "Skip". Marking the tutorial as
@@ -60,13 +74,38 @@ class IntroCarousel extends StatefulWidget {
       title: l10n.introSubmitTitle,
       description: l10n.introSubmitDesc,
     ),
+    IntroPageData(
+      icon: Icons.add_comment_outlined,
+      title: l10n.introSuggestTitle,
+      description: l10n.introSuggestDesc,
+      sinceRevision: 2,
+    ),
   ];
+
+  /// Index of the first page a user who completed [seenRevision] has not seen
+  /// yet — i.e. the first page whose `sinceRevision` is higher. Returns `0`
+  /// when nothing is new (or everything is, e.g. a first run), which starts
+  /// the tour from the beginning.
+  static int startPageForSeenRevision(AppLocalizations l10n, int seenRevision) {
+    final pageList = pages(l10n);
+    for (var i = 0; i < pageList.length; i++) {
+      if (pageList[i].sinceRevision > seenRevision) return i;
+    }
+    return 0;
+  }
 
   /// Called when the user finishes the carousel, either by tapping "Get
   /// Started" on the last page or by tapping "Skip" anywhere.
   final Future<void> Function() onComplete;
 
-  const IntroCarousel({super.key, required this.onComplete});
+  /// Page the carousel opens on (0-based).
+  final int initialPage;
+
+  const IntroCarousel({
+    super.key,
+    required this.onComplete,
+    this.initialPage = 0,
+  });
 
   @override
   State<IntroCarousel> createState() => _IntroCarouselState();
@@ -74,13 +113,14 @@ class IntroCarousel extends StatefulWidget {
 
 class _IntroCarouselState extends State<IntroCarousel> {
   late final PageController _pageController;
-  int _currentPage = 0;
+  late int _currentPage;
   bool _isCompleting = false;
 
   @override
   void initState() {
     super.initState();
-    _pageController = PageController();
+    _pageController = PageController(initialPage: widget.initialPage);
+    _currentPage = widget.initialPage;
   }
 
   @override

@@ -143,7 +143,16 @@ class TutorialGate extends StatelessWidget {
           );
         }
         if (tutorial.shouldShowTutorial) {
-          return IntroCarousel(onComplete: tutorial.complete);
+          // Returning users whose completed tour revision is older than the
+          // current one start at the first page they have not seen yet, so
+          // an update that adds pages replays only those.
+          return IntroCarousel(
+            initialPage: IntroCarousel.startPageForSeenRevision(
+              AppLocalizations.of(context),
+              tutorial.seenRevision,
+            ),
+            onComplete: tutorial.complete,
+          );
         }
         return const DeepLinkWrapper();
       },

@@ -343,6 +343,22 @@
   "removeAnswerOption": "Antwortmöglichkeit entfernen",
   "maxAnswerOptionsReached": "Du kannst höchstens {max} Antwortmöglichkeiten hinzufügen",
 
+  "suggestAnswer": "Antwort vorschlagen",
+  "signInToSuggestAnswer": "Anmelden, um eine Antwort vorzuschlagen",
+  "newAnswerSuggestionTitle": "Antwort vorschlagen",
+  "suggestedAnswerLabel": "Ihre Antwort",
+  "suggestedAnswerHint": "Geben Sie die Antwortmöglichkeit ein, die Sie hinzufügen möchten...",
+  "answerSubmissionCreated": "Antwortvorschlag zur Prüfung eingereicht",
+  "answerSubmissionFailed": "Antwortvorschlag konnte nicht eingereicht werden",
+  "answerSubmissions": "Antwortvorschläge",
+  "adminAnswerSubmissions": "Antwortvorschläge",
+  "adminAnswerSubmissionsEmpty": "Es gibt keine Antwortvorschläge zu prüfen.",
+  "rejectAnswerSuggestion": "Antwortvorschlag ablehnen",
+  "rejectAnswerSuggestionConfirm": "Möchten Sie diesen Antwortvorschlag wirklich ablehnen? Diese Aktion kann nicht rückgängig gemacht werden.",
+  "answerSuggestionApproved": "Antwortvorschlag freigegeben",
+  "answerSuggestionRejected": "Antwortvorschlag abgelehnt",
+  "answerSuggestionReviewFailed": "Der Antwortvorschlag konnte nicht geprüft werden",
+
   "adminReviewQueue": "Freigabewarteschlange",
   "adminSubmissionsEmpty": "Es gibt keine Einreichungen zu prüfen.",
   "adminSubmissionsLoadFailed": "Einreichungen konnten nicht geladen werden",
@@ -624,6 +640,14 @@
   "introSubmitDesc": "Hast du etwas zu fragen? Öffne den Reiter ‚Meine Einreichungen‘ und tippe auf die Schaltfläche, um deine eigene Frage zur Prüfung einzureichen.",
   "@introSubmitDesc": {
     "description": "Description of the introduction page explaining how to submit questions."
+  },
+  "introSuggestTitle": "Antworten vorschlagen",
+  "@introSuggestTitle": {
+    "description": "Title of the introduction page explaining how to suggest new answer options."
+  },
+  "introSuggestDesc": "Fehlt eine Antwortmöglichkeit? Öffne eine Frage und tippe auf ‚Antwort vorschlagen‘, um eine neue Antwortmöglichkeit vorzuschlagen. Ein Administrator prüft sie, bevor sie erscheint.",
+  "@introSuggestDesc": {
+    "description": "Description of the introduction page explaining how to suggest new answer options."
   },
   "introGetStarted": "Loslegen",
   "@introGetStarted": {

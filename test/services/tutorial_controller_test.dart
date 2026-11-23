@@ -50,7 +50,44 @@ void main() {
         await controller.load();
 
         expect(controller.isCompleted, isTrue);
-        expect(controller.shouldShowTutorial, isFalse);
+        // Completed before revisions were tracked counts as revision 1, so
+        // the tour (now at revision 2) is shown again once.
+        expect(controller.seenRevision, 1);
+        expect(controller.shouldShowTutorial, isTrue);
+      });
+
+      test('reads the stored revision', () async {
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'tutorial_completed': true,
+          'tutorial_revision': 2,
+        });
+        final TutorialController controller = TutorialController();
+
+        await controller.load();
+
+        expect(controller.seenRevision, 2);
+      });
+
+      test('treats a completed intro without a stored revision as '
+          'revision 1', () async {
+        // Users who completed the intro before revisions were tracked get
+        // revision 1 (the original tour), so they only replay newer pages.
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'tutorial_completed': true,
+        });
+        final TutorialController controller = TutorialController();
+
+        await controller.load();
+
+        expect(controller.seenRevision, 1);
+      });
+
+      test('defaults the revision to 0 for a fresh install', () async {
+        final TutorialController controller = TutorialController();
+
+        await controller.load();
+
+        expect(controller.seenRevision, 0);
       });
 
       test('is a no-op when called twice', () async {
@@ -88,6 +125,37 @@ void main() {
 
         final SharedPreferences prefs = await SharedPreferences.getInstance();
         expect(prefs.getBool('tutorial_completed'), isTrue);
+      });
+
+      test('persists the current revision', () async {
+        final TutorialController controller = TutorialController();
+        await controller.load();
+
+        await controller.complete();
+
+        expect(controller.seenRevision, TutorialController.currentRevision);
+        final SharedPreferences prefs = await SharedPreferences.getInstance();
+        expect(
+          prefs.getInt('tutorial_revision'),
+          TutorialController.currentRevision,
+        );
+      });
+
+      test('hides the tutorial after completing the current revision '
+          '(even when it was shown again for an update)', () async {
+        // A returning user who was shown the tour because of a revision bump
+        // must not see it again after completing it.
+        SharedPreferences.setMockInitialValues(<String, Object>{
+          'tutorial_completed': true,
+          'tutorial_revision': 1,
+        });
+        final TutorialController controller = TutorialController();
+        await controller.load();
+        expect(controller.shouldShowTutorial, isTrue);
+
+        await controller.complete();
+
+        expect(controller.shouldShowTutorial, isFalse);
       });
 
       test('is a no-op when already completed', () async {

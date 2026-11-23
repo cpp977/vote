@@ -27,6 +27,12 @@ class AdminException implements Exception {
 ///    were filed without them.
 ///  - [rejectQuestion] marks a submission as `rejected` through
 ///    `POST /admin/questions/{id}/reject`.
+///  - [getAnswerSubmissions] lists every answer-option submission that is not
+///    yet approved via `GET /admin/answer-submissions`.
+///  - [approveAnswerSubmission] appends a proposed answer option to its
+///    question via `POST /admin/answer-submissions/{id}/approve`.
+///  - [rejectAnswerSubmission] marks an answer-option submission as `rejected`
+///    through `POST /admin/answer-submissions/{id}/reject`.
 ///  - [getUsers] lists all registered users via `GET /admin/users`.
 ///  - [getUser] fetches detailed information for a single user via
 ///    `GET /admin/users/{id}`.
@@ -105,6 +111,54 @@ class AdminService {
   /// Throws [AdminException] on failure (including `401`/`403`).
   Future<Submission> rejectQuestion(int id) async {
     return _review('${ApiConfig.baseUrl}/admin/questions/$id/reject', 'reject');
+  }
+
+  /// Loads the answer-option review queue (all submissions that are not yet
+  /// approved) via `GET /admin/answer-submissions`.
+  ///
+  /// [status] optionally filters by `pending` or `rejected`; without it the
+  /// full queue is returned. Returns an empty list when there is nothing to
+  /// review. Throws [AdminException] on failure (including `401`/`403`).
+  Future<List<AnswerSubmission>> getAnswerSubmissions({String? status}) async {
+    final uri = Uri.parse('${ApiConfig.baseUrl}/admin/answer-submissions')
+        .replace(
+          queryParameters: status == null
+              ? null
+              : <String, String>{'status': status},
+        );
+    final response = await _authMiddleware.get(uri.toString());
+    if (response.statusCode == 200) {
+      final List<dynamic> data =
+          (jsonDecode(response.body) as List?) ?? <dynamic>[];
+      return data
+          .map((e) => AnswerSubmission.fromJson(e as Map<String, dynamic>))
+          .toList();
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const AdminException('Unauthorized', 401);
+    } else {
+      throw AdminException(_parseError(response), response.statusCode);
+    }
+  }
+
+  /// Approves the answer-option submission with the given [id]: the proposed
+  /// option is appended to its question and becomes votable.
+  ///
+  /// Returns the updated [AnswerSubmission] (status `approved`).
+  /// Throws [AdminException] on failure (including `401`/`403`/`404`/`409`).
+  Future<AnswerSubmission> approveAnswerSubmission(int id) async {
+    return _reviewAnswerSubmission(
+      '${ApiConfig.baseUrl}/admin/answer-submissions/$id/approve',
+    );
+  }
+
+  /// Rejects the answer-option submission with the given [id].
+  ///
+  /// Returns the updated [AnswerSubmission] (status `rejected`).
+  /// Throws [AdminException] on failure (including `401`/`403`/`404`/`409`).
+  Future<AnswerSubmission> rejectAnswerSubmission(int id) async {
+    return _reviewAnswerSubmission(
+      '${ApiConfig.baseUrl}/admin/answer-submissions/$id/reject',
+    );
   }
 
   /// Lists all registered users via `GET /admin/users`.
@@ -237,6 +291,22 @@ class AdminService {
     );
     if (response.statusCode == 200) {
       return Submission.fromJson(
+        jsonDecode(response.body) as Map<String, dynamic>,
+      );
+    } else if (response.statusCode == 401 || response.statusCode == 403) {
+      throw const AdminException('Unauthorized', 401);
+    } else if (response.statusCode == 404) {
+      throw const AdminException('Not found', 404);
+    } else {
+      throw AdminException(_parseError(response), response.statusCode);
+    }
+  }
+
+  /// Sends a POST to [url] and parses the response as an [AnswerSubmission].
+  Future<AnswerSubmission> _reviewAnswerSubmission(String url) async {
+    final response = await _authMiddleware.post(url);
+    if (response.statusCode == 200) {
+      return AnswerSubmission.fromJson(
         jsonDecode(response.body) as Map<String, dynamic>,
       );
     } else if (response.statusCode == 401 || response.statusCode == 403) {

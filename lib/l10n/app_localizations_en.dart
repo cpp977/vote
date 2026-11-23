@@ -705,6 +705,56 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String get suggestAnswer => 'Suggest an answer';
+
+  @override
+  String get signInToSuggestAnswer => 'Sign in to suggest an answer';
+
+  @override
+  String get newAnswerSuggestionTitle => 'Suggest an Answer';
+
+  @override
+  String get suggestedAnswerLabel => 'Your answer';
+
+  @override
+  String get suggestedAnswerHint =>
+      'Enter the answer option you want to add...';
+
+  @override
+  String get answerSubmissionCreated =>
+      'Answer suggestion submitted for review';
+
+  @override
+  String get answerSubmissionFailed => 'Failed to submit the answer suggestion';
+
+  @override
+  String get answerSubmissions => 'Answer suggestions';
+
+  @override
+  String get adminAnswerSubmissions => 'Answer Suggestions';
+
+  @override
+  String get adminAnswerSubmissionsEmpty =>
+      'There are no answer suggestions to review.';
+
+  @override
+  String get rejectAnswerSuggestion => 'Reject answer suggestion';
+
+  @override
+  String get rejectAnswerSuggestionConfirm =>
+      'Are you sure you want to reject this answer suggestion? This action cannot be undone.';
+
+  @override
+  String get answerSuggestionApproved => 'Answer suggestion approved';
+
+  @override
+  String get answerSuggestionRejected => 'Answer suggestion rejected';
+
+  @override
+  String get answerSuggestionReviewFailed =>
+      'Failed to review the answer suggestion';
+
+  @override
   String get adminReviewQueue => 'Review Queue';
 
   @override
@@ -938,6 +988,13 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get introSubmitDesc =>
       'Have something to ask? Open the \'My Submissions\' tab and tap the button to submit your own question for review.';
+
+  @override
+  String get introSuggestTitle => 'Suggest Answers';
+
+  @override
+  String get introSuggestDesc =>
+      'Missing an option? Open a question and tap \'Suggest an answer\' to propose a new answer choice. An administrator reviews it before it appears.';
 
   @override
   String get introGetStarted => 'Get Started';

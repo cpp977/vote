@@ -717,6 +717,57 @@ class AppLocalizationsDe extends AppLocalizations {
   }
 
   @override
+  String get suggestAnswer => 'Antwort vorschlagen';
+
+  @override
+  String get signInToSuggestAnswer => 'Anmelden, um eine Antwort vorzuschlagen';
+
+  @override
+  String get newAnswerSuggestionTitle => 'Antwort vorschlagen';
+
+  @override
+  String get suggestedAnswerLabel => 'Ihre Antwort';
+
+  @override
+  String get suggestedAnswerHint =>
+      'Geben Sie die Antwortmöglichkeit ein, die Sie hinzufügen möchten...';
+
+  @override
+  String get answerSubmissionCreated =>
+      'Antwortvorschlag zur Prüfung eingereicht';
+
+  @override
+  String get answerSubmissionFailed =>
+      'Antwortvorschlag konnte nicht eingereicht werden';
+
+  @override
+  String get answerSubmissions => 'Antwortvorschläge';
+
+  @override
+  String get adminAnswerSubmissions => 'Antwortvorschläge';
+
+  @override
+  String get adminAnswerSubmissionsEmpty =>
+      'Es gibt keine Antwortvorschläge zu prüfen.';
+
+  @override
+  String get rejectAnswerSuggestion => 'Antwortvorschlag ablehnen';
+
+  @override
+  String get rejectAnswerSuggestionConfirm =>
+      'Möchten Sie diesen Antwortvorschlag wirklich ablehnen? Diese Aktion kann nicht rückgängig gemacht werden.';
+
+  @override
+  String get answerSuggestionApproved => 'Antwortvorschlag freigegeben';
+
+  @override
+  String get answerSuggestionRejected => 'Antwortvorschlag abgelehnt';
+
+  @override
+  String get answerSuggestionReviewFailed =>
+      'Der Antwortvorschlag konnte nicht geprüft werden';
+
+  @override
   String get adminReviewQueue => 'Freigabewarteschlange';
 
   @override
@@ -953,6 +1004,13 @@ class AppLocalizationsDe extends AppLocalizations {
   @override
   String get introSubmitDesc =>
       'Hast du etwas zu fragen? Öffne den Reiter ‚Meine Einreichungen‘ und tippe auf die Schaltfläche, um deine eigene Frage zur Prüfung einzureichen.';
+
+  @override
+  String get introSuggestTitle => 'Antworten vorschlagen';
+
+  @override
+  String get introSuggestDesc =>
+      'Fehlt eine Antwortmöglichkeit? Öffne eine Frage und tippe auf ‚Antwort vorschlagen‘, um eine neue Antwortmöglichkeit vorzuschlagen. Ein Administrator prüft sie, bevor sie erscheint.';
 
   @override
   String get introGetStarted => 'Loslegen';
