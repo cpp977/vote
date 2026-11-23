@@ -928,6 +928,67 @@
     }
   },
 
+  "suggestAnswer": "Suggest an answer",
+  "@suggestAnswer": {
+    "description": "Button on the question detail page that opens the suggest-an-answer dialog."
+  },
+  "signInToSuggestAnswer": "Sign in to suggest an answer",
+  "@signInToSuggestAnswer": {
+    "description": "Title of the dialog shown to guests who try to suggest an answer to a question."
+  },
+  "newAnswerSuggestionTitle": "Suggest an Answer",
+  "@newAnswerSuggestionTitle": {
+    "description": "Title of the dialog used to propose a new answer option for a question."
+  },
+  "suggestedAnswerLabel": "Your answer",
+  "@suggestedAnswerLabel": {
+    "description": "Label for the answer text field in the suggest-an-answer dialog."
+  },
+  "suggestedAnswerHint": "Enter the answer option you want to add...",
+  "@suggestedAnswerHint": {
+    "description": "Hint for the answer text field in the suggest-an-answer dialog."
+  },
+  "answerSubmissionCreated": "Answer suggestion submitted for review",
+  "@answerSubmissionCreated": {
+    "description": "Success message shown after an answer option was proposed."
+  },
+  "answerSubmissionFailed": "Failed to submit the answer suggestion",
+  "@answerSubmissionFailed": {
+    "description": "Error message shown when proposing an answer option fails."
+  },
+  "answerSubmissions": "Answer suggestions",
+  "@answerSubmissions": {
+    "description": "Section header for the user's own answer-option submissions."
+  },
+  "adminAnswerSubmissions": "Answer Suggestions",
+  "@adminAnswerSubmissions": {
+    "description": "Tab / section title for the administrator review queue of answer-option submissions."
+  },
+  "adminAnswerSubmissionsEmpty": "There are no answer suggestions to review.",
+  "@adminAnswerSubmissionsEmpty": {
+    "description": "Empty-state message on the admin answer-suggestion tab when there is nothing to review."
+  },
+  "rejectAnswerSuggestion": "Reject answer suggestion",
+  "@rejectAnswerSuggestion": {
+    "description": "Title of the confirmation dialog shown when an administrator rejects an answer suggestion."
+  },
+  "rejectAnswerSuggestionConfirm": "Are you sure you want to reject this answer suggestion? This action cannot be undone.",
+  "@rejectAnswerSuggestionConfirm": {
+    "description": "Body of the confirmation dialog shown when an administrator rejects an answer suggestion."
+  },
+  "answerSuggestionApproved": "Answer suggestion approved",
+  "@answerSuggestionApproved": {
+    "description": "Success message shown after an administrator approved an answer suggestion."
+  },
+  "answerSuggestionRejected": "Answer suggestion rejected",
+  "@answerSuggestionRejected": {
+    "description": "Success message shown after an administrator rejected an answer suggestion."
+  },
+  "answerSuggestionReviewFailed": "Failed to review the answer suggestion",
+  "@answerSuggestionReviewFailed": {
+    "description": "Error message shown when approving or rejecting an answer suggestion fails."
+  },
+
   "adminReviewQueue": "Review Queue",
   "@adminReviewQueue": {
     "description": "Drawer / page title for the administrator review queue of submitted questions."
@@ -1248,6 +1309,14 @@
   "introSubmitDesc": "Have something to ask? Open the 'My Submissions' tab and tap the button to submit your own question for review.",
   "@introSubmitDesc": {
     "description": "Description of the introduction page explaining how to submit questions."
+  },
+  "introSuggestTitle": "Suggest Answers",
+  "@introSuggestTitle": {
+    "description": "Title of the introduction page explaining how to suggest new answer options."
+  },
+  "introSuggestDesc": "Missing an option? Open a question and tap 'Suggest an answer' to propose a new answer choice. An administrator reviews it before it appears.",
+  "@introSuggestDesc": {
+    "description": "Description of the introduction page explaining how to suggest new answer options."
   },
   "introGetStarted": "Get Started",
   "@introGetStarted": {

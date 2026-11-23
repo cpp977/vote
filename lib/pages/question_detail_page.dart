@@ -19,6 +19,7 @@ import '../utils/error_handler.dart';
 import '../widgets/configuration_menu.dart';
 import '../widgets/question_stats_widget.dart';
 import '../widgets/snack_bars.dart';
+import '../widgets/suggest_answer_dialog.dart';
 
 /// Detail page for a single question.
 ///
@@ -375,6 +376,53 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
         setState(() => _isDeletingAnswer = false);
       }
     }
+  }
+
+  /// Opens the suggest-answer dialog for the current question.
+  ///
+  /// Proposing a new answer option requires an authenticated user (the backend
+  /// stores the proposal as a `pending` submission owned by the caller), so
+  /// guests are asked to sign in first — the same flow the question submission
+  /// button uses. The proposal only becomes votable once an administrator
+  /// approves it, so nothing on this page changes immediately; [onSubmitted]
+  /// simply lets the caller react if it wants to.
+  Future<void> _suggestAnswer() async {
+    final authController = context.read<AuthController>();
+    if (!authController.isAuthenticated) {
+      await _promptSignIn(authController);
+      return;
+    }
+    if (!mounted) return;
+    await showSuggestAnswerDialog(
+      context,
+      questionId: widget.question.id,
+      questionText: widget.question.text,
+    );
+  }
+
+  /// Asks a guest to sign in before suggesting an answer. Confirming routes
+  /// them to the login page via [AuthController.logout], the app's established
+  /// way of making `AuthGate` show the login screen.
+  Future<void> _promptSignIn(AuthController authController) async {
+    final l10n = AppLocalizations.of(context);
+    final bool? confirmed = await showDialog<bool>(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: Text(l10n.signInToSuggestAnswer),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(dialogContext).pop(false),
+            child: Text(l10n.cancel),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.of(dialogContext).pop(true),
+            child: Text(l10n.signIn),
+          ),
+        ],
+      ),
+    );
+    if (confirmed != true) return;
+    await authController.logout(showLoginPage: true);
   }
 
   Future<void> _fetchAnswers() async {
@@ -813,6 +861,20 @@ class _QuestionDetailsPageState extends State<QuestionDetailsPage> {
                   ),
                 );
               }),
+
+            // Suggest a new answer option for this question. The proposal
+            // enters the admin review queue as `pending` and only becomes
+            // votable once an administrator approves it, so the button is
+            // available regardless of the answers state above.
+            const SizedBox(height: 8),
+            Align(
+              alignment: Alignment.centerLeft,
+              child: OutlinedButton.icon(
+                onPressed: _suggestAnswer,
+                icon: const Icon(Icons.add_comment_outlined, size: 18),
+                label: Text(l10n.suggestAnswer),
+              ),
+            ),
 
             const SizedBox(height: 32),
 

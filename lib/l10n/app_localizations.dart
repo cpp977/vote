@@ -1346,6 +1346,96 @@ abstract class AppLocalizations {
   /// **'You can add at most {max} answer options'**
   String maxAnswerOptionsReached(int max);
 
+  /// Button on the question detail page that opens the suggest-an-answer dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest an answer'**
+  String get suggestAnswer;
+
+  /// Title of the dialog shown to guests who try to suggest an answer to a question.
+  ///
+  /// In en, this message translates to:
+  /// **'Sign in to suggest an answer'**
+  String get signInToSuggestAnswer;
+
+  /// Title of the dialog used to propose a new answer option for a question.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest an Answer'**
+  String get newAnswerSuggestionTitle;
+
+  /// Label for the answer text field in the suggest-an-answer dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Your answer'**
+  String get suggestedAnswerLabel;
+
+  /// Hint for the answer text field in the suggest-an-answer dialog.
+  ///
+  /// In en, this message translates to:
+  /// **'Enter the answer option you want to add...'**
+  String get suggestedAnswerHint;
+
+  /// Success message shown after an answer option was proposed.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer suggestion submitted for review'**
+  String get answerSubmissionCreated;
+
+  /// Error message shown when proposing an answer option fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to submit the answer suggestion'**
+  String get answerSubmissionFailed;
+
+  /// Section header for the user's own answer-option submissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer suggestions'**
+  String get answerSubmissions;
+
+  /// Tab / section title for the administrator review queue of answer-option submissions.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer Suggestions'**
+  String get adminAnswerSubmissions;
+
+  /// Empty-state message on the admin answer-suggestion tab when there is nothing to review.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no answer suggestions to review.'**
+  String get adminAnswerSubmissionsEmpty;
+
+  /// Title of the confirmation dialog shown when an administrator rejects an answer suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Reject answer suggestion'**
+  String get rejectAnswerSuggestion;
+
+  /// Body of the confirmation dialog shown when an administrator rejects an answer suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to reject this answer suggestion? This action cannot be undone.'**
+  String get rejectAnswerSuggestionConfirm;
+
+  /// Success message shown after an administrator approved an answer suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer suggestion approved'**
+  String get answerSuggestionApproved;
+
+  /// Success message shown after an administrator rejected an answer suggestion.
+  ///
+  /// In en, this message translates to:
+  /// **'Answer suggestion rejected'**
+  String get answerSuggestionRejected;
+
+  /// Error message shown when approving or rejecting an answer suggestion fails.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to review the answer suggestion'**
+  String get answerSuggestionReviewFailed;
+
   /// Drawer / page title for the administrator review queue of submitted questions.
   ///
   /// In en, this message translates to:
@@ -1777,6 +1867,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Have something to ask? Open the \'My Submissions\' tab and tap the button to submit your own question for review.'**
   String get introSubmitDesc;
+
+  /// Title of the introduction page explaining how to suggest new answer options.
+  ///
+  /// In en, this message translates to:
+  /// **'Suggest Answers'**
+  String get introSuggestTitle;
+
+  /// Description of the introduction page explaining how to suggest new answer options.
+  ///
+  /// In en, this message translates to:
+  /// **'Missing an option? Open a question and tap \'Suggest an answer\' to propose a new answer choice. An administrator reviews it before it appears.'**
+  String get introSuggestDesc;
 
   /// Button on the last introduction page that dismisses the intro and enters the app.
   ///

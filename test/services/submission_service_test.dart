@@ -298,4 +298,143 @@ void main() {
       },
     );
   });
+
+  group('SubmissionService.submitAnswerOption', () {
+    test('posts the trimmed text to the question endpoint', () async {
+      final middleware = _CapturingAuthMiddleware(
+        responseBody: _createdAnswerSubmission,
+      );
+      final service = SubmissionService(authMiddleware: middleware);
+
+      final submission = await service.submitAnswerOption(
+        questionId: 7,
+        text: '  Team C  ',
+      );
+
+      expect(middleware.requests, hasLength(1));
+      final request = middleware.requests.single;
+      expect(request.url, endsWith('/questions/7/answer-submissions'));
+      expect(request.jsonBody, {'text': 'Team C'});
+      expect(submission.id, 12);
+      expect(submission.questionId, 7);
+      expect(submission.submissionStatus, 'pending');
+    });
+
+    test('surfaces 401 as a SubmissionException with status code', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 401,
+        responseBody: {'error': 'Unauthenticated'},
+      );
+      final service = SubmissionService(authMiddleware: middleware);
+
+      await expectLater(
+        service.submitAnswerOption(questionId: 7, text: 'Team C'),
+        throwsA(
+          isA<SubmissionException>().having(
+            (e) => e.statusCode,
+            'statusCode',
+            401,
+          ),
+        ),
+      );
+    });
+
+    test(
+      'throws SubmissionException with parsed error on other errors',
+      () async {
+        final middleware = _CapturingAuthMiddleware(
+          statusCode: 404,
+          responseBody: {'error': 'Question not found'},
+        );
+        final service = SubmissionService(authMiddleware: middleware);
+
+        await expectLater(
+          service.submitAnswerOption(questionId: 999, text: 'Team C'),
+          throwsA(
+            isA<SubmissionException>()
+                .having((e) => e.message, 'message', 'Question not found')
+                .having((e) => e.statusCode, 'statusCode', 404),
+          ),
+        );
+      },
+    );
+  });
+
+  group('SubmissionService.getMyAnswerSubmissions', () {
+    test('returns list of answer submissions on 200', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 200,
+        responseBody: [_createdAnswerSubmission],
+      );
+      final service = SubmissionService(authMiddleware: middleware);
+
+      final submissions = await service.getMyAnswerSubmissions();
+
+      expect(submissions, hasLength(1));
+      expect(submissions.single.id, 12);
+      expect(submissions.single.questionText, 'Who is going to win?');
+      expect(middleware.requests.single.method, 'GET');
+      expect(
+        middleware.requests.single.url,
+        endsWith('/answer-submissions/mine'),
+      );
+    });
+
+    test('passes the status filter as a query parameter', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 200,
+        responseBody: [_createdAnswerSubmission],
+      );
+      final service = SubmissionService(authMiddleware: middleware);
+
+      await service.getMyAnswerSubmissions(status: 'pending');
+
+      expect(
+        middleware.requests.single.url,
+        allOf(contains('/answer-submissions/mine'), endsWith('status=pending')),
+      );
+    });
+
+    test('returns empty list when there are none', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 200,
+        responseBody: [],
+      );
+      final service = SubmissionService(authMiddleware: middleware);
+
+      expect(await service.getMyAnswerSubmissions(), isEmpty);
+    });
+
+    test('throws SubmissionException on 401', () async {
+      final middleware = _CapturingAuthMiddleware(
+        statusCode: 401,
+        responseBody: {'error': 'Unauthorized'},
+      );
+      final service = SubmissionService(authMiddleware: middleware);
+
+      await expectLater(
+        service.getMyAnswerSubmissions(),
+        throwsA(
+          isA<SubmissionException>().having(
+            (e) => e.statusCode,
+            'statusCode',
+            401,
+          ),
+        ),
+      );
+    });
+  });
 }
+
+const _createdAnswerSubmission = <String, dynamic>{
+  'id': 12,
+  'question_id': 7,
+  'question_text': 'Who is going to win?',
+  'text': 'Team C',
+  'language': 'en',
+  'submission_status': 'pending',
+  'created_at': '2026-08-24T10:00:00Z',
+  'submitted_by': '6f1c0a2e-1111-2222-3333-444455556666',
+  'reviewed_by': null,
+  'reviewed_at': null,
+};
